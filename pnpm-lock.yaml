@@ -11,9 +11,15 @@ importers:
       '@hashgraph/hedera-wallet-connect':
         specifier: ^2.0.3
         version: 2.0.3(@hashgraph/sdk@2.76.0(bn.js@5.2.2)(react-native@0.82.1(@babel/core@7.28.5)(@types/react@19.2.2)(react@19.1.0)))(@reown/appkit@1.7.16(@types/react@19.2.2)(react@19.1.0)(typescript@5.9.3)(zod@3.22.4))(@reown/walletkit@1.4.1(typescript@5.9.3)(zod@3.22.4))(@walletconnect/modal@2.7.0(@types/react@19.2.2)(react@19.1.0))(ethers@6.15.0)
+      '@hashgraph/proto':
+        specifier: ^2.25.0
+        version: 2.25.0(ansi-regex@6.2.2)(ansi-styles@6.2.3)(debug@4.4.3)(protobufjs@7.5.4)(strip-ansi@7.1.2)
       '@hashgraph/sdk':
         specifier: ^2.76.0
         version: 2.76.0(bn.js@5.2.2)(react-native@0.82.1(@babel/core@7.28.5)(@types/react@19.2.2)(react@19.1.0))
+      '@iconify/react':
+        specifier: ^6.0.2
+        version: 6.0.2(react@19.1.0)
       '@reown/appkit':
         specifier: ^1.7.16
         version: 1.7.16(@types/react@19.2.2)(react@19.1.0)(typescript@5.9.3)(zod@3.22.4)
@@ -783,6 +789,16 @@ packages:
       protobufjs: 7.5.4
       strip-ansi: 7.1.2
 
+  '@hashgraph/proto@2.25.0':
+    resolution: {integrity: sha512-lN4DgGq/3peCC1dTc4mWCbHQOUMf0F8D0g4T9/lpEzsOA2l2ecbgLfeRbE8o68zz6PZ4nkWOK3jFio1GF3+Wzg==}
+    engines: {node: '>=10.0.0'}
+    peerDependencies:
+      ansi-regex: 6.2.2
+      ansi-styles: 6.2.3
+      debug: 4.4.1
+      protobufjs: 7.5.4
+      strip-ansi: 7.1.2
+
   '@hashgraph/sdk@2.76.0':
     resolution: {integrity: sha512-FrLDeiHCJak+ZBcRv5cFoX23LPHvn1xWvVIST+oheI0NGfMxOXrGLWICaP5FMWdOnLfkM1OklCQ93J+QBFP7+Q==}
     engines: {node: '>=18.0.0'}
@@ -804,6 +820,14 @@ packages:
   '@humanwhocodes/retry@0.4.3':
     resolution: {integrity: sha512-bV0Tgo9K4hfPCek+aMAn81RppFKv2ySDQeMoSZuvTASywNTnVJCArCZE2FWqpvIatKu7VMRLWlR1EazvVhDyhQ==}
     engines: {node: '>=18.18'}
+
+  '@iconify/react@6.0.2':
+    resolution: {integrity: sha512-SMmC2sactfpJD427WJEDN6PMyznTFMhByK9yLW0gOTtnjzzbsi/Ke/XqsumsavFPwNiXs8jSiYeZTmLCLwO+Fg==}
+    peerDependencies:
+      react: '>=16'
+
+  '@iconify/types@2.0.0':
+    resolution: {integrity: sha512-+wluvCrRhXrhyOmRDJ3q8mux9JkKy5SJ/v8ol2tu4FVjyYvtEzkc/3pK15ET6RKg4b4w4BmTk1+gsCUhf21Ykg==}
 
   '@img/colour@1.0.0':
     resolution: {integrity: sha512-A5P/LfWGFSl6nsckYtjw9da+19jB8hkJ6ACTGcDfEJ0aE+l2n2El7dsVM7UVHZQ9s2lmYMWlrS21YLy2IR1LUw==}
@@ -5100,6 +5124,15 @@ snapshots:
       protobufjs: 7.5.4
       strip-ansi: 7.1.2
 
+  '@hashgraph/proto@2.25.0(ansi-regex@6.2.2)(ansi-styles@6.2.3)(debug@4.4.3)(protobufjs@7.5.4)(strip-ansi@7.1.2)':
+    dependencies:
+      ansi-regex: 6.2.2
+      ansi-styles: 6.2.3
+      debug: 4.4.3
+      long: 5.3.1
+      protobufjs: 7.5.4
+      strip-ansi: 7.1.2
+
   '@hashgraph/sdk@2.76.0(bn.js@5.2.2)(react-native@0.82.1(@babel/core@7.28.5)(@types/react@19.2.2)(react@19.1.0))':
     dependencies:
       '@ethersproject/abi': 5.8.0
@@ -5138,6 +5171,13 @@ snapshots:
   '@humanwhocodes/module-importer@1.0.1': {}
 
   '@humanwhocodes/retry@0.4.3': {}
+
+  '@iconify/react@6.0.2(react@19.1.0)':
+    dependencies:
+      '@iconify/types': 2.0.0
+      react: 19.1.0
+
+  '@iconify/types@2.0.0': {}
 
   '@img/colour@1.0.0':
     optional: true
