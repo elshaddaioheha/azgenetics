@@ -1,67 +1,156 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🧬 AZ-Genes | Decentralized Genomic Data Platform
 
-## Getting Started
+Secure genomic data management powered by **Hedera Hashgraph**, **Supabase**, and **Next.js**.
 
-First, run the development server:
+[![Next.js](https://img.shields.io/badge/Next.js-15-black)](https://nextjs.org/)
+[![Supabase](https://img.shields.io/badge/Supabase-Enabled-green)](https://supabase.com)
+[![Hedera](https://img.shields.io/badge/Hedera-Mainnet-blue)](https://hedera.com)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue)](https://www.typescriptlang.org/)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+---
+
+## 🚀 Features
+
+- **Dual Authentication** - Email/password or Hedera wallet connection
+- **Role-Based Access** - Patient, Doctor, and Researcher dashboards
+- **Data Encryption** - End-to-end encrypted genomic data storage
+- **NFT Certification** - Certify data ownership on Hedera
+- **Access Control** - Grant and revoke data access with consent
+- **Modern Stack** - Next.js 15, Supabase, Tailwind CSS v4
+
+---
+
+## � Prerequisites
+
+- Node.js 18+
+- [Supabase Account](https://supabase.com) (free tier available)
+- [Resend Account](https://resend.com) (for email delivery)
+- [WalletConnect Project ID](https://cloud.walletconnect.com) (for wallet auth)
+
+---
+
+## ⚡ Quick Start
+
+1. **Clone & Install**
+   ```bash
+   git clone https://github.com/yourusername/az-genes.git
+   cd az-genes
+   npm install
+   ```
+
+2. **Environment Setup**
+   
+   Create `.env.local`:
+   ```env
+   NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_key
+   RESEND_API_KEY=your_resend_key
+   NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=your_wc_id
+   ```
+
+3. **Database Setup**
+   
+   Run in [Supabase SQL Editor](https://supabase.com/dashboard):
+   ```sql
+   -- See: supabase/migrations/01_simple_setup.sql
+   ```
+
+4. **Run Development Server**
+   ```bash
+   npm run dev
+   ```
+   
+   Open [http://localhost:3000](http://localhost:3000)
+
+---
+
+## 🏗️ Tech Stack
+
+| Technology | Purpose |
+|------------|---------|
+| **Next.js 15** | React framework with App Router |
+| **Supabase** | Authentication & PostgreSQL database |
+| **Tailwind CSS v4** | Utility-first styling |
+| **Hedera** | Blockchain for NFT certification |
+| **Resend** | Transactional email delivery |
+| **TypeScript** | Type-safe development |
+
+---
+
+## 📂 Project Structure
+
+```
+├── app/
+│   ├── api/auth/          # Authentication endpoints
+│   ├── dashboard/         # Role-specific dashboards
+│   ├── sign-in/           # Login page
+│   └── sign-up/           # Registration with OTP
+├── components/
+│   ├── auth/              # Auth UI components
+│   └── dashboard/         # Dashboard components
+├── lib/
+│   ├── email.ts           # Email service
+│   └── useAuth.ts         # Supabase auth hook
+├── types/                 # TypeScript definitions
+└── supabase/migrations/   # Database schema
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🔐 Authentication
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Email/Password
+1. Sign up with email → Receive OTP → Verify → Access dashboard
+2. OTP expires in 10 minutes, resend available after 60 seconds
+3. Rate limiting: 5 login attempts per hour
 
-## Learn More
+### Wallet Connection
+1. Connect Hedera wallet (Blade/HashPack/Kabila)
+2. First-time users: Select role & subscription tier
+3. Returning users: Direct access to dashboard
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## � Deployment
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Vercel (Recommended)
 
-## Deploy on Vercel
+1. Push to GitHub
+2. Import in [Vercel Dashboard](https://vercel.com)
+3. Add environment variables
+4. Deploy
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Environment Variables
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Required for production:
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `RESEND_API_KEY`
+- `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID`
+- `NEXT_PUBLIC_APP_URL` (your domain)
 
-## Testing locally with the mock API server
+---
 
-This repository includes a lightweight in-process mock API server used by the test suite so you can run
-integration tests entirely offline without a real Supabase backend or running the full Next server.
+## 🤝 Contributing
 
-How it works
-- The mock server lives at `tests/mockServer.ts` and implements the subset of endpoints the tests exercise
-	(upload, grant-access, get-file, get-analytics and file deletion).
-- Test helpers in `tests/helpers.ts` use an in-memory mocked Supabase client (`tests/mocks/supabase.ts`) to
-	create users and sessions. The helpers start the mock server on port 3000 so tests that call
-	`http://localhost:3000/api/*` hit the local handlers.
+1. Fork the repository
+2. Create feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit changes (`git commit -m 'Add AmazingFeature'`)
+4. Push to branch (`git push origin feature/AmazingFeature`)
+5. Open Pull Request
 
-Run tests
+---
 
-Use the project's test runner (Vitest) via the npm script. From the repository root:
+## 📄 License
 
-```powershell
-$env:NODE_ENV = 'test'; npm test
-```
+MIT License - see [LICENSE](LICENSE) file
 
-If you want verbose debugging for test server/auth flows, enable DEBUG:
+---
 
-```powershell
-$env:DEBUG = 'az-genes:*'; $env:NODE_ENV = 'test'; npm test
-```
+## 🙏 Acknowledgments
 
-Notes
-- The mock server is intentionally simple and intended only for tests. It does not persist data between
-	runs and is not secure—do not use it for production traffic.
-- If you prefer to skip auth during tests, you can relax middleware checks in test mode; see `src/functions/edge/middleware/auth.ts`.
+Built with Next.js, Supabase, and Hedera Hashgraph
+
+---
+
+**Made with 🧬 by the AZ-Genes Team**
