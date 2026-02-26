@@ -109,16 +109,30 @@ async function handleGetFile(req: Request, context: AuthContext): Promise<Respon
       }
     }
 
-    // Download encrypted file from Supabase Storage
-    const { data: encryptedData, error: downloadError } = await supabase.storage
-      .from('encrypted-files')
-      .download(file.storage_path);
+    // Download encrypted file from storage (IPFS or Supabase)
+    let encryptedData: ArrayBuffer;
 
-    if (downloadError || !encryptedData) {
-      throw new Error('Failed to download file');
+    if (file.ipfs_cid) {
+      console.log(`[GetFile] Downloading from IPFS: ${file.ipfs_cid}`);
+      const gateway = process.env.NEXT_PUBLIC_IPFS_GATEWAY || 'https://gateway.pinata.cloud/ipfs/';
+      const response = await fetch(`${gateway}${file.ipfs_cid}`);
+      if (!response.ok) {
+        throw new Error(`Failed to download from IPFS: ${response.statusText}`);
+      }
+      encryptedData = await response.arrayBuffer();
+    } else {
+      console.log(`[GetFile] Downloading from Supabase: ${file.storage_path}`);
+      const { data: storageData, error: downloadError } = await supabase.storage
+        .from('encrypted-files')
+        .download(file.storage_path);
+
+      if (downloadError || !storageData) {
+        throw new Error('Failed to download from Supabase storage');
+      }
+      encryptedData = await storageData.arrayBuffer();
     }
 
-    const encryptedBuffer = Buffer.from(await encryptedData.arrayBuffer());
+    const encryptedBuffer = Buffer.from(encryptedData);
 
     // Verify file integrity for F2 users
     if (profile.subscription_tier === 'F2') {
@@ -177,18 +191,18 @@ async function handleGetFile(req: Request, context: AuthContext): Promise<Respon
         error: 'Decryption failed',
         created_at: new Date().toISOString()
       });
-      
+
       throw new Error('Failed to decrypt file');
     }
 
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
-    const statusCode = error instanceof Error && 
-      (message.includes('limit exceeded') || 
-       message.includes('Access denied') ||
-       message.includes('not found')) ? 400 : 500;
+    const statusCode = error instanceof Error &&
+      (message.includes('limit exceeded') ||
+        message.includes('Access denied') ||
+        message.includes('not found')) ? 400 : 500;
 
-    return new Response(JSON.stringify({ 
+    return new Response(JSON.stringify({
       error: message,
       code: error instanceof Error ? error.name : 'UnknownError'
     }), {
@@ -217,12 +231,12 @@ export async function onRequest(req: Request, context: AuthContext): Promise<Res
     return await withAuth(req, context, handleGetFile);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
-    const statusCode = error instanceof Error && 
-      (message.includes('limit exceeded') || 
-       message.includes('access denied') ||
-       message.includes('not found')) ? 400 : 500;
+    const statusCode = error instanceof Error &&
+      (message.includes('limit exceeded') ||
+        message.includes('access denied') ||
+        message.includes('not found')) ? 400 : 500;
 
-    return new Response(JSON.stringify({ 
+    return new Response(JSON.stringify({
       error: message,
       code: error instanceof Error ? error.name : 'UnknownError'
     }), {

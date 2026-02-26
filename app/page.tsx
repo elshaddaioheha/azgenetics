@@ -1,132 +1,345 @@
-
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
-import { Icon } from '@iconify/react';
+import { motion } from 'framer-motion';
+import Navbar from '@/components/Navbar';
+import {
+  ArrowRight,
+  ArrowUpRight,
+  ShieldCheck,
+  ChevronRight,
+  Zap,
+  Info,
+  Dna,
+  Activity,
+  User,
+  Heart,
+  Smartphone,
+  Shield,
+  Globe,
+  Database,
+  Lock
+} from 'lucide-react';
+
+const fadeIn = {
+  hidden: { opacity: 0, y: 30 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.8,
+      ease: [0.16, 1, 0.3, 1] as any
+    }
+  }
+};
+
+const stagger = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.15
+    }
+  }
+};
 
 export default function Home() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
   return (
-    <>
+    <div className="bg-[#fdfdfd] text-foreground font-sans selection:bg-fern/10 selection:text-fern overflow-x-hidden min-h-screen">
       <Head>
-        <title>AZ genes | Secure Genomic Protocol on Hedera</title>
-        <meta name="description" content="Sovereign genomic data management powered by Hedera Hashgraph and decentralized indexing" />
+        <title>AZ genes | Protect Your Genetic Heritage & Health History</title>
+        <meta name="description" content="Secure, sovereign genomic data management for individuals and families." />
       </Head>
 
-      <div className="antialiased text-slate-600 selection:bg-emerald-500/20 selection:text-emerald-800 min-h-screen relative overflow-x-hidden bg-background">
-        <div className="fixed inset-0 z-[-1] bg-grid pointer-events-none h-screen w-full opacity-50"></div>
+      {/* Navigation - Premium & Refined */}
+      <Navbar />
 
-        {/* Navigation */}
-        <nav className="fixed top-0 w-full z-50 border-b border-border bg-background/80 backdrop-blur-xl">
-          <div className="max-w-[1400px] mx-auto px-6 h-14 flex items-center justify-between">
-            <div className="flex items-center gap-8">
-              <Link href="/" className="flex items-center gap-2 group cursor-pointer">
-                <div className="w-7 h-7 rounded-sm bg-emerald-50 border border-emerald-500/30 flex items-center justify-center text-emerald-600 font-bold tracking-tighter text-xs">
-                  AZ
-                </div>
-                <span className="text-foreground font-medium tracking-tight text-sm">
-                  genes <span className="text-slate-400 font-normal">/ protocol</span>
-                </span>
-              </Link>
+      {/* Hero Section */}
+      <section className="relative pt-36 pb-32 px-10 flex flex-col items-center justify-center text-center overflow-hidden">
+        {/* Abstract background blur */}
+        <div className="absolute top-[10%] left-[-10%] w-[500px] h-[500px] bg-med-blue/10 rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute bottom-[10%] right-[-10%] w-[500px] h-[500px] bg-med-purple/10 rounded-full blur-[120px] pointer-events-none" />
 
-              <div className="hidden md:flex items-center gap-6 text-xs font-medium text-slate-500 transition-opacity duration-300">
-                <Link href="#features" className="hover:text-foreground">Features</Link>
-                <Link href="#solutions" className="hover:text-foreground">Solutions</Link>
-                <Link href="/dashboard" className="hover:text-foreground">Dashboard</Link>
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={stagger}
+          className="relative z-10 flex flex-col items-center max-w-6xl"
+        >
+          <motion.div variants={fadeIn} className="flex items-center gap-3 px-5 py-2 mb-12 rounded-full bg-slate-50 border border-slate-100 shadow-sm">
+            <div className="flex items-center gap-2">
+              <ShieldCheck size={16} className="text-indigo-600" />
+            </div>
+            <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Backed by Leading Genomic Institutes</span>
+          </motion.div>
+
+          <motion.h1
+            variants={fadeIn}
+            className="text-5xl md:text-7xl lg:text-[6.5rem] font-bold tracking-tighter text-foreground mb-8 leading-[0.95] text-[#111]"
+          >
+            Own Your<br />Genetic Destiny.
+          </motion.h1>
+
+          <motion.p
+            variants={fadeIn}
+            className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-12 leading-relaxed font-semibold opacity-60"
+          >
+            Secure, sovereign genomic data management for the modern era.
+            Carry your biological heritage anywhere, protected by decentralized encryption.
+          </motion.p>
+
+          <motion.div variants={fadeIn} className="flex gap-10 items-center justify-center mb-16">
+            <div className="flex flex-col items-center">
+              <span className="text-3xl font-bold tracking-tighter">100%</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Sovereign</span>
+            </div>
+            <div className="w-[1px] h-12 bg-border" />
+            <div className="flex flex-col items-center">
+              <span className="text-3xl font-bold tracking-tighter">Hedera</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Powered Network</span>
+            </div>
+            <div className="w-[1px] h-12 bg-border" />
+            <div className="flex flex-col items-center">
+              <span className="text-3xl font-bold tracking-tighter">IPFS</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Encrypted Storage</span>
+            </div>
+          </motion.div>
+        </motion.div>
+
+        {/* Bento Grid Features */}
+        <div className="w-full max-w-[1440px] mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 px-6 mb-20">
+          {/* Card 1 - Unified proportions rounded-[2.5rem] */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="group relative overflow-hidden rounded-[2.5rem] bg-med-blue aspect-[4/5] p-10 flex flex-col justify-between text-white shadow-2xl hover:-translate-y-2 transition-transform duration-500"
+          >
+            <div className="flex justify-between items-start relative z-10">
+              <span className="text-[11px] font-bold uppercase tracking-widest opacity-80">Biological Vault</span>
+              <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center group-hover:bg-white group-hover:text-med-blue transition-all duration-300 shadow-lg">
+                <ArrowUpRight size={24} />
               </div>
             </div>
-
-            <div className="flex items-center gap-4">
-              <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-100">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                </span>
-                <span className="text-[10px] font-mono text-emerald-600 font-bold uppercase tracking-widest">Hedera Mainnet Beta</span>
-              </div>
-
-              <Link href="/sign-in" className="bg-foreground hover:bg-slate-800 text-white px-4 py-1.5 rounded text-xs font-medium transition-all flex items-center gap-2 shadow-sm">
-                <Icon icon="lucide:wallet" width="14" />
-                Connect Wallet
-              </Link>
+            <div className="relative z-10 text-left">
+              <h3 className="text-4xl font-bold leading-[1] tracking-tight mb-4">Protect Your<br />Heritage</h3>
+              <p className="text-sm font-semibold opacity-60 leading-relaxed max-w-[180px]">End-to-end encrypted storage for your full genomic sequence.</p>
             </div>
-          </div>
-        </nav>
+            <div className="absolute inset-0 z-0 group-hover:scale-105 transition-transform duration-1000">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/10 z-10" />
+              <img
+                src="/dna_abstract_1772094318671.png"
+                alt=""
+                className="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity"
+                onError={(e) => { e.currentTarget.style.backgroundColor = '#a8c0d8' }}
+              />
+            </div>
+          </motion.div>
 
-        {/* Hero Section */}
-        <section className="pt-32 pb-20 px-6 max-w-[1400px] mx-auto min-h-screen flex flex-col items-center justify-center text-center relative">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-emerald-500/5 rounded-full blur-[100px] pointer-events-none"></div>
+          {/* Card 2 - Researcher Focus */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+            className="group relative overflow-hidden rounded-[2.5rem] bg-med-green aspect-[4/5] p-10 flex flex-col justify-between text-white shadow-2xl hover:-translate-y-2 transition-transform duration-500"
+          >
+            <div className="flex justify-between items-start relative z-10">
+              <span className="text-[11px] font-bold uppercase tracking-widest opacity-80">Clinical Network</span>
+              <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center group-hover:bg-white group-hover:text-med-green transition-all duration-300 shadow-lg">
+                <ArrowUpRight size={24} />
+              </div>
+            </div>
+            <div className="relative z-10 text-left">
+              <h3 className="text-4xl font-bold leading-[1] tracking-tight mb-4">Precision<br />Medicine</h3>
+              <p className="text-sm font-semibold opacity-60 leading-relaxed max-w-[180px]">Collaborate with researchers while maintaining 100% data sovereignty.</p>
+            </div>
+            <div className="absolute inset-0 z-0 group-hover:scale-105 transition-transform duration-1000">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/10 z-10" />
+              <img
+                src="/medical_lab_tech_1772094355868.png"
+                alt=""
+                className="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity"
+                onError={(e) => { e.currentTarget.style.backgroundColor = '#a3b18a' }}
+              />
+            </div>
+          </motion.div>
 
-          <div className="inline-flex items-center gap-2 px-3 py-1 mb-8 rounded-full bg-white border border-border shadow-sm backdrop-blur-sm">
-            <span className="text-[10px] font-mono text-emerald-600">v1.0 Public Release</span>
-            <span className="w-px h-3 bg-slate-200"></span>
-            <a href="#" className="text-[10px] text-slate-500 hover:text-foreground flex items-center gap-1">
-              Read the Whitepaper <Icon icon="lucide:arrow-right" width="10" />
-            </a>
-          </div>
+          {/* Card 3 - Security Focus */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+            className="group relative overflow-hidden rounded-[2.5rem] bg-med-tan aspect-[4/5] p-10 flex flex-col justify-between text-white shadow-2xl hover:-translate-y-2 transition-transform duration-500"
+          >
+            <div className="flex justify-between items-start relative z-10">
+              <span className="text-[11px] font-bold uppercase tracking-widest opacity-80">Encryption Layer</span>
+              <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center group-hover:bg-white group-hover:text-med-tan transition-all duration-300 shadow-lg">
+                <ArrowUpRight size={24} />
+              </div>
+            </div>
+            <div className="relative z-10 text-left">
+              <h3 className="text-4xl font-bold leading-[1] tracking-tight mb-4">Immutable<br />Security</h3>
+              <p className="text-sm font-semibold opacity-60 leading-relaxed max-w-[180px]">Blockchain-backed proof of authorship and genetic integrity.</p>
+            </div>
+            <div className="absolute inset-0 z-0 group-hover:scale-105 transition-transform duration-1000">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/10 z-10" />
+              <img
+                src="/secure_vault_medical_1772094379550.png"
+                alt=""
+                className="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity"
+                onError={(e) => { e.currentTarget.style.backgroundColor = '#c8b6a6' }}
+              />
+            </div>
+          </motion.div>
 
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-semibold tracking-tighter text-foreground mb-6 relative z-10">
-            Your DNA. <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-600">Sovereign Asset.</span>
-          </h1>
+          {/* Card 4 - Global Hub */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.3 }}
+            className="group relative overflow-hidden rounded-[2.5rem] bg-med-purple aspect-[4/5] p-10 flex flex-col justify-between text-white shadow-2xl hover:-translate-y-2 transition-transform duration-500"
+          >
+            <div className="flex justify-between items-start relative z-10">
+              <span className="text-[11px] font-bold uppercase tracking-widest opacity-80">Global Portability</span>
+              <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center group-hover:bg-white group-hover:text-med-purple transition-all duration-300 shadow-lg">
+                <ArrowUpRight size={24} />
+              </div>
+            </div>
+            <div className="relative z-10 text-left">
+              <h3 className="text-4xl font-bold leading-[1] tracking-tight mb-4">Total<br />Control</h3>
+              <p className="text-sm font-semibold opacity-60 leading-relaxed max-w-[180px]">Access your biological records from any authorized medical node worldwide.</p>
+            </div>
+            <div className="absolute inset-0 z-0 group-hover:scale-105 transition-transform duration-1000">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/10 z-10" />
+              <img
+                src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=1000"
+                alt=""
+                className="w-full h-full object-cover opacity-40 group-hover:opacity-60 transition-opacity mix-blend-overlay"
+              />
+              <div className="w-full h-full bg-[#a997bf] flex items-center justify-center">
+                <Globe size={120} className="text-white/10" />
+              </div>
+            </div>
+          </motion.div>
+        </div>
 
-          <p className="text-sm md:text-base text-slate-500 max-w-xl mx-auto mb-10 leading-relaxed relative z-10">
-            Securely house your genomic profile using industry-grade encryption.
-            Verify data integrity on Hedera Hashgraph and manage access through decentralized protocol layers.
-          </p>
-
-          <div className="flex flex-col sm:flex-row items-center gap-4 relative z-10">
-            <Link href="/sign-up" className="h-10 px-6 rounded bg-emerald-500 hover:bg-emerald-400 text-white text-sm font-semibold transition-all shadow-[0_4px_20px_-5px_rgba(16,185,129,0.3)] flex items-center gap-2">
-              Get Started
-              <Icon icon="lucide:arrow-right" width="16" />
+        {/* Final CTA Section */}
+        <section className="w-full max-w-[1440px] mx-auto px-6 mb-32 mt-20">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            className="rounded-[3rem] p-16 md:p-24 bg-indigo-50 border border-indigo-100 flex flex-col md:flex-row items-center justify-between gap-12 group"
+          >
+            <div className="max-w-xl">
+              <h2 className="text-4xl md:text-6xl font-black text-indigo-950 tracking-tighter leading-[1] mb-6">
+                Ready to secure your biological legacy?
+              </h2>
+              <p className="text-xl text-indigo-900/60 font-medium leading-relaxed">
+                Join the protocol. Decentralize your health records and access precision medical AI without compromising privacy.
+              </p>
+            </div>
+            <Link href="/sign-up" className="px-10 py-6 rounded-full bg-indigo-600 text-white font-bold uppercase tracking-widest text-sm flex items-center gap-4 hover:bg-indigo-700 hover:scale-105 active:scale-95 transition-all shadow-xl whitespace-nowrap">
+              Initialize Vault <ArrowRight size={20} />
             </Link>
-            <button className="h-10 px-6 rounded glass-btn text-slate-600 hover:text-foreground text-sm font-medium flex items-center gap-2">
-              <Icon icon="lucide:play-circle" width="16" />
-              Watch Demo
-            </button>
-          </div>
-
-          {/* Features Grid */}
-          <div id="features" className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-24 w-full max-w-5xl">
-            <div className="glass-panel p-6 rounded-xl text-left hover:border-emerald-500/30 transition-colors group">
-              <div className="w-10 h-10 rounded bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 mb-4 group-hover:scale-110 transition-transform">
-                <Icon icon="lucide:lock" width="20" />
-              </div>
-              <h3 className="text-sm font-medium text-foreground mb-2">Immutable Integrity</h3>
-              <p className="text-xs text-slate-500 leading-relaxed">Every genomic asset is hashed and timestamped on the Hedera Consensus Service, ensuring permanent verifiability.</p>
-            </div>
-            <div className="glass-panel p-6 rounded-xl text-left hover:border-emerald-500/30 transition-colors group">
-              <div className="w-10 h-10 rounded bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 mb-4 group-hover:scale-110 transition-transform">
-                <Icon icon="lucide:database" width="20" />
-              </div>
-              <h3 className="text-sm font-medium text-foreground mb-2">Decentralized Storage</h3>
-              <p className="text-xs text-slate-500 leading-relaxed">Leverage Supabase and Firestore hybrid layers for secure, low-latency access to your personal biological records.</p>
-            </div>
-            <div className="glass-panel p-6 rounded-xl text-left hover:border-emerald-500/30 transition-colors group">
-              <div className="w-10 h-10 rounded bg-purple-50 border border-purple-100 flex items-center justify-center text-purple-600 mb-4 group-hover:scale-110 transition-transform">
-                <Icon icon="lucide:network" width="20" />
-              </div>
-              <h3 className="text-sm font-medium text-foreground mb-2">Interoperable</h3>
-              <p className="text-xs text-slate-500 leading-relaxed">Import from 23andMe or Ancestry. Export standardized VCF files to any decentralized health dApp.</p>
-            </div>
-          </div>
-
-          <div className="mt-20 border-t border-border pt-10 flex flex-wrap justify-center gap-12 grayscale opacity-50">
-            <span className="text-xs font-bold text-slate-400 tracking-[0.2em]">HEDERA</span>
-            <span className="text-xs font-bold text-slate-400 tracking-[0.2em]">FIREBASE</span>
-            <span className="text-xs font-bold text-slate-400 tracking-[0.2em]">SUPABASE</span>
-            <span className="text-xs font-bold text-slate-400 tracking-[0.2em]">NEXTJS</span>
-          </div>
+          </motion.div>
         </section>
+      </section>
 
-        {/* Footer */}
-        <footer className="border-t border-border py-8 text-center bg-background">
-          <p className="text-[10px] text-slate-400 font-mono">AZ-genes-protocol v1.0.4 • <span className="text-emerald-600">System Operational</span></p>
-        </footer>
-      </div>
-    </>
+      {/* Social Proof / Trust - Smooth Reveal */}
+      <section className="py-40 border-y border-border bg-[#fdfdfd]">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={fadeIn}
+          className="max-w-[1400px] mx-auto px-10"
+        >
+          <div className="flex flex-col lg:flex-row items-center justify-between gap-24">
+            <div className="max-w-md text-center lg:text-left">
+              <h3 className="text-4xl font-bold tracking-tight mb-4">Strategic Clinical Partners.</h3>
+              <p className="text-muted-foreground font-semibold leading-relaxed opacity-60">Integrated with leading institutions to ensure compliance and robust genomic data security.</p>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-16 opacity-30 grayscale hover:grayscale-0 transition-all duration-700">
+              <div className="flex flex-col items-center group">
+                <span className="text-2xl font-black italic tracking-tighter uppercase group-hover:text-indigo-600 transition-colors">BioTrust</span>
+              </div>
+              <div className="flex flex-col items-center group">
+                <span className="text-2xl font-black italic tracking-tighter uppercase group-hover:text-med-green transition-colors">GenX Labs</span>
+              </div>
+              <div className="flex flex-col items-center group">
+                <span className="text-2xl font-black italic tracking-tighter uppercase group-hover:text-med-blue transition-colors">NodeCore</span>
+              </div>
+              <div className="flex flex-col items-center group">
+                <span className="text-2xl font-black italic tracking-tighter uppercase group-hover:text-med-purple transition-colors">H-Protocol</span>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </section>
+
+      {/* Footer - Professional Dark Contrast */}
+      <footer className="py-24 bg-foreground text-white border-t border-white/5 mt-0">
+        <div className="max-w-[1440px] mx-auto px-10">
+          <div className="flex flex-col lg:flex-row justify-between items-start gap-20 mb-20">
+            <div className="max-w-md">
+              <div className="flex items-center gap-3 mb-10">
+                <div className="w-10 h-10 rounded-xl bg-fern flex items-center justify-center text-white font-bold text-sm shadow-sm transition-transform hover:scale-110">AZ</div>
+                <span className="text-white font-bold tracking-tight text-3xl uppercase">genes</span>
+              </div>
+              <p className="text-white/60 text-lg font-semibold leading-relaxed">
+                The global infrastructure for biological data sovereignty. Built for individuals, refined for institutions.
+              </p>
+              <div className="flex gap-4 mt-12">
+                <div className="w-11 h-11 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all cursor-pointer shadow-sm"><Smartphone size={20} /></div>
+                <div className="w-11 h-11 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all cursor-pointer shadow-sm"><Dna size={20} /></div>
+                <div className="w-11 h-11 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all cursor-pointer shadow-sm"><Shield size={20} /></div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-24">
+              <div>
+                <h5 className="font-bold text-xs mb-10 uppercase tracking-[0.3em] text-white/40">Infrastructure</h5>
+                <ul className="space-y-6 text-[14px] font-bold text-white/60">
+                  <li className="hover:text-white cursor-pointer transition-colors">Vault Engine</li>
+                  <li className="hover:text-white cursor-pointer transition-colors">Hedera Node</li>
+                  <li className="hover:text-white cursor-pointer transition-colors">IPFS Storage</li>
+                  <li className="hover:text-white cursor-pointer transition-colors">Asset Minting</li>
+                </ul>
+              </div>
+              <div>
+                <h5 className="font-bold text-xs mb-10 uppercase tracking-[0.3em] text-white/40">Ecosystem</h5>
+                <ul className="space-y-6 text-[14px] font-bold text-white/60">
+                  <li className="hover:text-white cursor-pointer transition-colors">Developer API</li>
+                  <li className="hover:text-white cursor-pointer transition-colors">Researcher Hub</li>
+                  <li className="hover:text-white cursor-pointer transition-colors">Clinic Connect</li>
+                </ul>
+              </div>
+              <div className="hidden sm:block">
+                <h5 className="font-bold text-xs mb-10 uppercase tracking-[0.3em] text-white/40">Foundation</h5>
+                <ul className="space-y-6 text-[14px] font-bold text-white/60">
+                  <li className="hover:text-white cursor-pointer transition-colors">About Mission</li>
+                  <li className="hover:text-white cursor-pointer transition-colors">Transparency</li>
+                  <li className="hover:text-white cursor-pointer transition-colors">Contact Node</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div className="pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center text-[11px] font-bold text-white/30 gap-6">
+            <span className="tracking-[0.2em] uppercase">© 2026 AZ Genes Protocol | Clinical Grade Heritage Protection</span>
+            <div className="flex gap-12">
+              <span className="hover:text-white cursor-pointer uppercase transition-colors tracking-widest">Privacy Protocol</span>
+              <span className="hover:text-white cursor-pointer uppercase transition-colors tracking-widest">Node Terms</span>
+              <span className="text-med-green uppercase tracking-widest">Network Synchronized</span>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
   );
 }

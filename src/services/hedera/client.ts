@@ -14,7 +14,8 @@ import {
   Hbar,
   TransferTransaction,
   TokenId,
-  NftId
+  NftId,
+  AccountCreateTransaction
 } from "@hashgraph/sdk";
 
 export class HederaClient {
@@ -30,12 +31,12 @@ export class HederaClient {
 
     this.operatorId = operatorId;
     this.operatorKey = operatorKey;
-    
+
     // Create client instance
-    this.client = network === 'mainnet' 
+    this.client = network === 'mainnet'
       ? Client.forMainnet()
       : Client.forTestnet();
-    
+
     this.client.setOperator(operatorId, operatorKey);
   }
 
@@ -49,8 +50,28 @@ export class HederaClient {
 
     const response = await transaction.execute(this.client);
     await response.getReceipt(this.client); // Wait for consensus
-    
+
     return response.transactionId.toString();
+  }
+
+  /**
+   * Creates a new Hedera account paid by the operator
+   */
+  async createAccount(initialBalance: Hbar = new Hbar(0)): Promise<{ accountId: string; privateKey: string }> {
+    const newAccountPrivateKey = PrivateKey.generateED25519();
+    const newAccountPublicKey = newAccountPrivateKey.publicKey;
+
+    const transaction = new AccountCreateTransaction()
+      .setKey(newAccountPublicKey)
+      .setInitialBalance(initialBalance);
+
+    const txResponse = await transaction.execute(this.client);
+    const receipt = await txResponse.getReceipt(this.client);
+
+    return {
+      accountId: receipt.accountId!.toString(),
+      privateKey: newAccountPrivateKey.toStringDer()
+    };
   }
 
   /**
@@ -72,15 +93,15 @@ export class HederaClient {
       );
 
     const response = await transaction.execute(this.client);
-    const receipt = await response.getReceipt(this.client);
-    
+    await response.getReceipt(this.client);
+
     return response.transactionId.toString();
   }
 
   /**
    * Queries Mirror Node for transaction details
    */
-  async getHashFromMirrorNode(transactionId: string): Promise<string> {
+  async getHashFromMirrorNode(_transactionId: string): Promise<string> {
     // Implementation will depend on your Mirror Node setup
     // This is a placeholder for the actual implementation
     throw new Error("Mirror Node query not implemented");
@@ -105,8 +126,8 @@ export class HederaClient {
       );
 
     const response = await transaction.execute(this.client);
-    const receipt = await response.getReceipt(this.client);
-    
+    await response.getReceipt(this.client);
+
     return response.transactionId.toString();
   }
 
@@ -128,23 +149,23 @@ export class HederaClient {
       .setTreasuryAccountId(treasuryAccountId)
       .setSupplyType(TokenSupplyType.Infinite)
       .setTokenMemo(metadata);
-    
+
     // Set supply key if provided
     if (supplyKey) {
       transaction.setSupplyKey(supplyKey.publicKey);
     }
-    
+
     const frozenTransaction = await transaction.freezeWith(this.client);
     const signedTransaction = await frozenTransaction.sign(this.operatorKey);
-    
+
     // If supply key is provided, sign with it too
     if (supplyKey) {
       await signedTransaction.sign(supplyKey);
     }
-    
+
     const response = await signedTransaction.execute(this.client);
     const receipt = await response.getReceipt(this.client);
-    
+
     return receipt.tokenId!;
   }
 
@@ -154,7 +175,7 @@ export class HederaClient {
   async mintNFTCertificate(
     tokenId: TokenId,
     metadata: Uint8Array,
-    serialNumber?: number
+    _serialNumber?: number
   ): Promise<string> {
     const transaction = await new TokenMintTransaction()
       .setTokenId(tokenId)
@@ -164,12 +185,12 @@ export class HederaClient {
     const signedTransaction = await transaction.sign(this.operatorKey);
     const response = await signedTransaction.execute(this.client);
     const receipt = await response.getReceipt(this.client);
-    
+
     // Extract serial number from receipt
     if (receipt && 'serials' in receipt && Array.isArray(receipt.serials) && receipt.serials.length > 0) {
       return receipt.serials[0].toString();
     }
-    
+
     throw new Error("Failed to retrieve serial number from mint transaction");
   }
 
@@ -205,7 +226,7 @@ export class HederaClient {
     const signedTransaction = await transaction.sign(this.operatorKey);
     const response = await signedTransaction.execute(this.client);
     const receipt = await response.getReceipt(this.client);
-    
+
     return response.transactionId.toString();
   }
 }

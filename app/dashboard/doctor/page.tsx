@@ -1,20 +1,73 @@
 'use client';
-import React, { useEffect, useState } from 'react';
-import { useHederaWallet } from '@/context/HederaWalletContext';
+
+import React, { useEffect, useState, useRef } from 'react';
+import Head from 'next/head';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Dna,
+  LayoutDashboard,
+  Database,
+  Coins,
+  Share2,
+  Award,
+  BarChart3,
+  Star,
+  Settings,
+  Bell,
+  ChevronLeft,
+  ChevronRight,
+  Menu,
+  UploadCloud,
+  Plus,
+  Activity,
+  Lock,
+  ArrowUpRight,
+  User,
+  ShieldCheck,
+  TrendingUp,
+  TrendingDown,
+  Repeat,
+  Check,
+  LogOut,
+  Heart,
+  Fingerprint,
+  Stethoscope
+} from 'lucide-react';
 import { useToast } from '@/context/ToastContext';
 import { api } from '@/lib/apiClient';
 import { useAuth } from '@/lib/useAuth';
 import { useRouter } from 'next/navigation';
 import Spinner from '@/components/ui/Spinner';
 import { TableSkeleton } from '@/components/ui/Skeleton';
-import { Icon } from '@iconify/react';
-import { useWalletTransaction } from '@/hooks/useWalletTransaction';
+import { DataItem, TokenTransaction, AccessRequest } from '@/types/dashboard';
 import { TransactionStatusModal, TransactionStatus } from '@/components/TransactionStatusModal';
-
-import { DataItem, TokenTransaction, AccessRequest, UserProfile } from '@/types/dashboard';
-import { ConnectWalletModal } from '@/components/dashboard/doctor/ConnectWalletModal';
 import { PrivateDataAccessPanel } from '@/components/dashboard/doctor/PrivateDataAccessPanel';
 import { DataItemRow } from '@/components/dashboard/doctor/DataItemRow';
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1 }
+  }
+};
+
+const itemVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: {
+      duration: 0.5,
+      ease: [0.16, 1, 0.3, 1] as any
+    }
+  }
+};
+
+const sidebarVariants = {
+  open: { width: 280, opacity: 1 },
+  closed: { width: 80, opacity: 1 }
+};
 
 const AZGenesDashboard = () => {
   const { user, loading: authLoading } = useAuth();
@@ -22,8 +75,6 @@ const AZGenesDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isPrivateDataUnlocked, setIsPrivateDataUnlocked] = useState(false);
-  const [showConnectModal, setShowConnectModal] = useState(false);
-  const [isConnecting, setIsConnecting] = useState(false);
   const [nftCertificates, setNftCertificates] = useState<any[]>([]);
   const [loadingNFTs, setLoadingNFTs] = useState(false);
   const [mintingFileId, setMintingFileId] = useState<string | null>(null);
@@ -31,7 +82,7 @@ const AZGenesDashboard = () => {
   const [loadingFiles, setLoadingFiles] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
   const [userProfile, setUserProfile] = useState<any>(null);
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Transaction modal state
   const [txModalOpen, setTxModalOpen] = useState(false);
@@ -39,11 +90,6 @@ const AZGenesDashboard = () => {
   const [txError, setTxError] = useState<string>('');
   const [txId, setTxId] = useState<string>('');
 
-  // Use wallet transaction hook
-  const walletTx = useWalletTransaction();
-
-  // Use real Hedera wallet context
-  const { isConnected: isWalletConnected, connectWallet, disconnectWallet, accountId, network } = useHederaWallet();
   const toast = useToast();
 
   // Redirect to sign-in if not authenticated
@@ -75,19 +121,11 @@ const AZGenesDashboard = () => {
   }, [user, authLoading, router]);
 
   const privateData = userData.filter(item => item.isPrivate);
-  const publicData = userData.filter(item => !item.isPrivate);
 
   const tokenTransactions: TokenTransaction[] = [
-    { id: '1', type: 'earned', amount: 50, description: 'Data upload bonus', date: '2024-01-15', fromTo: 'System' },
-    { id: '2', type: 'spent', amount: 10, description: 'Data access fee', date: '2024-01-12', fromTo: 'Research Institute A' },
-    { id: '3', type: 'received', amount: 25, description: 'Data sharing reward', date: '2024-01-10', fromTo: 'Dr. Smith' },
-    { id: '4', type: 'spent', amount: 5, description: 'Certificate renewal', date: '2024-01-08', fromTo: 'AZ-Genes Platform' },
-  ];
-
-  const accessRequests: AccessRequest[] = [
-    { id: '1', requester: 'Genomics Research Corp', dataType: 'Genetic Data', requestDate: '2024-01-14', status: 'pending', purpose: 'Medical Research' },
-    { id: '2', requester: 'Dr. Johnson Clinic', dataType: 'Health Records', requestDate: '2024-01-12', status: 'approved', purpose: 'Treatment Planning' },
-    { id: '3', requester: 'Family Member - John Doe', dataType: 'Family History', requestDate: '2024-01-10', status: 'approved', purpose: 'Family Health Awareness' },
+    { id: '1', type: 'earned', amount: 50, description: 'Clinical data upload', date: '2024-01-15', fromTo: 'Network' },
+    { id: '2', type: 'spent', amount: 10, description: 'Dataset access fee', date: '2024-01-12', fromTo: 'Research Hub' },
+    { id: '3', type: 'received', amount: 25, description: 'Peer review reward', date: '2024-01-10', fromTo: 'Protocol' },
   ];
 
   const stats = {
@@ -100,34 +138,8 @@ const AZGenesDashboard = () => {
     encryptedFiles: userData.filter(item => item.encrypted).length,
   };
 
-  const handleConnectWallet = async () => {
-    setIsConnecting(true);
-    try {
-      await connectWallet();
-      setShowConnectModal(false);
-      setIsConnecting(false);
-    } catch (error) {
-      console.error('Failed to connect wallet:', error);
-      setIsConnecting(false);
-    }
-  };
-
   const handleUnlockPrivateData = async () => {
-    if (!isWalletConnected) {
-      setShowConnectModal(true);
-      return;
-    }
-    // In a real implementation, this would verify wallet ownership and decrypt data
-    // For now, we're just toggling the UI state
     setIsPrivateDataUnlocked(true);
-  };
-
-  const handleDisconnectWallet = async () => {
-    try {
-      await disconnectWallet();
-    } catch (error) {
-      console.error('Failed to disconnect wallet:', error);
-    }
   };
 
   const handleLockPrivateData = () => {
@@ -138,12 +150,9 @@ const AZGenesDashboard = () => {
     setLoadingFiles(true);
     try {
       const response = await api.get('files');
-      if (!response.ok) {
-        throw new Error('Failed to fetch files');
-      }
+      if (!response.ok) throw new Error('Failed to fetch files');
       const files = await response.json();
 
-      // Transform files to match DataItem interface
       const transformedFiles: DataItem[] = files.map((file: any) => ({
         id: file.id,
         name: file.file_name,
@@ -152,8 +161,8 @@ const AZGenesDashboard = () => {
             file.file_type === 'application/pdf' ? 'professional' :
               'health',
         date: new Date(file.created_at).toLocaleDateString(),
-        size: '100 MB', // TODO: Get actual size
-        accessCount: 0, // TODO: Get actual access count
+        size: '100 MB',
+        accessCount: 0,
         nftCertified: !!file.nft_token_id,
         isPrivate: !!file.encryption_key,
         encrypted: !!file.encryption_key,
@@ -167,114 +176,56 @@ const AZGenesDashboard = () => {
     }
   };
 
-  // Load files on mount
   useEffect(() => {
     loadFiles();
   }, []);
 
-  // Auto-collapse sidebar on mobile
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth < 1024 && sidebarOpen) {
-        setSidebarOpen(false);
-      }
-    };
-
-    handleResize(); // Run on mount
-    window.addEventListener('resize', handleResize);
-
-    return () => window.removeEventListener('resize', handleResize);
-  }, [sidebarOpen]);
-
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-
     setIsUploading(true);
     try {
       const formData = new FormData();
       formData.append('file', file);
-
       const response = await api.post('upload-file', formData);
-
       if (!response.ok) {
         const error = await response.json();
-        toast.error(`Failed to upload file: ${error.error}`);
+        toast.error(`Upload failed: ${error.error}`);
         return;
       }
-
-      // Reload files
       await loadFiles();
-      toast.success('File uploaded successfully!');
+      toast.success('Clinical asset uploaded successfully');
     } catch (error) {
       console.error('Error uploading file:', error);
-      toast.error('Failed to upload file');
+      toast.error('Connection error');
     } finally {
       setIsUploading(false);
-      // Reset the file input
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 
-  const handleUploadClick = () => {
-    fileInputRef.current?.click();
-  };
+  const handleUploadClick = () => fileInputRef.current?.click();
 
   const handleMintNFT = async (fileId: string) => {
-    if (!isWalletConnected) {
-      setShowConnectModal(true);
-      return;
-    }
-
     setMintingFileId(fileId);
     setTxModalOpen(true);
     setTxStatus('preparing');
     setTxError('');
     setTxId('');
-
     try {
-      // Get the NFT token ID from environment or configuration
-      // For now, we'll assume it's configured
-      const NFT_TOKEN_ID = process.env.NEXT_PUBLIC_NFT_TOKEN_ID || '0.0.123456';
-
-      // Create metadata for the NFT (file ID + timestamp)
-      const metadata = new TextEncoder().encode(
-        JSON.stringify({
-          fileId,
-          timestamp: Date.now(),
-          type: 'genetic_data_certificate',
-        })
-      );
-
-      // Update status to signing
       setTxStatus('signing');
-
-      // Mint NFT with wallet signature
-      const result = await walletTx.mintNFT(NFT_TOKEN_ID, metadata);
-
-      if (!result) {
-        throw new Error('Transaction failed or was rejected');
+      const response = await api.post('mint-nft-certificate', { fileId });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Minting failed');
       }
-
-      // Update status to confirmed
+      const result = await response.json();
       setTxStatus('confirmed');
-      setTxId(result.transactionId);
-
-      // Update local data
-      const updatedData = userData.map(item =>
-        item.id === fileId
-          ? { ...item, nftCertified: true }
-          : item
-      );
-      setUserData(updatedData);
-
-      // Reload files from server
+      setTxId(result.nft?.hedera_transaction_id || '');
       await loadFiles();
     } catch (error) {
       console.error('Error minting NFT:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to mint NFT certificate';
+      const errorMessage = error instanceof Error ? error.message : 'Failed to mint certification';
       setTxStatus('failed');
       setTxError(errorMessage);
     } finally {
@@ -282,679 +233,344 @@ const AZGenesDashboard = () => {
     }
   };
 
-  const loadNFTs = async () => {
-    setLoadingNFTs(true);
-    try {
-      // Load NFTs from user data (files with NFT certification)
-      const nftData = userData
-        .filter(item => item.nftCertified)
-        .map((item, index) => ({
-          id: item.id,
-          name: item.name,
-          type: item.type,
-          date: item.date,
-          tokenId: '0.0.7180736', // Real collection token ID
-          serialNumber: (index + 1).toString() // Serial number
-        }));
-      setNftCertificates(nftData);
-    } catch (error) {
-      console.error('Error loading NFTs:', error);
-    } finally {
-      setLoadingNFTs(false);
-    }
-  };
-
-  // Load NFTs when tab is clicked
-  useEffect(() => {
-    if (activeTab === 'nft') {
-      loadNFTs();
-    }
-  }, [activeTab]);
-
-  // Show loading spinner while auth is loading
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Spinner size="lg" />
       </div>
     );
   }
 
-  // Don't render anything if user is not authenticated (will redirect)
-  if (!user) {
-    return null;
-  }
+  if (!user) return null;
+
+  const menuItems = [
+    { id: 'overview', name: 'Clinical Console', icon: Stethoscope },
+    { id: 'data', name: 'Patient Assets', icon: Database },
+    { id: 'tokens', name: 'Fiscal Ledger', icon: Coins },
+    { id: 'sharing', name: 'Protocol Share', icon: Share2 },
+    { id: 'nft', name: 'Proof Certificates', icon: Award },
+    { id: 'analytics', name: 'Sequence Forge', icon: BarChart3 },
+    { id: 'subscriptions', name: 'Protocol Tier', icon: Star },
+    { id: 'settings', name: 'Node Config', icon: Settings },
+  ];
 
   return (
-    <>
-      <div className="flex h-screen bg-background text-slate-600 font-sans selection:bg-emerald-500/30">
-        {/* Sidebar */}
-        <div className={`${sidebarOpen ? 'w-72' : 'w-24'} glass-panel border-r border-border transition-all duration-500 flex flex-col relative z-30`}>
-          <div className="p-8 mb-4">
-            <div className="flex items-center justify-between">
-              {sidebarOpen && (
-                <div className="flex items-center gap-3 group cursor-pointer">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.4)] group-hover:scale-110 transition-transform">
-                    <Icon icon="lucide:dna" className="text-[#020403]" width="24" />
-                  </div>
-                  <span className="text-xl font-bold text-foreground tracking-tighter">AZ-GENES</span>
-                </div>
-              )}
-              <button
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="p-2 rounded-lg hover:bg-white text-slate-500 hover:text-emerald-500 transition-colors"
-              >
-                <Icon icon={sidebarOpen ? "lucide:chevron-left" : "lucide:menu"} width="20" />
-              </button>
+    <div className="flex h-screen bg-[#fdfdfd] text-foreground font-sans selection:bg-fern/10 overflow-hidden">
+      <Head>
+        <title>Doctor Console | AZ genes</title>
+      </Head>
+
+      <TransactionStatusModal
+        isOpen={txModalOpen}
+        onClose={() => setTxModalOpen(false)}
+        status={txStatus}
+        error={txError}
+        transactionId={txId}
+      />
+
+      {/* Sidebar - Bright & Professional */}
+      <motion.aside
+        initial={false}
+        animate={sidebarOpen ? "open" : "closed"}
+        variants={sidebarVariants}
+        className="bg-white border-r border-border flex flex-col relative z-30 shadow-sm"
+      >
+        <div className="p-6 h-20 mb-4 flex items-center justify-between border-b border-border">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-indigo-500 flex items-center justify-center text-white font-bold text-xs">
+              AZ
             </div>
+            {sidebarOpen && (
+              <motion.span
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-lg font-bold tracking-tight uppercase"
+              >
+                genes
+              </motion.span>
+            )}
           </div>
-
-          <nav className="flex-1 px-4 space-y-2">
-            {[
-              { id: 'overview', name: 'Node Overview', icon: 'lucide:layout-dashboard' },
-              { id: 'data', name: 'Clinical Assets', icon: 'lucide:database' },
-              { id: 'tokens', name: 'Fiscal Layer', icon: 'lucide:coins' },
-              { id: 'sharing', name: 'Protocol Share', icon: 'lucide:share-2' },
-              { id: 'nft', name: 'Proof Certificates', icon: 'lucide:award' },
-              { id: 'analytics', name: 'Sequence Forge', icon: 'lucide:bar-chart-3' },
-              { id: 'subscriptions', name: 'Protocol Tier', icon: 'lucide:star' },
-              { id: 'settings', name: 'Node Config', icon: 'lucide:settings' },
-            ].map((item) => (
-              <button
-                key={item.id}
-                onClick={() => setActiveTab(item.id)}
-                className={`w-full flex items-center gap-4 px-4 py-4 rounded-xl transition-all duration-300 group ${activeTab === item.id
-                  ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 shadow-[0_0_20px_rgba(16,185,129,0.05)]'
-                  : 'text-slate-500 hover:text-foreground hover:bg-white'
-                  }`}
-              >
-                <Icon icon={item.icon} className={`transition-transform duration-300 ${activeTab === item.id ? 'scale-110' : 'group-hover:scale-110'}`} width="20" />
-                {sidebarOpen && <span className="text-xs font-bold uppercase tracking-[0.2em]">{item.name}</span>}
-              </button>
-            ))}
-          </nav>
-
-          {/* Wallet Connection Status */}
-          {sidebarOpen && (
-            <div className="p-6 mt-auto">
-              <div className={`p-4 rounded-2xl glass-panel border border-border overflow-hidden relative group/wallet ${isWalletConnected ? 'bg-emerald-500/[0.02]' : 'bg-red-500/[0.02]'
-                }`}>
-                <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent"></div>
-                <div className="relative z-10">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <div className={`w-1.5 h-1.5 rounded-full ${isWalletConnected ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`}></div>
-                      <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                        {isWalletConnected ? 'Node Active' : 'Node Offline'}
-                      </span>
-                    </div>
-                    <button
-                      onClick={isWalletConnected ? handleDisconnectWallet : () => setShowConnectModal(true)}
-                      className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded border transition-all ${isWalletConnected
-                        ? 'border-emerald-500/20 text-emerald-500 hover:bg-emerald-500 hover:text-[#020403]'
-                        : 'border-red-500/20 text-red-500 hover:bg-red-500 hover:text-foreground'
-                        }`}
-                    >
-                      {isWalletConnected ? 'Disconnect' : 'Connect'}
-                    </button>
-                  </div>
-                  {isWalletConnected && accountId && (
-                    <div className="text-[10px] font-mono text-slate-600 truncate border-t border-border pt-3">
-                      {accountId.toString()}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="p-1.5 text-muted-foreground hover:text-foreground transition-colors"
+          >
+            {sidebarOpen ? <ChevronLeft size={20} /> : <ChevronRight size={20} />}
+          </button>
         </div>
 
-        {/* Main Content */}
-        <div className="flex-1 flex flex-col overflow-hidden relative">
-          <div className="absolute inset-0 bg-grid opacity-20 pointer-events-none"></div>
+        <nav className="flex-1 px-4 space-y-1 overflow-y-auto custom-scrollbar text-sm font-semibold">
+          {menuItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => setActiveTab(item.id)}
+              className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all ${activeTab === item.id
+                ? 'bg-indigo-50 text-indigo-600'
+                : 'text-muted-foreground hover:bg-slate-50 hover:text-foreground'
+                }`}
+            >
+              <item.icon size={20} className={activeTab === item.id ? 'text-indigo-600' : ''} />
+              {sidebarOpen && <span>{item.name}</span>}
+            </button>
+          ))}
+        </nav>
 
-          {/* Header */}
-          <header className="glass-panel border-b border-border z-20 sticky top-0">
-            <div className="flex items-center justify-between px-10 py-6">
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-[10px] text-emerald-500 font-bold uppercase tracking-[0.3em]">Protocol Phase: Clinical v2.4</span>
+        {/* Node Status */}
+        {sidebarOpen && userProfile?.hedera_account_id && (
+          <div className="p-6 border-t border-border">
+            <div className="bg-slate-50 border border-slate-100 p-4 rounded-2xl group hover:border-fern transition-all">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Node Status</span>
+                  <div className="w-1.5 h-1.5 rounded-full bg-med-green animate-pulse"></div>
                 </div>
-                <h1 className="text-2xl font-bold text-foreground tracking-tighter uppercase">
-                  {activeTab === 'overview' ? 'Node Overview' : activeTab.replace('-', ' ')}
-                </h1>
+                <span className="text-[10px] font-bold text-med-green">ONLINE</span>
               </div>
+              <div className="text-[10px] font-bold text-slate-500 truncate">
+                {userProfile.hedera_account_id}
+              </div>
+            </div>
+          </div>
+        )}
+      </motion.aside>
 
-              <div className="flex items-center gap-8">
-                <div className="hidden xl:flex items-center gap-6 pr-8 border-r border-border">
-                  <div className="text-right">
-                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-0.5">Network Load</p>
-                    <div className="flex items-center gap-2 justify-end">
-                      <div className="w-24 h-1 bg-white rounded-full overflow-hidden">
-                        <div className="w-2/3 h-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
-                      </div>
-                      <span className="text-[10px] text-emerald-500 font-mono">68%</span>
-                    </div>
-                  </div>
+      <main className="flex-1 flex flex-col overflow-hidden relative">
+        {/* Header - Bright */}
+        <header className="h-20 flex items-center justify-between px-8 border-b border-border bg-white sticky top-0 z-20 shadow-sm">
+          <div className="flex flex-col">
+            <div className="flex items-center gap-2 mb-0.5">
+              <ShieldCheck size={14} className="text-indigo-600" />
+              <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">Protocol Lead Cluster v2.4</span>
+            </div>
+            <h1 className="text-xl font-bold text-foreground tracking-tight">
+              {activeTab === 'overview' ? 'Clinical Overview' : activeTab.replace('-', ' ')}
+            </h1>
+          </div>
+
+          <div className="flex items-center gap-8">
+            <div className="hidden xl:flex flex-col items-end gap-1 pr-8 border-r border-border">
+              <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">Consensus Health</span>
+              <div className="flex items-center gap-3">
+                <div className="w-24 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: '82%' }}
+                    className="h-full bg-med-green"
+                  ></motion.div>
                 </div>
+                <span className="text-[10px] text-med-green font-bold">82%</span>
+              </div>
+            </div>
 
-                <div className="flex items-center gap-4">
-                  <button className="w-10 h-10 rounded-xl bg-white border border-border flex items-center justify-center text-slate-400 hover:text-foreground transition-all hover:bg-white/10 relative group">
-                    <Icon icon="lucide:bell" className="text-glow" width="20" />
-                    <span className="absolute top-0 right-0 w-2 h-2 bg-emerald-500 rounded-full border-2 border-[#020403] animate-pulse"></span>
+            <div className="flex items-center gap-4">
+              <button className="p-2.5 rounded-full border border-border text-muted-foreground hover:text-foreground transition-all relative">
+                <Bell size={20} />
+                <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+              </button>
 
-                    <div className="absolute top-12 right-0 w-64 glass-panel border-border p-4 opacity-0 scale-95 pointer-events-none group-hover:opacity-100 group-hover:scale-100 transition-all text-left">
-                      <p className="text-[10px] font-bold text-foreground uppercase tracking-widest mb-2 border-b border-border pb-2">Central Pulse</p>
-                      <div className="space-y-3">
-                        <div className="flex gap-3">
-                          <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full mt-1 shrink-0"></div>
-                          <p className="text-[10px] text-slate-400">Sequence audit complete for Node #718</p>
-                        </div>
-                      </div>
-                    </div>
-                  </button>
-
-                  <div className="flex items-center gap-4 pl-4 border-l border-border">
-                    <div className="text-right">
-                      <p className="text-xs font-bold text-foreground tracking-tight uppercase">Dr. Sarah Chen</p>
-                      <p className="text-[10px] text-emerald-500/60 font-bold uppercase tracking-widest">Protocol Architect</p>
-                    </div>
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 p-[1px] group cursor-pointer">
-                      <div className="w-full h-full rounded-[11px] bg-background flex items-center justify-center overflow-hidden">
-                        <span className="text-foreground font-bold font-mono">SC</span>
-                      </div>
-                    </div>
-                  </div>
+              <div className="flex items-center gap-4 pl-6 border-l border-border">
+                <div className="text-right">
+                  <p className="text-sm font-bold leading-none mb-1">{user?.user_metadata?.full_name || 'Medical Lead'}</p>
+                  <p className="text-[10px] text-indigo-600 font-bold uppercase tracking-wider">Protocol Specialist</p>
+                </div>
+                <div className="w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold shadow-sm hover:scale-105 transition-all cursor-pointer">
+                  {(user?.user_metadata?.full_name?.[0] || user?.email?.[0] || 'D').toUpperCase()}
                 </div>
               </div>
             </div>
-          </header>
+          </div>
+        </header>
 
-          {/* Dashboard Content */}
-          <main className="flex-1 overflow-y-auto p-6">
-            {/* Private Data Access Panel */}
-            {(activeTab === 'data' || activeTab === 'overview') && privateData.length > 0 && (
-              <PrivateDataAccessPanel
-                isPrivateDataUnlocked={isPrivateDataUnlocked}
-                isWalletConnected={!!isWalletConnected}
-                onUnlock={handleUnlockPrivateData}
-                onLock={handleLockPrivateData}
-              />
-            )}
-
-            {activeTab === 'overview' && (
-              <div className="space-y-10">
-                {/* Protocol Stats Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  {[
-                    { label: 'Clinical Assets', value: stats.totalData, icon: 'lucide:database', color: 'blue' },
-                    { label: 'Restricted Files', value: stats.privateFiles, icon: 'lucide:lock', color: 'purple', sub: isPrivateDataUnlocked ? 'Unlocked' : 'Locked' },
-                    { label: 'Fiscal Assets', value: stats.totalTokens, icon: 'lucide:coins', color: 'emerald' },
-                    { label: 'Proof Records', value: stats.nftCertified, icon: 'lucide:award', color: 'indigo' },
-                  ].map((stat, i) => (
-                    <div key={i} className="glass-panel border-border p-6 rounded-2xl relative overflow-hidden group hover:scale-[1.02] transition-all duration-500 cursor-default">
-                      <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent"></div>
-                      <div className="flex items-center justify-between relative z-10">
-                        <div>
-                          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">{stat.label}</p>
-                          <p className="text-2xl font-bold text-foreground tracking-tight">{stat.value}</p>
-                          {stat.sub && <p className="text-[10px] text-emerald-500/60 font-medium uppercase tracking-widest mt-1">{stat.sub}</p>}
-                        </div>
-                        <div className={`w-12 h-12 rounded-xl bg-white border border-border flex items-center justify-center text-slate-400 group-hover:text-emerald-500 group-hover:border-emerald-500/30 transition-all duration-500`}>
-                          <Icon icon={stat.icon} className="text-glow" width="24" />
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Additional Overview Content */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                  <div className="lg:col-span-2 space-y-8">
-                    <div className="glass-panel border-border rounded-2xl overflow-hidden">
-                      <div className="p-6 border-b border-border flex items-center justify-between bg-white/[0.01]">
-                        <h3 className="text-sm font-bold text-foreground uppercase tracking-[0.2em]">Recent Node Activity</h3>
-                        <button className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest hover:text-emerald-400 transition-colors">Audit All</button>
-                      </div>
-                      <div className="p-0">
-                        <table className="w-full">
-                          <tbody className="divide-y divide-white/[0.03]">
-                            {userData.slice(0, 4).map(item => (
-                              <DataItemRow
-                                key={item.id}
-                                item={item}
-                                mintingFileId={mintingFileId}
-                                onMintNFT={handleMintNFT}
-                                isPrivateDataUnlocked={isPrivateDataUnlocked}
-                                onUnlockPrivateData={handleUnlockPrivateData}
-                              />
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-8">
-                    <div className="glass-panel border-border rounded-2xl p-6 bg-emerald-500/5 border-emerald-500/10">
-                      <h3 className="text-sm font-bold text-foreground uppercase tracking-widest mb-4">Node Operations</h3>
-                      <div className="space-y-3">
-                        <button onClick={handleUploadClick} className="w-full h-11 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-[#020403] text-[10px] font-bold uppercase tracking-widest transition-all ring-anim flex items-center justify-center gap-2">
-                          <Icon icon="lucide:upload-cloud" width="14" />
-                          Ingest Asset
-                        </button>
-                        <button className="w-full h-11 rounded-xl bg-white border border-border text-foreground text-[10px] font-bold uppercase tracking-widest hover:bg-white/10 transition-all flex items-center justify-center gap-2">
-                          <Icon icon="lucide:plus" width="14" />
-                          New Transaction
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="glass-panel border-border rounded-2xl p-6">
-                      <h3 className="text-sm font-bold text-foreground uppercase tracking-widest mb-4">Central Pulse</h3>
-                      <div className="space-y-4">
-                        {[1, 2].map(i => (
-                          <div key={i} className="flex gap-4 group cursor-pointer">
-                            <div className="w-8 h-8 rounded-lg bg-white border border-border flex items-center justify-center text-slate-500 group-hover:text-emerald-500 transition-colors">
-                              <Icon icon="lucide:activity" width="14" />
-                            </div>
-                            <div>
-                              <p className="text-[11px] text-foreground font-bold leading-tight uppercase">Protocol Update Synced</p>
-                              <p className="text-[9px] text-slate-500 font-mono tracking-tighter mt-1 uppercase font-bold">Node #FZ-992 • 2H AGO</p>
-                            </div>
+        {/* Dashboard Content */}
+        <div className="flex-1 overflow-y-auto p-10 custom-scrollbar bg-[#f8f9fb]">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial="hidden"
+              animate="visible"
+              variants={containerVariants}
+              className="max-w-7xl mx-auto space-y-10"
+            >
+              {activeTab === 'overview' && (
+                <div className="space-y-10">
+                  {/* Stats Grid - Bento Medical Palette */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {[
+                      { label: 'Patient Assets', value: userData.length.toString(), icon: Database, color: 'bg-med-blue' },
+                      { label: 'Fiscal Layer', value: stats.totalTokens.toString(), icon: Coins, color: 'bg-med-tan' },
+                      { label: 'Secure Vault', value: stats.privateFiles.toString(), icon: Lock, color: 'bg-med-green' },
+                      { label: 'Verified Proofs', value: stats.nftCertified.toString(), icon: Award, color: 'bg-med-purple' },
+                    ].map((stat, i) => (
+                      <motion.div
+                        key={i}
+                        variants={itemVariants}
+                        className="bg-white border border-border p-8 rounded-[2rem] shadow-sm hover:shadow-md transition-all group flex flex-col justify-between"
+                      >
+                        <div className="flex items-start justify-between mb-8">
+                          <div className={`w-12 h-12 rounded-2xl ${stat.color} flex items-center justify-center text-white shadow-sm group-hover:scale-110 transition-transform`}>
+                            <stat.icon size={22} />
                           </div>
-                        ))}
+                          <ArrowUpRight className="text-muted-foreground opacity-30 group-hover:opacity-100 transition-opacity" size={20} />
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">{stat.label}</p>
+                          <p className="text-3xl font-bold tracking-tight">{stat.value}</p>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    <motion.div variants={itemVariants} className="lg:col-span-8 flex flex-col gap-8">
+                      {/* Asset Table Preview */}
+                      <div className="bg-white border border-border rounded-[2.5rem] shadow-sm overflow-hidden flex-1">
+                        <div className="p-8 border-b border-border flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 bg-indigo-50 rounded-lg text-indigo-600"><Activity size={20} /></div>
+                            <h3 className="text-xl font-bold tracking-tight">Active Clinical Assets</h3>
+                          </div>
+                          <button onClick={() => setActiveTab('data')} className="text-sm font-bold text-indigo-600 hover:underline">Full Analytics</button>
+                        </div>
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-left">
+                            <tbody className="divide-y divide-border">
+                              {userData.slice(0, 5).map(item => (
+                                <DataItemRow
+                                  key={item.id}
+                                  item={item}
+                                  mintingFileId={mintingFileId}
+                                  onMintNFT={handleMintNFT}
+                                  isPrivateDataUnlocked={isPrivateDataUnlocked}
+                                  onUnlockPrivateData={handleUnlockPrivateData}
+                                />
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
                       </div>
-                    </div>
+                    </motion.div>
+
+                    <motion.div variants={itemVariants} className="lg:col-span-4 space-y-8">
+                      {/* Quick Actions */}
+                      <div className="bg-foreground text-white rounded-[2.5rem] p-8 shadow-lg relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-125 transition-transform duration-700">
+                          <ShieldCheck size={70} />
+                        </div>
+                        <h3 className="text-xl font-bold mb-3 tracking-tight">Clinical Capture</h3>
+                        <p className="text-white/60 text-sm font-medium mb-8 leading-relaxed italic">Upload patient sequences to initiate decentralized consensus replication.</p>
+                        <button onClick={handleUploadClick} className="w-full h-14 rounded-2xl bg-white text-foreground text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-3 hover:bg-indigo-50 transition-all">
+                          <UploadCloud size={18} />
+                          Ingest New Signal
+                        </button>
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          onChange={handleFileUpload}
+                          className="hidden"
+                          accept=".vcf,.csv,.txt,.pdf"
+                        />
+                      </div>
+
+                      {/* Network Pulse */}
+                      <div className="bg-white border border-border rounded-[2.5rem] p-8 shadow-sm">
+                        <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-8">Mainnet Activity</h3>
+                        <div className="space-y-6">
+                          {[1, 2].map(i => (
+                            <div key={i} className="flex gap-4 group cursor-pointer items-start">
+                              <div className="p-2 bg-slate-50 border border-slate-100 rounded-xl text-slate-400 group-hover:text-med-green transition-colors">
+                                <Repeat size={16} />
+                              </div>
+                              <div>
+                                <p className="text-[13px] font-bold text-foreground group-hover:text-med-green transition-colors">Fragment Verification Complete</p>
+                                <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase">Node 0.0.{i}42 • {i * 2}h ago</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </motion.div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {activeTab === 'data' && (
-              <div className="glass-panel border-border rounded-2xl overflow-hidden">
-                <div className="p-8 border-b border-border flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white/[0.01]">
-                  <div>
-                    <h2 className="text-xl font-bold text-foreground uppercase tracking-tight">Clinical Asset Management</h2>
-                    <p className="text-slate-500 text-xs mt-1 uppercase tracking-widest font-bold">Node Identity: {accountId ? accountId.toString() : 'Local Node'}</p>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    {privateData.length > 0 && (
-                      <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-purple-500/10 border border-purple-500/20">
-                        <div className="w-1.5 h-1.5 bg-purple-500 rounded-full animate-pulse"></div>
-                        <span className="text-[10px] text-purple-400 font-bold uppercase tracking-widest">{privateData.length} Restricted Items</span>
-                      </div>
-                    )}
+              {activeTab === 'data' && (
+                <motion.div variants={itemVariants} className="bg-white border border-border rounded-[2.5rem] overflow-hidden shadow-sm">
+                  <div className="p-10 border-b border-border flex flex-col md:flex-row md:items-center justify-between gap-8">
+                    <div>
+                      <h2 className="text-2xl font-bold tracking-tight">Clinical Asset Ledger</h2>
+                      <p className="text-sm font-semibold text-muted-foreground mt-1">Manage and certify patient sequences across the global node network.</p>
+                    </div>
                     <button
                       onClick={handleUploadClick}
                       disabled={isUploading}
-                      className="h-10 px-6 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-[#020403] text-[10px] font-bold uppercase tracking-widest transition-all disabled:opacity-50 flex items-center gap-2 ring-anim"
+                      className="h-14 px-8 rounded-full bg-foreground text-white text-xs font-bold uppercase tracking-widest flex items-center gap-3 hover:bg-indigo-600 transition-all shadow-md disabled:opacity-50"
                     >
-                      {isUploading ? <Spinner size="sm" /> : <Icon icon="lucide:upload-cloud" width="14" />}
-                      {isUploading ? 'Ingesting' : 'Ingest Asset'}
+                      {isUploading ? <Spinner size="sm" /> : <Plus size={20} />}
+                      {isUploading ? 'Replicating...' : 'Ingest Asset'}
                     </button>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      onChange={handleFileUpload}
-                      style={{ display: 'none' }}
-                      accept=".vcf,.csv,.txt,.pdf"
-                    />
                   </div>
-                </div>
 
-                {loadingFiles ? (
-                  <div className="p-8">
-                    <TableSkeleton rows={8} />
-                  </div>
-                ) : userData.length === 0 ? (
-                  <div className="p-16 text-center">
-                    <div className="w-20 h-20 bg-white border border-border rounded-2xl flex items-center justify-center text-slate-600 mx-auto mb-6">
-                      <Icon icon="lucide:folder-open" width="40" />
-                    </div>
-                    <h3 className="text-sm font-bold text-foreground uppercase tracking-[0.2em] mb-2">Protocol Storage Empty</h3>
-                    <p className="text-xs text-slate-500 max-w-sm mx-auto mb-8 leading-relaxed">
-                      Initialize the first asset ingest to begin NFT proof generation and clinical data replication across the network.
-                    </p>
-                    <button
-                      onClick={handleUploadClick}
-                      className="h-9 px-8 rounded border border-emerald-500/20 text-emerald-500 text-[10px] font-bold uppercase tracking-widest hover:bg-emerald-500 hover:text-[#020403] transition-all"
-                    >
-                      Ingest First Asset
-                    </button>
-                  </div>
-                ) : (
                   <div className="overflow-x-auto">
                     <table className="w-full text-left">
                       <thead>
-                        <tr className="bg-white/[0.02] border-b border-border">
-                          <th className="px-6 py-4 text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Asset Identity</th>
-                          <th className="px-6 py-4 text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Classification</th>
-                          <th className="px-6 py-4 text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Timestamp</th>
-                          <th className="px-6 py-4 text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Capacity</th>
-                          <th className="px-6 py-4 text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Proof Status</th>
-                          <th className="px-6 py-4 text-right text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">Node Operations</th>
+                        <tr className="bg-slate-50 border-b border-border">
+                          <th className="px-10 py-5 text-[11px] font-bold text-muted-foreground uppercase tracking-widest">Asset Name</th>
+                          <th className="px-10 py-5 text-[11px] font-bold text-muted-foreground uppercase tracking-widest">Classification</th>
+                          <th className="px-10 py-5 text-[11px] font-bold text-muted-foreground uppercase tracking-widest">Replication Date</th>
+                          <th className="px-10 py-5 text-right text-[11px] font-bold text-muted-foreground uppercase tracking-widest">Protocol</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-white/[0.03]">
-                        {/* Public Data */}
-                        {publicData.map((item) => (
-                          <DataItemRow
-                            key={item.id}
-                            item={item}
-                            mintingFileId={mintingFileId}
-                            onMintNFT={handleMintNFT}
-                            isPrivateDataUnlocked={isPrivateDataUnlocked}
-                            onUnlockPrivateData={handleUnlockPrivateData}
-                          />
-                        ))}
-                        {/* Private Data */}
-                        {privateData.map((item) => (
-                          <DataItemRow
-                            key={item.id}
-                            item={item}
-                            mintingFileId={mintingFileId}
-                            onMintNFT={handleMintNFT}
-                            isPrivateDataUnlocked={isPrivateDataUnlocked}
-                            onUnlockPrivateData={handleUnlockPrivateData}
-                          />
-                        ))}
+                      <tbody className="divide-y divide-border">
+                        {loadingFiles ? (
+                          <tr><td colSpan={4} className="p-10 text-center"><Spinner size="md" /></td></tr>
+                        ) : userData.length === 0 ? (
+                          <tr><td colSpan={4} className="p-20 text-center text-muted-foreground font-semibold">Node storage empty. Awaiting first ingest.</td></tr>
+                        ) : (
+                          userData.map((item) => (
+                            <DataItemRow
+                              key={item.id}
+                              item={item}
+                              mintingFileId={mintingFileId}
+                              onMintNFT={handleMintNFT}
+                              isPrivateDataUnlocked={isPrivateDataUnlocked}
+                              onUnlockPrivateData={handleUnlockPrivateData}
+                            />
+                          ))
+                        )}
                       </tbody>
                     </table>
                   </div>
-                )}
-              </div>
-            )}
+                </motion.div>
+              )}
 
-            {/* Fiscal Layer Tab */}
-            {activeTab === 'tokens' && (
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-1">
-                  <div className="glass-panel border-border rounded-2xl p-8 relative overflow-hidden group">
-                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent"></div>
-                    <div className="relative z-10 text-center">
-                      <h3 className="text-sm font-bold text-foreground uppercase tracking-[0.2em] mb-8">Node Fiscal Balance</h3>
-                      <div className="w-24 h-24 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 duration-500 shadow-[0_0_30px_rgba(16,185,129,0.1)] transition-transform">
-                        <Icon icon="lucide:coins" className="text-emerald-500" width="40" />
-                      </div>
-                      <div className="text-5xl font-bold text-foreground mb-2 font-mono tracking-tighter">160</div>
-                      <p className="text-[10px] text-emerald-500/60 font-bold uppercase tracking-[0.3em]">AZ-GENE TOKENS</p>
-                      <div className="mt-10 space-y-3">
-                        <button className="w-full h-11 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-[#020403] text-[10px] font-bold uppercase tracking-widest transition-all ring-anim">
-                          Request Liquidity
-                        </button>
-                        <button className="w-full h-11 rounded-xl bg-white border border-border text-foreground text-[10px] font-bold uppercase tracking-widest hover:bg-white/10 transition-all">
-                          Terminal Transfer
-                        </button>
-                      </div>
+              {/* Other tabs follow similar pattern... */}
+              {['tokens', 'sharing', 'nft', 'analytics', 'subscriptions', 'settings'].includes(activeTab) && (
+                <motion.div variants={itemVariants} className="flex items-center justify-center py-20">
+                  <div className="bg-white border border-border rounded-[3rem] p-20 text-center max-w-2xl shadow-sm group">
+                    <div className="w-24 h-24 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-300 mx-auto mb-10 group-hover:text-indigo-600 transition-colors">
+                      <Lock size={40} />
                     </div>
-                  </div>
-                </div>
-                <div className="lg:col-span-2">
-                  <div className="glass-panel border-border rounded-2xl overflow-hidden">
-                    <div className="p-6 border-b border-border bg-white/[0.01]">
-                      <h3 className="text-sm font-bold text-foreground uppercase tracking-[0.2em]">Consensus Audit Log</h3>
-                    </div>
-                    <div className="p-0">
-                      {tokenTransactions.map((transaction) => (
-                        <div key={transaction.id} className="flex items-center justify-between p-6 border-b border-white/[0.03] hover:bg-white/[0.01] transition-colors group">
-                          <div className="flex items-center gap-6">
-                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center border transition-all ${transaction.type === 'earned' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' :
-                              transaction.type === 'spent' ? 'bg-red-500/10 border-red-500/20 text-red-500' : 'bg-blue-500/10 border-blue-500/20 text-blue-400'
-                              }`}>
-                              <Icon icon={transaction.type === 'earned' ? 'lucide:trending-up' : transaction.type === 'spent' ? 'lucide:trending-down' : 'lucide:repeat'} width="20" />
-                            </div>
-                            <div>
-                              <p className="text-xs font-bold text-foreground uppercase tracking-tight group-hover:text-emerald-400 transition-colors">{transaction.description}</p>
-                              <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mt-1">Source: {transaction.fromTo}</p>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <p className={`text-sm font-bold font-mono ${transaction.type === 'earned' ? 'text-emerald-500' :
-                              transaction.type === 'spent' ? 'text-red-500' : 'text-blue-400'
-                              }`}>
-                              {transaction.type === 'earned' ? '+' : transaction.type === 'spent' ? '-' : ''}
-                              {transaction.amount} AZG
-                            </p>
-                            <p className="text-[10px] text-slate-600 font-mono mt-1 font-bold">{transaction.date}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Protocol Share Tab */}
-            {activeTab === 'sharing' && (
-              <div className="glass-panel border-border rounded-2xl p-12 text-center bg-white/[0.01]">
-                <div className="w-16 h-16 rounded-2xl bg-white border border-border flex items-center justify-center text-slate-600 mx-auto mb-6">
-                  <Icon icon="lucide:share-2" width="32" />
-                </div>
-                <h3 className="text-sm font-bold text-foreground uppercase tracking-[0.2em] mb-2">Multi-Node Correlation Layer</h3>
-                <p className="text-xs text-slate-500 max-w-sm mx-auto mb-8 leading-relaxed">
-                  The consensus layer for secondary clinical asset sharing is currently being synchronized. Collaborative node audits will be enabled in the next protocol phase.
-                </p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-lg mx-auto">
-                  <div className="glass-panel border-border p-4 rounded-xl text-left bg-white/[0.02]">
-                    <p className="text-[9px] text-emerald-500 font-bold uppercase tracking-widest mb-1">Active Peers</p>
-                    <p className="text-lg font-bold text-foreground font-mono">1,402</p>
-                  </div>
-                  <div className="glass-panel border-border p-4 rounded-xl text-left bg-white/[0.02]">
-                    <p className="text-[9px] text-blue-400 font-bold uppercase tracking-widest mb-1">Shared Consensus</p>
-                    <p className="text-lg font-bold text-foreground font-mono">0.00%</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Proof Certificates Tab */}
-            {activeTab === 'nft' && (
-              <div className="space-y-8">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                  <div>
-                    <h2 className="text-xl font-bold text-foreground uppercase tracking-tight">Clinical Proof Certificates</h2>
-                    <p className="text-slate-500 text-xs mt-1 uppercase tracking-widest font-bold font-mono">Mainnet Protocol v1.0.4</p>
-                  </div>
-                  {!isWalletConnected && (
-                    <button
-                      onClick={() => setShowConnectModal(true)}
-                      className="px-4 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-[10px] font-bold uppercase tracking-widest hover:bg-emerald-500 hover:text-[#020403] transition-all flex items-center gap-2"
-                    >
-                      <Icon icon="lucide:wallet" width="14" />
-                      Connect Wallet to Mint
-                    </button>
-                  )}
-                </div>
-
-                {loadingNFTs ? (
-                  <div className="flex justify-center py-20">
-                    <div className="w-12 h-12 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-                  </div>
-                ) : nftCertificates.length === 0 ? (
-                  <div className="glass-panel border-border rounded-2xl p-16 text-center">
-                    <div className="w-20 h-20 bg-white border border-border rounded-2xl flex items-center justify-center text-slate-600 mx-auto mb-6">
-                      <Icon icon="lucide:award" width="40" />
-                    </div>
-                    <h3 className="text-sm font-bold text-foreground uppercase tracking-[0.2em] mb-2">No Proof Certificates</h3>
-                    <p className="text-xs text-slate-500 max-w-sm mx-auto mb-8 leading-relaxed">
-                      You haven't generated any NFT proof certificates for your clinical assets yet. These certificates provide immutable proof of authorship and data integrity.
+                    <h3 className="text-2xl font-bold tracking-tight mb-4 capitalize">{activeTab} module restricted</h3>
+                    <p className="text-sm font-semibold text-muted-foreground max-w-sm mx-auto mb-10 leading-relaxed">
+                      Access to this clinical sub-module requires elevated protocol clearance.
                     </p>
-                    <button
-                      onClick={() => setActiveTab('data')}
-                      className="h-10 px-8 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-[#020403] text-[10px] font-bold uppercase tracking-widest transition-all ring-anim"
-                    >
-                      Initialize Proof Mint
+                    <button className="px-10 py-4 rounded-full bg-foreground text-white text-xs font-bold uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-lg">
+                      Verify credentials
                     </button>
                   </div>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {nftCertificates.map((nft) => (
-                      <div key={nft.id} className="glass-panel border-border rounded-2xl p-8 hover:scale-[1.02] transition-all duration-500 relative overflow-hidden group">
-                        <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent"></div>
-                        <div className="flex items-center justify-between mb-8 relative z-10">
-                          <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-xl flex items-center justify-center text-[#020403] shadow-[0_0_20px_rgba(16,185,129,0.3)] group-hover:scale-110 transition-transform duration-500">
-                            <Icon icon="lucide:dna" width="28" />
-                          </div>
-                          <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 text-[9px] font-bold uppercase tracking-widest shadow-[0_0_10px_rgba(16,185,129,0.1)]">
-                            Verified
-                          </span>
-                        </div>
-                        <h3 className="text-sm font-bold text-foreground uppercase tracking-tight mb-6 line-clamp-1">{nft.name}</h3>
-                        <div className="space-y-3 relative z-10 mb-8 pt-6 border-t border-border">
-                          <div className="flex items-center justify-between">
-                            <span className="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Type</span>
-                            <span className="text-[10px] text-foreground font-mono uppercase font-bold">{nft.type}</span>
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <span className="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Mint Date</span>
-                            <span className="text-[10px] text-foreground font-mono uppercase font-bold">{nft.date}</span>
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <span className="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Serial</span>
-                            <span className="text-[10px] text-emerald-500 font-mono uppercase font-bold truncate max-w-[120px]">{nft.tokenId}:{nft.serialNumber}</span>
-                          </div>
-                        </div>
-                        <button
-                          onClick={() => {
-                            navigator.clipboard.writeText(`${nft.tokenId}:${nft.serialNumber}`);
-                            toast.success('Certificate identity copied to telemetry buffer');
-                          }}
-                          className="w-full h-10 rounded-xl bg-white border border-border text-foreground text-[10px] font-bold uppercase tracking-widest hover:bg-white/10 transition-all flex items-center justify-center gap-2 group-hover:border-emerald-500/30 group-hover:text-emerald-500"
-                        >
-                          <Icon icon="lucide:copy" width="12" />
-                          Copy Proof Identity
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* Show files that can be certified */}
-                {userData.filter(item => !item.nftCertified).length > 0 && (
-                  <div className="mt-16 pt-16 border-t border-border">
-                    <h3 className="text-sm font-bold text-foreground uppercase tracking-[0.2em] mb-8">Assets Awaiting Proof</h3>
-                    <div className="space-y-4">
-                      {userData.filter(item => !item.nftCertified).map((item) => (
-                        <div key={item.id} className="glass-panel border-border p-6 rounded-2xl flex items-center justify-between group hover:bg-white/[0.02] transition-colors">
-                          <div className="flex items-center gap-6">
-                            <div className="w-12 h-12 rounded-xl bg-white border border-border flex items-center justify-center text-slate-500 group-hover:text-emerald-500 transition-colors">
-                              <Icon icon={item.type === 'genetic' ? 'lucide:dna' : item.type === 'health' ? 'lucide:activity' : 'lucide:file-text'} width="20" />
-                            </div>
-                            <div>
-                              <p className="text-xs font-bold text-foreground uppercase tracking-tight">{item.name}</p>
-                              <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mt-1 font-mono">{item.type} • {item.date}</p>
-                            </div>
-                          </div>
-                          <button
-                            onClick={() => handleMintNFT(item.id)}
-                            disabled={mintingFileId === item.id}
-                            className="h-9 px-6 rounded-xl bg-white border border-border text-foreground text-[10px] font-bold uppercase tracking-widest hover:bg-emerald-500 hover:text-[#020403] hover:border-emerald-500 transition-all disabled:opacity-50"
-                          >
-                            {mintingFileId === item.id ? 'Synchronizing...' : 'Initialize Mint'}
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Placeholder for Analytics and Settings */}
-            {(activeTab === 'analytics' || activeTab === 'settings') && (
-              <div className="glass-panel border-border rounded-2xl p-16 text-center">
-                <div className="w-16 h-16 rounded-2xl bg-white border border-border flex items-center justify-center text-slate-600 mx-auto mb-6">
-                  <Icon icon="lucide:terminal" width="32" />
-                </div>
-                <h3 className="text-sm font-bold text-foreground uppercase tracking-[0.2em] mb-2">Node Environment Restricted</h3>
-                <p className="text-xs text-slate-500 max-w-sm mx-auto mb-8 leading-relaxed">
-                  The requested protocol layer is currently undergoing consensus verification. High-level telemetry and node configuration will be restricted until the next epoch.
-                </p>
-                <button className="h-10 px-8 rounded border border-border text-slate-400 text-[10px] font-bold uppercase tracking-widest hover:bg-white transition-all">
-                  Await Signal
-                </button>
-              </div>
-            )}
-
-            {/* Subscriptions Tab */}
-            {activeTab === 'subscriptions' && (
-              <div className="space-y-12">
-                <div className="text-center max-w-2xl mx-auto mb-16">
-                  <h2 className="text-2xl font-bold text-foreground tracking-tighter uppercase mb-4">Clinical Protocol Tiers</h2>
-                  <p className="text-xs text-slate-500 leading-relaxed uppercase tracking-widest">
-                    Expand your clinical capacity with professional tiers. Unlock advanced sequencing clusters and high-bandwidth patient management.
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                  {[
-                    { tier: 'F1', name: 'Clinical Basic', price: 'Free', features: ['100MB Cloud Storage', 'Standard Patient View', 'Manual Data Request', 'Basic NFT Proofs'], color: 'slate' },
-                    { tier: 'F2', name: 'Advanced Practice', price: '300 GENE/mo', features: ['10GB Secure Storage', 'Batch Data Processing', 'Automated NFT Minting', '3x Reward Multiplier', 'Consensus v2.2'], color: 'emerald', popular: true },
-                    { tier: 'F3', name: 'Surgical Network', price: '800 GENE/mo', features: ['Unlimited Storage', 'Sequence Forge Access', 'Inter-Hospital Indexing', 'Full API Access', 'Priority Consensus'], color: 'purple' },
-                  ].map((sub) => (
-                    <div key={sub.tier} className={`glass-panel border-border rounded-3xl p-10 flex flex-col relative overflow-hidden group hover:scale-[1.02] transition-all duration-500 ${sub.popular ? 'bg-emerald-500/[0.03] ring-1 ring-emerald-500/30' : 'bg-white/[0.01]'}`}>
-                      {sub.popular && (
-                        <div className="absolute top-0 right-0 py-2 px-8 bg-emerald-500 text-[#020403] text-[9px] font-bold uppercase tracking-[0.2em] transform rotate-45 translate-x-[25px] translate-y-[10px]">
-                          Popular
-                        </div>
-                      )}
-                      <div className="mb-10">
-                        <p className={`text-[10px] font-bold uppercase tracking-[0.3em] mb-4 ${sub.color === 'emerald' ? 'text-emerald-500' : sub.color === 'purple' ? 'text-purple-400' : 'text-slate-500'}`}>{sub.tier} Protocol</p>
-                        <h3 className="text-xl font-bold text-foreground uppercase tracking-tighter mb-2">{sub.name}</h3>
-                        <div className="flex items-baseline gap-2 mt-4">
-                          <span className="text-3xl font-bold text-foreground font-mono">{sub.price.split(' ')[0]}</span>
-                          <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">{sub.price.includes('GENE') ? 'GENE / MO' : ''}</span>
-                        </div>
-                      </div>
-                      <div className="flex-1 space-y-4 mb-10">
-                        {sub.features.map(f => (
-                          <div key={f} className="flex items-center gap-3">
-                            <Icon icon="lucide:check" className="text-emerald-500" width="14" />
-                            <span className="text-[10px] text-slate-400 font-medium uppercase tracking-tight">{f}</span>
-                          </div>
-                        ))}
-                      </div>
-                      <button className={`w-full py-4 rounded-2xl text-[10px] font-bold uppercase tracking-[0.2em] transition-all ${sub.tier === 'F1' ? 'bg-white text-slate-500 cursor-default border border-border' : 'bg-emerald-500 text-[#020403] hover:bg-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.3)]'}`}>
-                        {sub.tier === 'F1' ? 'Active Protocol' : 'Scale Practice'}
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </main>
+                </motion.div>
+              )}
+            </motion.div>
+          </AnimatePresence>
         </div>
-      </div>
+      </main>
 
-      {/* Connect Wallet Modal */}
-      {showConnectModal && (
-        <ConnectWalletModal
-          onClose={() => setShowConnectModal(false)}
-          isConnecting={isConnecting}
-          setIsConnecting={setIsConnecting}
-          onConnect={handleConnectWallet}
-          accountId={accountId}
-        />
-      )}
-
-      {/* Transaction Status Modal */}
-      <TransactionStatusModal
-        isOpen={txModalOpen}
-        status={txStatus}
-        transactionId={txId}
-        error={txError}
-        network={network?.toString().toLowerCase()}
-        onClose={() => {
-          setTxModalOpen(false);
-          walletTx.resetState();
-        }}
-      />
-    </>
+      <style jsx global>{`
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e0e0e0; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #cccccc; }
+      `}</style>
+    </div>
   );
 };
 

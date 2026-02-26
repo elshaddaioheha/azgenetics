@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { adminAuth } from '../../../../lib/firebaseAdmin';
+
 import { AuthContext, EdgeFunctionConfig, getEdgeConfig, corsHeaders, createTestClient } from '../utils';
 
 // Import mock verification only in test mode to avoid bundling test code
@@ -18,7 +18,7 @@ export async function withAuth(
 
   try {
     const config: EdgeFunctionConfig = getEdgeConfig();
-    
+
     // In test mode, we can bypass auth entirely
     if (config.skipAuth) {
       if (!context.supabase) {
@@ -52,36 +52,23 @@ export async function withAuth(
           created_at: mockUser.created_at || new Date().toISOString()
         };
       } else {
-        // Try Firebase Admin verification first (since that's what's configured)
-        try {
-          console.log('[Auth] Attempting Firebase Admin verification...');
-          const decodedToken = await adminAuth.verifyIdToken(token);
-          console.log('[Auth] Firebase Admin verified:', decodedToken.uid);
-          context.user = {
-            id: decodedToken.uid,
-            email: decodedToken.email,
-            uid: decodedToken.uid
-          };
-        } catch (firebaseError) {
-          console.error('[Auth] Firebase Admin verification failed:', firebaseError instanceof Error ? firebaseError.message : firebaseError);
-          // Fallback to Supabase auth if Firebase verification fails
-          if (context.supabase) {
-            console.log('[Auth] Falling back to Supabase auth...');
-            const { data: { user }, error: userError } = await context.supabase.auth.getUser(token);
-            if (userError) {
-              console.error('[Auth] Supabase auth error:', userError.message);
-              throw new Error(`Token validation failed: ${userError.message}`);
-            }
-            if (!user) {
-              console.error('[Auth] Supabase auth: No user found');
-              throw new Error('Token validation failed: No user found');
-            }
-            console.log('[Auth] Supabase auth verified:', user.id);
-            context.user = user;
-          } else {
-            console.error('[Auth] No authentication provider configured');
-            throw new Error('No authentication provider configured');
+        // Use Supabase auth to verify the token
+        if (context.supabase) {
+          console.log('[Auth] Verifying token with Supabase...');
+          const { data: { user }, error: userError } = await context.supabase.auth.getUser(token);
+          if (userError) {
+            console.error('[Auth] Supabase auth error:', userError.message);
+            throw new Error(`Token validation failed: ${userError.message}`);
           }
+          if (!user) {
+            console.error('[Auth] Supabase auth: No user found');
+            throw new Error('Token validation failed: No user found');
+          }
+          console.log('[Auth] Supabase auth verified:', user.id);
+          context.user = user;
+        } else {
+          console.error('[Auth] No authentication provider configured');
+          throw new Error('No authentication provider configured');
         }
       }
 
@@ -90,14 +77,14 @@ export async function withAuth(
 
     } catch (err: unknown) {
       const error = err instanceof Error ? err : new Error(String(err));
-      const isAuthError = error.message.toLowerCase().includes('token') || 
-                         error.message.toLowerCase().includes('auth') ||
-                         error.message.toLowerCase().includes('unauthorized');
-      
+      const isAuthError = error.message.toLowerCase().includes('token') ||
+        error.message.toLowerCase().includes('auth') ||
+        error.message.toLowerCase().includes('unauthorized');
+
       console.error('Auth Error:', error.message);
-      
+
       return new Response(
-        JSON.stringify({ 
+        JSON.stringify({
           error: error.message,
           code: isAuthError ? 'AUTH_ERROR' : 'REQUEST_ERROR'
         }),
@@ -110,9 +97,9 @@ export async function withAuth(
   } catch (err: unknown) {
     const error = err instanceof Error ? err : new Error(String(err));
     console.error('Unexpected auth error:', error.message);
-    
+
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         error: error.message,
         code: 'UNEXPECTED_ERROR'
       }),

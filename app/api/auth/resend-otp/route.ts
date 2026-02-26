@@ -17,6 +17,13 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        if (!supabase) {
+            return NextResponse.json(
+                { error: 'Database connection error' },
+                { status: 500 }
+            );
+        }
+
         // Get user profile to get their name
         const { data: profile } = await supabase
             .from('profiles')

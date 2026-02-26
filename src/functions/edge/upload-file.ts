@@ -1,11 +1,13 @@
 import { EncryptionService } from '../../services/encryption';
 import { HederaClient } from '../../services/hedera/client';
+import { IPFSClient } from '../../services/ipfs/client';
 import { FileMetadata } from './types';
 import { AuthContext, corsHeaders } from './utils';
 import { withAuth } from './middleware/auth';
 
 const encryptionService = new EncryptionService();
 const hederaClient = new HederaClient();
+const ipfsClient = new IPFSClient();
 const TOPIC_ID = process.env.HEDERA_TOPIC_ID ?? '';
 
 // Constants
@@ -14,7 +16,8 @@ const ALLOWED_FILE_TYPES = new Set([
   'application/pdf', // Medical reports
   'text/plain',     // TXT files
   'text/csv',       // CSV files
-  'chemical/x-vcf'  // VCF files
+  'chemical/x-vcf', // VCF files
+  'text/x-vcard'    // Used by some browsers for .vcf
 ]);
 
 // Rate limiting map (in production, use Redis or similar)
@@ -43,7 +46,8 @@ function checkRateLimit(userId: string): boolean {
 
 async function validateGeneticFile(fileBuffer: Buffer, fileType: string): Promise<boolean> {
   // Basic validation for VCF files
-  if (fileType === 'chemical/x-vcf') {
+  const isVcf = fileType === 'chemical/x-vcf' || fileType === 'text/x-vcard';
+  if (isVcf) {
     const content = fileBuffer.toString('utf-8').slice(0, 1000); // Check first 1000 chars
     return content.includes('##fileformat=VCF');
   }
@@ -85,8 +89,9 @@ async function handleFileUpload(req: Request, context: AuthContext): Promise<Res
       throw new Error('No file provided');
     }
 
-    // Validate file type
-    if (!ALLOWED_FILE_TYPES.has(file.type)) {
+    // Validate file type or extension
+    const isAllowedExtension = file.name.toLowerCase().endsWith('.vcf') || file.name.toLowerCase().endsWith('.csv') || file.name.toLowerCase().endsWith('.txt') || file.name.toLowerCase().endsWith('.pdf');
+    if (!ALLOWED_FILE_TYPES.has(file.type) && !isAllowedExtension) {
       throw new Error('Invalid file type. Supported types: PDF, TXT, CSV, VCF');
     }
 
@@ -107,21 +112,12 @@ async function handleFileUpload(req: Request, context: AuthContext): Promise<Res
     // Encrypt file
     const { encryptedData, key, iv, hash } = await encryptionService.encryptFile(fileBuffer);
 
-    // Upload encrypted file to Supabase Storage
+    // Upload encrypted file to IPFS via Pinata
     const timestamp = new Date().toISOString();
-    const storagePath = `${profile.id}/${timestamp}-${file.name}`;
-    uploadedFilePath = storagePath;
-    
-    const { error: uploadError } = await context.supabase.storage
-      .from('encrypted-files')
-      .upload(storagePath, encryptedData, {
-        contentType: 'application/octet-stream', // Always store as binary
-        cacheControl: 'private, no-cache'
-      });
+    const fileName = `${timestamp}-${file.name}`;
 
-    if (uploadError) {
-      throw uploadError;
-    }
+    // Convert Buffer to CID via IPFS
+    const ipfsCid = await ipfsClient.uploadFile(encryptedData, fileName);
 
     // Submit hash to Hedera
     const hederaTxId = await hederaClient.submitHash(TOPIC_ID, hash);
@@ -131,7 +127,8 @@ async function handleFileUpload(req: Request, context: AuthContext): Promise<Res
       owner_id: profile.id,
       file_name: file.name,
       file_type: file.type,
-      storage_path: storagePath,
+      storage_path: undefined, // Legacy field
+      ipfs_cid: ipfsCid,
       encryption_key: key,
       encryption_iv: iv,
       hash,
@@ -154,22 +151,14 @@ async function handleFileUpload(req: Request, context: AuthContext): Promise<Res
     });
 
   } catch (error) {
-    // Cleanup uploaded file if exists
-    if (uploadedFilePath) {
-      try {
-        await context.supabase.storage
-          .from('encrypted-files')
-          .remove([uploadedFilePath]);
-      } catch (cleanupError) {
-        console.error('Failed to cleanup uploaded file:', cleanupError);
-      }
-    }
+    // IPFS uploads are immutable, so we don't have a simple "remove" like Supabase Storage
+    // unless we unpin from Pinata, but for now we skip cleanup since it's decentralized.
 
     const message = error instanceof Error ? error.message : 'Unknown error';
-    const statusCode = error instanceof Error && 
+    const statusCode = error instanceof Error &&
       (message.includes('Rate limit') || message.includes('Invalid file type')) ? 400 : 500;
 
-    return new Response(JSON.stringify({ 
+    return new Response(JSON.stringify({
       error: message,
       code: error instanceof Error ? error.name : 'UnknownError'
     }), {

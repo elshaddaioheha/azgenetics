@@ -1,5 +1,5 @@
 import React from 'react';
-import { Icon } from '@iconify/react';
+import { ShieldCheck, Lock, LogOut } from 'lucide-react';
 
 interface PrivateDataAccessPanelProps {
     isPrivateDataUnlocked: boolean;
@@ -15,47 +15,47 @@ export const PrivateDataAccessPanel: React.FC<PrivateDataAccessPanelProps> = ({
     onLock,
 }) => {
     return (
-        <div className="glass-panel border-border p-6 rounded-2xl mb-8 relative overflow-hidden group">
-            <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
-            <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
-                <div className="flex items-center gap-6 text-center md:text-left">
-                    <div className="w-14 h-14 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center justify-center text-emerald-500 flex-shrink-0 animate-pulse">
-                        <Icon icon="lucide:shield-check" width="28" />
+        <div className="glass-panel border-white/5 p-10 rounded-[30px] mb-12 relative overflow-hidden group bg-white/[0.02] shadow-2xl">
+            <div className="absolute inset-0 bg-gradient-to-r from-fern/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
+            <div className="flex flex-col md:flex-row items-center justify-between gap-10 relative z-10">
+                <div className="flex items-center gap-8 text-center md:text-left">
+                    <div className="w-16 h-16 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center text-fern flex-shrink-0 animate-pulse shadow-inner group-hover:scale-105 transition-transform duration-500">
+                        <ShieldCheck size={32} className="shadow-[0_0_15px_#A7C7AB]" />
                     </div>
                     <div>
-                        <h3 className="text-lg font-bold text-foreground uppercase tracking-tight">
-                            {isPrivateDataUnlocked ? 'Clinical Decryption Active' : 'Restricted Clinical Assets'}
+                        <h3 className="text-xl font-black text-white uppercase tracking-tight italic">
+                            {isPrivateDataUnlocked ? 'Clinical Decryption Active / Terminal_Open' : 'Restricted Clinical Assets / Vault_Locked'}
                         </h3>
-                        <p className="text-slate-500 text-xs mt-1 max-w-md leading-relaxed">
+                        <p className="text-white/30 text-[10px] mt-2 max-w-lg leading-relaxed uppercase tracking-widest italic font-bold">
                             {isPrivateDataUnlocked
-                                ? 'End-to-end encryption is currently active for all patient records. Node session is traceable.'
-                                : 'Zero-knowledge proof required via Hedera wallet to decrypt restricted patient sequences and medical history.'}
+                                ? 'End-to-end quantum encryption is currently active for all patient records. Node session is traceable and audit-ready.'
+                                : 'Zero-knowledge verification required via protocol-linked identity to decrypt restricted patient sequences and medical history.'}
                         </p>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-6">
                     {isWalletConnected && (
-                        <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/5 border border-emerald-500/10">
-                            <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
-                            <span className="text-[10px] text-emerald-500 font-bold uppercase tracking-widest">Signal Locked</span>
+                        <div className="hidden lg:flex items-center gap-3 px-4 py-2 rounded-full bg-white/5 border border-white/10">
+                            <span className="w-2 h-2 bg-fern rounded-full animate-pulse shadow-[0_0_10px_#A7C7AB]"></span>
+                            <span className="text-[10px] text-fern font-black uppercase tracking-widest italic">Signal Locked</span>
                         </div>
                     )}
 
                     {!isPrivateDataUnlocked ? (
                         <button
                             onClick={onUnlock}
-                            className="bg-emerald-500 hover:bg-emerald-400 text-white px-8 py-3.5 rounded-xl font-bold uppercase tracking-widest text-xs transition-all flex items-center gap-3 ring-anim"
+                            className="bg-fern hover:bg-[#A7C7AB] text-obsidian px-10 py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] italic transition-all flex items-center gap-4 hover:scale-[1.02] active:scale-[0.98] shadow-[0_0_30px_rgba(167,199,171,0.2)]"
                         >
-                            <Icon icon="lucide:lock" width="18" />
+                            <Lock size={18} />
                             <span>Decrypt Node</span>
                         </button>
                     ) : (
                         <button
                             onClick={onLock}
-                            className="bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 px-8 py-3.5 rounded-xl font-bold uppercase tracking-widest text-xs transition-all flex items-center gap-3"
+                            className="bg-white/5 border border-white/10 text-white/40 hover:text-red-400 hover:bg-red-900/10 hover:border-red-900/30 px-10 py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] italic transition-all flex items-center gap-4"
                         >
-                            <Icon icon="lucide:log-out" width="18" />
+                            <LogOut size={18} />
                             <span>Terminate Session</span>
                         </button>
                     )}

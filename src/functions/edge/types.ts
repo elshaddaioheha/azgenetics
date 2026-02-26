@@ -11,7 +11,8 @@ export interface FileMetadata {
   owner_id: string;
   file_name: string;
   file_type: string;
-  storage_path: string;
+  storage_path?: string;
+  ipfs_cid?: string;
   encryption_key: string;
   encryption_iv: string;
   hedera_transaction_id: string;

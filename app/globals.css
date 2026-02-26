@@ -1,37 +1,57 @@
 ﻿@import "tailwindcss";
 
 :root {
-  --background: #f8fafc;
-  /* Slate 50 */
-  --foreground: #0f172a;
-  /* Slate 900 */
-  --card: #ffffff;
-  --card-foreground: #0f172a;
-  --popover: #ffffff;
-  --popover-foreground: #0f172a;
-  --primary: #10b981;
-  /* Emerald 500 */
-  --primary-foreground: #ffffff;
-  --muted: #f1f5f9;
-  /* Slate 100 */
-  --muted-foreground: #64748b;
-  /* Slate 500 */
-  --accent: #f1f5f9;
-  --accent-foreground: #0f172a;
-  --destructive: #ef4444;
-  --destructive-foreground: #ffffff;
-  --border: #e2e8f0;
-  /* Slate 200 */
-  --input: #e2e8f0;
-  --ring: #10b981;
-  --radius: 0.75rem;
+  --dust-grey: #dad7cd;
+  --dry-sage: #a3b18a;
+  --fern: #588157;
+  --hunter-green: #344e41;
+  --pine-teal: #3a5a40;
 
-  --emerald-500: #10b981;
-  --emerald-950: #022c22;
+  /* Reference Design Colors - Medical & Health focused */
+  --medical-purple: #bfa8d8;
+  --medical-tan: #c8b6a6;
+  --medical-green: #a3b18a;
+  --medical-blue: #a8c0d8;
+
+  --background: #fdfdfd;
+  --foreground: #111111;
+
+  --card: #ffffff;
+  --card-foreground: #111111;
+
+  --popover: #ffffff;
+  --popover-foreground: #111111;
+
+  --primary: #111111;
+  --primary-foreground: #ffffff;
+
+  --muted: #f5f7fa;
+  --muted-foreground: #717171;
+
+  --accent: #f5f7fa;
+  --accent-foreground: #111111;
+
+  --destructive: #ff4d4d;
+  --destructive-foreground: #ffffff;
+
+  --border: #f0f0f0;
+  --input: #f0f0f0;
+  --ring: var(--fern);
+  --radius: 1.5rem;
 }
 
-/* @theme is a Tailwind CSS v4 directive - IDE warning can be ignored */
 @theme inline {
+  --color-dust-grey: var(--dust-grey);
+  --color-dry-sage: var(--dry-sage);
+  --color-fern: var(--fern);
+  --color-hunter-green: var(--hunter-green);
+  --color-pine-teal: var(--pine-teal);
+
+  --color-med-purple: var(--medical-purple);
+  --color-med-tan: var(--medical-tan);
+  --color-med-green: var(--medical-green);
+  --color-med-blue: var(--medical-blue);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -50,75 +70,39 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
 
-  --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
-  --font-mono: var(--font-jetbrains-mono), monospace;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui;
+  --font-heading: var(--font-outfit), ui-sans-serif, system-ui;
 }
 
 body {
   background-color: var(--background);
-  background-image:
-    radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.03) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(16, 185, 129, 0.03) 0px, transparent 50%);
   color: var(--foreground);
   font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-outfit), var(--font-inter), sans-serif;
+  letter-spacing: -0.02em;
 }
 
 .glass-panel {
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--border);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+  background: #ffffff;
+  border-radius: 2rem;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
 }
 
-.glass-btn {
-  background: white;
-  border: 1px solid var(--border);
-  color: var(--foreground);
-  transition: all 0.2s ease;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-}
-
-.glass-btn:hover {
-  background: var(--muted);
-  border-color: var(--emerald-500);
-}
-
-.bg-grid {
-  background-size: 60px 60px;
-  background-image: linear-gradient(to right, rgba(0, 0, 0, 0.03) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
-  mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
-}
-
-.text-glow {
-  /* Subtle glow for light mode, or maybe remove it */
-  text-shadow: 0 0 20px rgba(16, 185, 129, 0.1);
-}
-
-.ring-anim::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  border: 1px solid var(--emerald-500);
-  animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
-}
-
-@keyframes pulse-ring {
-  0% {
-    transform: scale(0.8);
-    opacity: 0.5;
-  }
-
-  100% {
-    transform: scale(2);
-    opacity: 0;
-  }
+.glass-panel:hover {
+  box-shadow: 0 20px 40px -4px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
 }
 
 /* Custom Scrollbar */
@@ -131,22 +115,15 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 3px;
+  background: #e0e0e0;
+  border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--emerald-500);
+  background: #cccccc;
 }
 
-/* Transitions */
-.fade-enter {
-  opacity: 0;
-  transform: translateY(10px);
-}
-
-.fade-enter-active {
-  opacity: 1;
-  transform: translateY(0);
-  transition: opacity 300ms, transform 300ms;
+::selection {
+  background: rgba(167, 199, 171, 0.2);
+  color: var(--fern);
 }

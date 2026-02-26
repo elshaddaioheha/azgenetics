@@ -1,40 +1,77 @@
 'use client';
+
 import React, { useEffect, useState } from 'react';
 import Head from 'next/head';
-import { useHederaWallet } from '@/context/HederaWalletContext';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+    Terminal,
+    Activity,
+    Network,
+    Layers,
+    Coins,
+    Star,
+    Sliders,
+    User,
+    Search,
+    Bell,
+    TrendingUp,
+    Repeat,
+    Check,
+    ArrowUpRight,
+    Database,
+    Cpu,
+    ShieldCheck,
+    Zap,
+    Dna,
+    Fingerprint,
+    Globe,
+    Lock,
+    ChevronLeft,
+    ChevronRight,
+    SearchIcon
+} from 'lucide-react';
 import { useToast } from '@/context/ToastContext';
 import { api } from '@/lib/apiClient';
 import { useAuth } from '@/lib/useAuth';
 import { useRouter } from 'next/navigation';
 import Spinner from '@/components/ui/Spinner';
-import { Icon } from '@iconify/react';
 
 // Types
-interface NodeTelemetry {
-    consensusHealth: string;
-    activeIndexers: number;
-    totalTransactions: string;
-    networkLatency: string;
-}
-
 interface AnalyticsData {
     id: string;
     metric: string;
     value: string;
     trend: 'up' | 'down' | 'stable';
     color: string;
+    bgClass: string;
 }
+
+const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+        opacity: 1,
+        transition: { staggerChildren: 0.1 }
+    }
+};
+
+const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+        y: 0,
+        opacity: 1,
+        transition: {
+            duration: 0.5,
+            ease: [0.16, 1, 0.3, 1] as any
+        }
+    }
+};
 
 const ResearcherDashboard = () => {
     const { user, loading: authLoading } = useAuth();
     const router = useRouter();
     const [activeTab, setActiveTab] = useState('overview');
     const [sidebarOpen, setSidebarOpen] = useState(true);
-    const [showConnectModal, setShowConnectModal] = useState(false);
-    const [isConnecting, setIsConnecting] = useState(false);
     const [userProfile, setUserProfile] = useState<any>(null);
-
-    const { isConnected: isWalletConnected, connectWallet, disconnectWallet } = useHederaWallet();
     const toast = useToast();
 
     // Redirect if not authenticated
@@ -52,10 +89,6 @@ const ResearcherDashboard = () => {
                 if (response.ok) {
                     const profile = await response.json();
                     setUserProfile(profile);
-                    // Verify role
-                    if (profile.user_role !== 'researcher') {
-                        // Optional: redirect if wrong role, but for now we let them stay if they reached here
-                    }
                 }
             } catch (err) {
                 console.error('Failed to load profile:', err);
@@ -65,283 +98,321 @@ const ResearcherDashboard = () => {
     }, [user]);
 
     const analytics: AnalyticsData[] = [
-        { id: '1', metric: 'Genomic Diversity Index', value: '0.84', trend: 'up', color: 'emerald' },
-        { id: '2', metric: 'Total Anonymized Records', value: '14,202', trend: 'up', color: 'blue' },
-        { id: '3', metric: 'Clinical Access Latency', value: '0.4s', trend: 'down', color: 'purple' },
-        { id: '4', metric: 'Consensus Reliability', value: '99.9%', trend: 'stable', color: 'teal' },
+        { id: '1', metric: 'Genomic Diversity Index', value: '0.84', trend: 'up', color: 'text-med-purple', bgClass: 'bg-med-purple' },
+        { id: '2', metric: 'Anonymized Records', value: '14,202', trend: 'up', color: 'text-med-blue', bgClass: 'bg-med-blue' },
+        { id: '3', metric: 'System Latency', value: '0.4s', trend: 'down', color: 'text-med-green', bgClass: 'bg-med-green' },
+        { id: '4', metric: 'Consensus Stability', value: '99.9%', trend: 'stable', color: 'text-med-tan', bgClass: 'bg-med-tan' },
     ];
 
-    const handleConnectWallet = async () => {
-        setIsConnecting(true);
-        try {
-            await connectWallet();
-            setShowConnectModal(false);
-            setIsConnecting(false);
-        } catch (error) {
-            toast.error('Failed to connect node wallet');
-            setIsConnecting(false);
-        }
-    };
+    const menuItems = [
+        { id: 'overview', name: 'Analysis Console', icon: Activity },
+        { id: 'telemetry', name: 'Node Network', icon: Network },
+        { id: 'datasets', name: 'Asset Clusters', icon: Layers },
+        { id: 'tokens', name: 'Grant Allocation', icon: Coins },
+        { id: 'subscriptions', name: 'Protocol Tiers', icon: Star },
+        { id: 'settings', name: 'Node Config', icon: Sliders },
+    ];
+
+    if (authLoading) {
+        return (
+            <div className="h-screen w-full flex items-center justify-center bg-background">
+                <Spinner size="lg" />
+            </div>
+        );
+    }
 
     return (
-        <>
+        <div className="flex h-screen bg-[#f8f9fb] text-foreground font-sans selection:bg-fern/10 overflow-hidden">
             <Head>
-                <title>Researcher Node | AZ Genes Protocol</title>
-                <meta name="description" content="Decentralized genomic research analytics and telemetry" />
+                <title>Researcher Console | AZ genes</title>
             </Head>
 
-            <div className="flex h-screen bg-background text-slate-600 font-sans selection:bg-emerald-500/30">
-                {/* Sidebar */}
-                <div className={`${sidebarOpen ? 'w-72' : 'w-24'} glass-panel border-r border-border transition-all duration-500 flex flex-col relative z-30`}>
-                    <div className="p-8 mb-4 text-center">
-                        <div className="flex items-center justify-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.4)]">
-                                <Icon icon="lucide:terminal" className="text-[#020403]" width="24" />
-                            </div>
-                            {sidebarOpen && <span className="text-xl font-bold text-foreground tracking-tighter uppercase">Research</span>}
+            {/* Sidebar - Clean & Professional */}
+            <motion.aside
+                initial={false}
+                animate={{ width: sidebarOpen ? 280 : 80 }}
+                className="bg-white border-r border-border flex flex-col relative z-30 shadow-sm"
+            >
+                <div className="p-6 h-20 flex items-center justify-between border-b border-border">
+                    <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-xs">
+                            AZ
                         </div>
-                    </div>
-
-                    <nav className="flex-1 px-4 space-y-2">
-                        {[
-                            { id: 'overview', name: 'Analytic Pulse', icon: 'lucide:activity' },
-                            { id: 'telemetry', name: 'Node Network', icon: 'lucide:network' },
-                            { id: 'datasets', name: 'Asset Clusters', icon: 'lucide:layers' },
-                            { id: 'tokens', name: 'Grant Allocation', icon: 'lucide:coins' },
-                            { id: 'subscriptions', name: 'Protocol Tier', icon: 'lucide:star' },
-                            { id: 'settings', name: 'Node Config', icon: 'lucide:sliders' },
-                        ].map((item) => (
-                            <button
-                                key={item.id}
-                                onClick={() => setActiveTab(item.id)}
-                                className={`w-full flex items-center gap-4 px-4 py-4 rounded-xl transition-all duration-300 group ${activeTab === item.id
-                                    ? 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/20'
-                                    : 'text-slate-500 hover:text-foreground hover:bg-white'
-                                    }`}
+                        {sidebarOpen && (
+                            <motion.span
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                className="text-xl font-bold tracking-tight uppercase"
                             >
-                                <Icon icon={item.icon} width="20" />
-                                {sidebarOpen && <span className="text-[10px] font-bold uppercase tracking-[0.2em]">{item.name}</span>}
-                            </button>
-                        ))}
-                    </nav>
-
-                    {/* Wallet Status */}
-                    {sidebarOpen && (
-                        <div className="p-6">
-                            <div className="glass-panel border-border p-4 rounded-2xl bg-white/[0.01]">
-                                <div className="flex items-center justify-between mb-4">
-                                    <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Node Identity</span>
-                                    <div className={`w-2 h-2 rounded-full ${isWalletConnected ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`}></div>
-                                </div>
-                                <button
-                                    onClick={isWalletConnected ? disconnectWallet : () => setShowConnectModal(true)}
-                                    className="w-full py-2 rounded-lg bg-white border border-border text-[10px] font-bold text-foreground uppercase tracking-widest hover:bg-slate-50 transition-all"
-                                >
-                                    {isWalletConnected ? 'Disconnect Node' : 'Initialize Node'}
-                                </button>
-                            </div>
-                        </div>
-                    )}
+                                Research
+                            </motion.span>
+                        )}
+                    </div>
                 </div>
 
-                {/* Main Content */}
-                <div className="flex-1 flex flex-col overflow-hidden relative">
-                    <div className="absolute inset-0 bg-grid opacity-20 pointer-events-none"></div>
+                <nav className="flex-1 p-4 space-y-1 mt-4 text-sm font-semibold">
+                    {menuItems.map((item) => (
+                        <button
+                            key={item.id}
+                            onClick={() => setActiveTab(item.id)}
+                            className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all ${activeTab === item.id
+                                ? 'bg-indigo-50 text-indigo-600'
+                                : 'text-muted-foreground hover:bg-slate-50 hover:text-foreground'
+                                }`}
+                        >
+                            <item.icon size={20} className={activeTab === item.id ? 'text-indigo-600' : ''} />
+                            {sidebarOpen && <span>{item.name}</span>}
+                        </button>
+                    ))}
+                </nav>
 
-                    {/* Header */}
-                    <header className="glass-panel border-b border-border px-10 py-6 z-20 sticky top-0">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-[0.3em] mb-1">Ecosystem Status: Synchronized</p>
-                                <h1 className="text-2xl font-bold text-foreground tracking-tighter uppercase">研究員プロトコル <span className="text-slate-400 tracking-widest ml-2">v1.2</span></h1>
+                {/* Node Status */}
+                {sidebarOpen && (
+                    <div className="p-6 border-t border-border">
+                        <div className="bg-slate-50 border border-slate-100 p-4 rounded-2xl">
+                            <div className="flex items-center justify-between mb-2">
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Node Status</span>
+                                <div className="flex items-center gap-1.5">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-med-green animate-pulse"></div>
+                                    <span className="text-[10px] font-bold text-med-green">SYNCED</span>
+                                </div>
                             </div>
-                            <div className="flex items-center gap-6">
-                                <div className="px-4 py-2 rounded-xl bg-white border border-border flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-600">
-                                        <Icon icon="lucide:user" width="18" />
-                                    </div>
-                                    <div className="text-right">
-                                        <p className="text-xs font-bold text-foreground uppercase tracking-tight">{userProfile?.name || 'Researcher'}</p>
-                                        <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest">{userProfile?.subscription_tier || 'F1'} Tier</p>
-                                    </div>
+                            <div className="text-[10px] font-bold text-slate-500 truncate">
+                                {userProfile?.hedera_account_id || 'Connecting to mainnet...'}
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </motion.aside>
+
+            {/* Main Content Area */}
+            <div className="flex-1 flex flex-col relative overflow-hidden">
+                {/* Header */}
+                <header className="h-20 flex items-center justify-between px-8 border-b border-border bg-white sticky top-0 z-20 shadow-sm">
+                    <div className="flex flex-col">
+                        <div className="flex items-center gap-2 mb-0.5">
+                            <ShieldCheck size={14} className="text-indigo-600" />
+                            <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">Secure Research Cluster v2.4</span>
+                        </div>
+                        <h1 className="text-xl font-bold text-foreground tracking-tight">
+                            Researcher <span className="text-muted-foreground">Analysis Console</span>
+                        </h1>
+                    </div>
+
+                    <div className="flex items-center gap-8">
+                        <div className="hidden lg:flex flex-col items-end pr-8 border-r border-border">
+                            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Network Throughput</span>
+                            <span className="text-sm font-bold text-foreground">4.2 GB/s <span className="text-med-green text-[10px]">STABLE</span></span>
+                        </div>
+
+                        <div className="flex items-center gap-4">
+                            <button className="p-2.5 rounded-full border border-border text-muted-foreground hover:text-foreground transition-all">
+                                <Bell size={20} />
+                                <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+                            </button>
+
+                            <div className="flex items-center gap-4 pl-6 border-l border-border">
+                                <div className="text-right flex flex-col">
+                                    <p className="text-sm font-bold leading-none mb-1">
+                                        {userProfile?.name || 'Researcher'}
+                                    </p>
+                                    <p className="text-[10px] text-indigo-600 font-bold uppercase tracking-wider">
+                                        Level {userProfile?.subscription_tier || 'F1'} Scientist
+                                    </p>
+                                </div>
+                                <div className="w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold shadow-sm hover:scale-105 transition-all cursor-pointer">
+                                    {(userProfile?.name?.[0] || user?.email?.[0] || 'R').toUpperCase()}
                                 </div>
                             </div>
                         </div>
-                    </header>
+                    </div>
+                </header>
 
-                    <main className="flex-1 overflow-y-auto p-10 relative z-10 custom-scrollbar">
-                        {activeTab === 'overview' && (
-                            <div className="space-y-10">
-                                {/* Stats Grid */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                                    {analytics.map((item) => (
-                                        <div key={item.id} className="glass-panel border-border p-8 rounded-2xl hover:scale-[1.02] transition-all group overflow-hidden relative">
-                                            <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent pointer-events-none"></div>
-                                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-4 group-hover:text-emerald-500 transition-colors uppercase">{item.metric}</p>
-                                            <div className="flex items-end justify-between">
-                                                <h3 className="text-3xl font-bold text-foreground font-mono tracking-tighter">{item.value}</h3>
-                                                <div className={`flex items-center gap-1 ${item.trend === 'up' ? 'text-emerald-600' : 'text-blue-500'}`}>
-                                                    <Icon icon={item.trend === 'up' ? "lucide:trending-up" : "lucide:repeat"} width="14" />
-                                                    <span className="text-[10px] font-bold uppercase">{item.trend === 'up' ? '+12%' : 'STABLE'}</span>
+                <main className="flex-1 overflow-y-auto p-10 custom-scrollbar">
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            key={activeTab}
+                            variants={containerVariants}
+                            initial="hidden"
+                            animate="visible"
+                            exit={{ opacity: 0, y: -20 }}
+                        >
+                            {activeTab === 'overview' && (
+                                <div className="space-y-10">
+                                    {/* Stats Grid - Using medical bento palette */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                                        {analytics.map((item) => (
+                                            <motion.div
+                                                key={item.id}
+                                                variants={itemVariants}
+                                                className={`rounded-[2rem] p-8 ${item.bgClass} text-white shadow-lg hover:-translate-y-1 transition-all duration-300 group cursor-default relative overflow-hidden`}
+                                            >
+                                                <div className="absolute top-0 right-0 p-6 opacity-20 group-hover:scale-125 transition-transform duration-500">
+                                                    <ArrowUpRight size={32} />
                                                 </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                {/* Telemetry Section */}
-                                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                                    <div className="lg:col-span-2 glass-panel border-border rounded-2xl p-8 bg-white/[0.01]">
-                                        <div className="flex items-center justify-between mb-8">
-                                            <h2 className="text-sm font-bold text-foreground uppercase tracking-[0.2em]">Genomic Pattern Heatmap</h2>
-                                            <div className="flex gap-2">
-                                                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                                                <span className="text-[10px] text-emerald-600 font-bold uppercase tracking-widest">Live Consensus</span>
-                                            </div>
-                                        </div>
-                                        <div className="h-64 rounded-xl bg-white border border-border flex items-center justify-center relative overflow-hidden group">
-                                            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(16,185,129,0.1)_0%,_transparent_70%)] group-hover:scale-150 transition-transform duration-1000"></div>
-                                            <p className="text-[10px] text-slate-500 font-mono italic tracking-widest uppercase">Rendering Aggregated Sequencing Points...</p>
-                                        </div>
-                                        <div className="grid grid-cols-3 gap-4 mt-8">
-                                            <div className="p-4 rounded-xl bg-white border border-border">
-                                                <p className="text-[9px] text-slate-500 font-bold uppercase mb-1">Sample Depth</p>
-                                                <p className="text-lg font-bold text-foreground font-mono">14.2k</p>
-                                            </div>
-                                            <div className="p-4 rounded-xl bg-white border border-border">
-                                                <p className="text-[9px] text-slate-500 font-bold uppercase mb-1">Mutation Delta</p>
-                                                <p className="text-lg font-bold text-emerald-600 font-mono">0.03%</p>
-                                            </div>
-                                            <div className="p-4 rounded-xl bg-white border border-border">
-                                                <p className="text-[9px] text-slate-500 font-bold uppercase mb-1">Audit Trail</p>
-                                                <p className="text-lg font-bold text-blue-500 font-mono">VERIFIED</p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="glass-panel border-border rounded-2xl p-8 flex flex-col bg-white/[0.01]">
-                                        <h2 className="text-sm font-bold text-foreground uppercase tracking-[0.2em] mb-8">Consensus Feed</h2>
-                                        <div className="flex-1 space-y-6 overflow-y-auto pr-2 custom-scrollbar">
-                                            {[1, 2, 3, 4, 5].map((i) => (
-                                                <div key={i} className="flex gap-4 group">
-                                                    <div className="w-1 h-auto bg-slate-200 rounded-full group-hover:bg-emerald-500 transition-colors"></div>
-                                                    <div>
-                                                        <p className="text-[10px] text-foreground font-bold leading-none mb-1 uppercase tracking-tight">Block #742,91{i}</p>
-                                                        <p className="text-[9px] text-slate-500 font-mono leading-relaxed">Sequencing shard 0.0.{i}92 committed to consensus.</p>
-                                                        <p className="text-[8px] text-slate-400 font-mono mt-1">2.01s ago</p>
+                                                <p className="text-[10px] font-bold uppercase tracking-widest mb-10 opacity-70">{item.metric}</p>
+                                                <div className="flex items-end justify-between relative z-10">
+                                                    <h3 className="text-4xl font-bold tracking-tight">{item.value}</h3>
+                                                    <div className="flex items-center gap-1.5 bg-white/20 px-3 py-1 rounded-full backdrop-blur-sm">
+                                                        {item.trend === 'up' ? <TrendingUp size={14} /> : <Repeat size={14} />}
+                                                        <span className="text-[10px] font-bold">{item.trend === 'up' ? '+12%' : 'Active'}</span>
                                                     </div>
                                                 </div>
-                                            ))}
-                                        </div>
-                                        <button className="w-full py-3 mt-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 text-[10px] font-bold uppercase tracking-widest hover:bg-emerald-500 hover:text-[#020403] transition-all">
-                                            Global Node Audit
-                                        </button>
+                                            </motion.div>
+                                        ))}
                                     </div>
-                                </div>
-                            </div>
-                        )}
 
-                        {/* Subscriptions Tab */}
-                        {activeTab === 'subscriptions' && (
-                            <div className="space-y-12">
-                                <div className="text-center max-w-2xl mx-auto mb-16">
-                                    <h2 className="text-2xl font-bold text-foreground tracking-tighter uppercase mb-4">Protocol Tier Elevation</h2>
-                                    <p className="text-xs text-slate-500 leading-relaxed uppercase tracking-widest">
-                                        Scale your research capabilities by choosing a protocol tier. Each tier unlocks higher consensus bandwidth and advanced genomic analytics.
-                                    </p>
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                                    {[
-                                        { tier: 'F1', name: 'Open Access', price: 'Free', features: ['100MB Node Storage', 'Standard Analytics', 'Basic Telemetry', 'Single Chain Sync'], color: 'slate' },
-                                        { tier: 'F2', name: 'Pro Researcher', price: '250 GENE/mo', features: ['5GB Node Storage', 'Advanced ML Indexing', 'Full Telemetry Access', 'Multi-Shard Sync', 'Priority Support'], color: 'emerald', popular: true },
-                                        { tier: 'F3', name: 'Enterprise Node', price: 'Custom', features: ['Unlimited Storage', 'Ecosystem Governance', 'API Cluster Access', 'Direct Hedera Node Sync', '24/7 Priority Protocol Support'], color: 'purple' },
-                                    ].map((sub) => (
-                                        <div key={sub.tier} className={`glass-panel border-border rounded-3xl p-10 flex flex-col relative overflow-hidden group hover:scale-[1.02] transition-all duration-500 ${sub.popular ? 'bg-emerald-500/[0.03] ring-1 ring-emerald-500/30' : 'bg-white/[0.01]'}`}>
-                                            {sub.popular && (
-                                                <div className="absolute top-0 right-0 py-2 px-8 bg-emerald-500 text-[#020403] text-[9px] font-bold uppercase tracking-[0.2em] transform rotate-45 translate-x-[25px] translate-y-[10px] shadow-[0_0_15px_rgba(16,185,129,0.3)]">
-                                                    Popular
+                                    {/* Charts and Data Visualizer */}
+                                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                                        <motion.div variants={itemVariants} className="lg:col-span-2 bg-white rounded-[2.5rem] p-10 border border-border shadow-sm flex flex-col">
+                                            <div className="flex items-center justify-between mb-10">
+                                                <div>
+                                                    <h2 className="text-xl font-bold tracking-tight mb-1">Genomic Pattern Tracker</h2>
+                                                    <p className="text-xs font-semibold text-muted-foreground">Aggregated mutation markers across global clusters</p>
                                                 </div>
-                                            )}
-
-                                            <div className="mb-10">
-                                                <p className={`text-[10px] font-bold uppercase tracking-[0.3em] mb-4 ${sub.color === 'emerald' ? 'text-emerald-600' : sub.color === 'purple' ? 'text-purple-500' : 'text-slate-500'}`}>{sub.tier} Protocol</p>
-                                                <h3 className="text-xl font-bold text-foreground uppercase tracking-tighter mb-2">{sub.name}</h3>
-                                                <div className="flex items-baseline gap-2 mt-4">
-                                                    <span className="text-3xl font-bold text-foreground font-mono">{sub.price.split(' ')[0]}</span>
-                                                    <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">{sub.price.includes('GENE') ? 'GENE / MO' : ''}</span>
+                                                <div className="flex items-center gap-2 bg-indigo-50 text-indigo-600 px-4 py-2 rounded-full border border-indigo-100">
+                                                    <Zap size={14} className="fill-current" />
+                                                    <span className="text-[10px] font-bold uppercase tracking-widest">Real-time mapping</span>
                                                 </div>
                                             </div>
 
-                                            <div className="flex-1 space-y-4 mb-10">
-                                                {sub.features.map(f => (
-                                                    <div key={f} className="flex items-center gap-3 group/item">
-                                                        <div className="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center group-hover/item:bg-emerald-500/20 transition-colors">
-                                                            <Icon icon="lucide:check" className="text-slate-400 group-hover/item:text-emerald-500" width="12" />
+                                            <div className="h-[340px] w-full bg-slate-50 rounded-[2rem] border border-slate-100 flex flex-col items-center justify-center relative group overflow-hidden">
+                                                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(79,70,229,0.03)_0%,transparent_70%)]"></div>
+                                                <div className="relative">
+                                                    <Dna size={80} className="text-indigo-600/10 animate-[spin_20s_linear_infinite] mb-6" />
+                                                </div>
+                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.4em] animate-pulse">Processing sharded telemetry...</p>
+                                            </div>
+
+                                            <div className="grid grid-cols-3 gap-6 mt-10">
+                                                {[
+                                                    { label: 'Dataset Size', val: '14.2K', sub: 'Sequences' },
+                                                    { label: 'Consensus', val: '99.9%', sub: 'Verification' },
+                                                    { label: 'Integrity', val: 'Verified', sub: 'Audit Passed' },
+                                                ].map((d, i) => (
+                                                    <div key={i} className="p-6 rounded-2xl bg-slate-50 border border-slate-100 group transition-all">
+                                                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">{d.label}</p>
+                                                        <p className="text-2xl font-bold tracking-tight text-foreground">{d.val}</p>
+                                                        <p className="text-[10px] font-bold text-indigo-600 mt-1 opacity-60 italic">{d.sub}</p>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </motion.div>
+
+                                        <motion.div variants={itemVariants} className="bg-white rounded-[2.5rem] p-10 border border-border shadow-sm flex flex-col relative overflow-hidden">
+                                            <div className="flex items-center gap-3 mb-10 border-b border-border pb-6">
+                                                <div className="p-2 bg-indigo-50 rounded-lg text-indigo-600"><Cpu size={20} /></div>
+                                                <h2 className="text-lg font-bold tracking-tight">Mainnet Consensus Feed</h2>
+                                            </div>
+
+                                            <div className="flex-1 space-y-8 overflow-y-auto pr-2 custom-scrollbar">
+                                                {[1, 2, 3, 4, 5, 6].map((i) => (
+                                                    <div key={i} className="flex gap-4 group cursor-pointer items-start">
+                                                        <div className="w-1 h-12 bg-indigo-50 rounded-full flex-shrink-0 relative overflow-hidden">
+                                                            <div className="absolute top-0 left-0 w-full h-1/2 bg-indigo-600 group-hover:h-full transition-all duration-700" />
                                                         </div>
-                                                        <span className="text-[10px] text-slate-500 font-medium uppercase tracking-tight">{f}</span>
+                                                        <div className="space-y-1">
+                                                            <p className="text-[11px] font-bold text-foreground group-hover:text-indigo-600 transition-colors">Fragment Committed #742,91{i}</p>
+                                                            <p className="text-[10px] text-muted-foreground font-medium leading-tight">Shard metadata replicated to decentralized storage.</p>
+                                                            <p className="text-[9px] font-bold text-indigo-600/50 mt-1">{i * 2} minutes ago</p>
+                                                        </div>
                                                     </div>
                                                 ))}
                                             </div>
 
-                                            <button className={`w-full py-4 rounded-2xl text-[10px] font-bold uppercase tracking-[0.2em] transition-all ${sub.tier === (userProfile?.subscription_tier || 'F1')
-                                                ? 'bg-white text-slate-400 cursor-default border border-border'
-                                                : 'bg-emerald-500 text-[#020403] hover:bg-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.3)] ring-anim'}`}>
-                                                {sub.tier === (userProfile?.subscription_tier || 'F1') ? 'Active Protocol' : 'Select Tier'}
+                                            <button className="w-full py-4 mt-10 rounded-2xl bg-slate-50 border border-slate-100 text-slate-400 text-[10px] font-bold uppercase tracking-widest hover:bg-slate-100 hover:text-foreground transition-all">
+                                                Download Audit Trail
                                             </button>
-                                        </div>
-                                    ))}
+                                        </motion.div>
+                                    </div>
                                 </div>
-                            </div>
-                        )}
+                            )}
 
-                        {/* Other tabs as placeholders */}
-                        {(activeTab === 'telemetry' || activeTab === 'datasets' || activeTab === 'tokens' || activeTab === 'settings') && (
-                            <div className="glass-panel border-border rounded-2xl p-16 text-center">
-                                <div className="w-16 h-16 rounded-2xl bg-white border border-border flex items-center justify-center text-slate-600 mx-auto mb-6">
-                                    <Icon icon="lucide:terminal" width="32" />
-                                </div>
-                                <h3 className="text-sm font-bold text-foreground uppercase tracking-[0.2em] mb-2 font-mono">Protocol restricted / consensus pending</h3>
-                                <p className="text-xs text-slate-500 max-w-sm mx-auto mb-8 leading-relaxed">
-                                    The requested research layer is currently being synchronized with the Hedera Consensus Service. High-level telemetry will be available in the next node epoch.
-                                </p>
-                                <button className="h-10 px-8 rounded border border-border text-slate-500 text-[10px] font-bold uppercase tracking-widest hover:bg-white transition-all">
-                                    Await Pulse
-                                </button>
-                            </div>
-                        )}
-                    </main>
-                </div>
+                            {activeTab === 'subscriptions' && (
+                                <motion.div variants={itemVariants} className="space-y-16 py-6">
+                                    <div className="text-center max-w-2xl mx-auto space-y-4">
+                                        <h2 className="text-4xl font-bold tracking-tight">Scale your research capacity</h2>
+                                        <p className="text-sm font-semibold text-muted-foreground leading-relaxed">
+                                            Higher tiers unlock multi-sharded network access and real-time biometric indexing clusters on the AZ Genes protocol.
+                                        </p>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                                        {[
+                                            { tier: 'F1', name: 'Open Access', price: 'Free', features: ['100MB Cloud Storage', 'Standard Analytics', 'Basic Node Access', 'Single Chain Sync'], color: 'slate-400' },
+                                            { tier: 'F2', name: 'Pro Researcher', price: '250', features: ['5GB Storage Node', 'Advanced ML Indexing', 'Multi-Shard Support', 'Priority Compute', 'Direct Support'], color: 'indigo-600', popular: true },
+                                            { tier: 'F3', name: 'Global Cluster', price: 'Custom', features: ['Unlimited Storage', 'Governance Access', 'Restricted API access', '24/7 Managed Nodes', 'Dedicated Scientist'], color: 'slate-900' },
+                                        ].map((sub) => (
+                                            <div key={sub.tier} className={`bg-white border rounded-[3rem] p-12 flex flex-col relative overflow-hidden transition-all duration-500 hover:shadow-xl ${sub.popular ? 'border-indigo-600 ring-4 ring-indigo-50 shadow-lg' : 'border-border'}`}>
+                                                {sub.popular && (
+                                                    <div className="absolute top-0 right-0 py-1.5 px-10 bg-indigo-600 text-white text-[10px] font-bold uppercase tracking-widest transform rotate-45 translate-x-10 translate-y-4">
+                                                        Recommended
+                                                    </div>
+                                                )}
+
+                                                <div className="mb-10 text-center">
+                                                    <p className={`text-[10px] font-bold uppercase tracking-widest mb-4 ${sub.popular ? 'text-indigo-600' : 'text-muted-foreground'}`}>{sub.tier} Protocol</p>
+                                                    <h3 className="text-2xl font-bold tracking-tight mb-8">{sub.name}</h3>
+                                                    <div className="flex items-baseline justify-center gap-1.5 ">
+                                                        <span className="text-5xl font-bold tracking-tighter">{sub.price}</span>
+                                                        <span className="text-xs font-bold text-muted-foreground uppercase">{sub.price === 'Custom' ? '' : 'AZG / MO'}</span>
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex-1 space-y-5 mb-12">
+                                                    {sub.features.map(f => (
+                                                        <div key={f} className="flex items-center gap-4">
+                                                            <div className="w-6 h-6 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-indigo-600">
+                                                                <Check size={12} />
+                                                            </div>
+                                                            <span className="text-xs font-semibold text-slate-600">{f}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+
+                                                <button className={`w-full py-5 rounded-2xl text-xs font-bold uppercase tracking-widest transition-all ${sub.tier === (userProfile?.subscription_tier || 'F1')
+                                                    ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                                                    : 'bg-foreground text-white hover:bg-indigo-600 hover:scale-[1.02] shadow-md'}`}>
+                                                    {sub.tier === (userProfile?.subscription_tier || 'F1') ? 'Currently Active' : 'Upgrade Node'}
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </motion.div>
+                            )}
+
+                            {/* Locked States */}
+                            {(activeTab === 'telemetry' || activeTab === 'datasets' || activeTab === 'tokens' || activeTab === 'settings') && (
+                                <motion.div variants={itemVariants} className="flex items-center justify-center py-20">
+                                    <div className="bg-white border border-border rounded-[3rem] p-20 text-center max-w-2xl shadow-sm relative overflow-hidden group">
+                                        <div className="w-24 h-24 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 mx-auto mb-10 group-hover:text-indigo-600 transition-colors">
+                                            <Lock size={40} />
+                                        </div>
+                                        <h3 className="text-2xl font-bold tracking-tight mb-4">Node Authorization Required</h3>
+                                        <p className="text-sm font-semibold text-muted-foreground max-w-md mx-auto mb-12 leading-relaxed">
+                                            The requested research cluster is restricted to professional protocol tiers. Scale your subscription to deploy this module.
+                                        </p>
+                                        <button
+                                            onClick={() => setActiveTab('subscriptions')}
+                                            className="px-12 py-4 rounded-full bg-foreground text-white text-xs font-bold uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-lg"
+                                        >
+                                            View access tiers
+                                        </button>
+                                    </div>
+                                </motion.div>
+                            )}
+                        </motion.div>
+                    </AnimatePresence>
+                </main>
             </div>
 
-            {/* Wallet Connect Modal Placeholder */}
-            {showConnectModal && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-background/90 backdrop-blur-sm" onClick={() => setShowConnectModal(false)}></div>
-                    <div className="glass-panel w-full max-w-sm rounded-2xl relative z-10 p-8 border-border">
-                        <div className="text-center mb-10">
-                            <div className="w-16 h-16 bg-emerald-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                                <Icon icon="lucide:wallet" className="text-emerald-500" width="32" />
-                            </div>
-                            <h3 className="text-lg font-bold text-foreground mb-2 uppercase tracking-widest">Connect Node Wallet</h3>
-                            <p className="text-[10px] text-slate-500 uppercase tracking-widest font-medium">Verify node ownership on Hedera</p>
-                        </div>
-                        <button
-                            onClick={handleConnectWallet}
-                            className="w-full py-4 rounded-xl bg-emerald-500 text-[#020403] text-xs font-bold uppercase tracking-widest hover:bg-emerald-400 transition-all shadow-[0_0_20px_-5px_rgba(16,185,129,0.4)] mb-4"
-                        >
-                            {isConnecting ? 'Transmitting...' : 'Metamask Key'}
-                        </button>
-                        <button
-                            onClick={() => setShowConnectModal(false)}
-                            className="w-full text-slate-500 py-2 text-[10px] font-bold uppercase tracking-widest hover:text-foreground transition-colors"
-                        >
-                            Abort Protocol
-                        </button>
-                    </div>
-                </div>
-            )}
-        </>
+            <style jsx global>{`
+                .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+                .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+                .custom-scrollbar::-webkit-scrollbar-thumb { background: #e0e0e0; border-radius: 10px; }
+                .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #cccccc; }
+            `}</style>
+        </div>
     );
 };
 

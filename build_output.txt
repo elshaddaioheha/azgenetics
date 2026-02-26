@@ -1,0 +1,55 @@
+﻿app/api/auth/resend-otp/route.ts(21,41): error TS18047: 'supabase' is possibly 'null'.
+app/api/auth/resend-otp/route.ts(42,43): error TS18047: 'supabase' is possibly 'null'.
+app/api/auth/resend-otp/route.ts(68,43): error TS18047: 'supabase' is possibly 'null'.
+app/api/auth/signup/route.ts(94,60): error TS18047: 'supabase' is possibly 'null'.
+app/api/auth/signup/route.ts(134,43): error TS18047: 'supabase' is possibly 'null'.
+app/api/auth/signup/route.ts(166,47): error TS18047: 'supabase' is possibly 'null'.
+app/api/auth/signup/route.ts(185,51): error TS18047: 'supabase' is possibly 'null'.
+app/api/auth/verify-otp/route.ts(16,60): error TS18047: 'supabase' is possibly 'null'.
+app/api/auth/verify-otp/route.ts(49,15): error TS18047: 'supabase' is possibly 'null'.
+app/api/auth/verify-otp/route.ts(55,46): error TS18047: 'supabase' is possibly 'null'.
+app/api/auth/wallet/route.ts(16,65): error TS18047: 'supabase' is possibly 'null'.
+app/api/auth/wallet/route.ts(25,19): error TS18047: 'supabase' is possibly 'null'.
+app/api/auth/wallet/route.ts(67,61): error TS18047: 'supabase' is possibly 'null'.
+app/contact/page.tsx(8,19): error TS2307: Cannot find module 'react-hot-toast' or its corresponding type declarations.
+app/dashboard/doctor/page.tsx(5,41): error TS2307: Cannot find module 'motion/react' or its corresponding type declarations.
+app/dashboard/individual/page.tsx(6,19): error TS2307: Cannot find module 'react-hot-toast' or its corresponding type declarations.
+app/dashboard/individual/page.tsx(57,39): error TS2339: Property 'logout' does not exist on type '{ user: User | null; session: Session | null; loading: boolean; }'.
+app/dashboard/page.tsx(279,25): error TS2322: Type '{ hidden: { y: number; opacity: number; }; visible: { y: number; opacity: number; transition: { duration: number; ease: number[]; }; }; }' is not assignable to type 'Variants'.
+  Property 'visible' is incompatible with index signature.
+    Type '{ y: number; opacity: number; transition: { duration: number; ease: number[]; }; }' is not assignable to type 'Variant'.
+      Type '{ y: number; opacity: number; transition: { duration: number; ease: number[]; }; }' is not assignable to type 'TargetAndTransition'.
+        Type '{ y: number; opacity: number; transition: { duration: number; ease: number[]; }; }' is not assignable to type '{ transition?: Transition<any> | undefined; transitionEnd?: ResolvedValues$1 | undefined; }'.
+          Types of property 'transition' are incompatible.
+            Type '{ duration: number; ease: number[]; }' is not assignable to type 'Transition<any> | undefined'.
+              Type '{ duration: number; ease: number[]; }' is not assignable to type 'TransitionWithValueOverrides<any>'.
+                Type '{ duration: number; ease: number[]; }' is not assignable to type 'ValueAnimationTransition<any>'.
+                  Types of property 'ease' are incompatible.
+                    Type 'number[]' is not assignable to type 'Easing | Easing[] | undefined'.
+                      Type 'number[]' is not assignable to type 'EasingFunction | Easing[]'.
+                        Type 'number[]' is not assignable to type 'Easing[]'.
+                          Type 'number' is not assignable to type 'Easing'.
+app/dashboard/page.tsx(299,19): error TS2322: Type '{ hidden: { y: number; opacity: number; }; visible: { y: number; opacity: number; transition: { duration: number; ease: number[]; }; }; }' is not assignable to type 'Variants'.
+  Property 'visible' is incompatible with index signature.
+    Type '{ y: number; opacity: number; transition: { duration: number; ease: number[]; }; }' is not assignable to type 'Variant'.
+      Type '{ y: number; opacity: number; transition: { duration: number; ease: number[]; }; }' is not assignable to type 'TargetAndTransition'.
+        Type '{ y: number; opacity: number; transition: { duration: number; ease: number[]; }; }' is not assignable to type '{ transition?: Transition<any> | undefined; transitionEnd?: ResolvedValues$1 | undefined; }'.
+          Types of property 'transition' are incompatible.
+            Type '{ duration: number; ease: number[]; }' is not assignable to type 'Transition<any> | undefined'.
+              Type '{ duration: number; ease: number[]; }' is not assignable to type 'TransitionWithValueOverrides<any>'.
+                Type '{ duration: number; ease: number[]; }' is not assignable to type 'ValueAnimationTransition<any>'.
+                  Types of property 'ease' are incompatible.
+                    Type 'number[]' is not assignable to type 'Easing | Easing[] | undefined'.
+                      Type 'number[]' is not assignable to type 'EasingFunction | Easing[]'.
+                        Type 'number[]' is not assignable to type 'Easing[]'.
+                          Type 'number' is not assignable to type 'Easing'.
+app/dashboard/researcher/page.tsx(235,29): error TS2322: Type '{ children: (false | Element)[]; key: string; fragments: { hidden: { opacity: number; }; visible: { opacity: number; transition: { staggerChildren: number; }; }; }; initial: string; animate: string; exit: { ...; }; }' is not assignable to type 'IntrinsicAttributes & Omit<HTMLMotionProps<"div">, "ref"> & RefAttributes<HTMLDivElement>'.
+  Property 'fragments' does not exist on type 'IntrinsicAttributes & Omit<HTMLMotionProps<"div">, "ref"> & RefAttributes<HTMLDivElement>'.
+app/page.tsx(56,8): error TS2304: Cannot find name 'Navbar'.
+lib/useAuth.ts(13,5): error TS18047: 'supabase' is possibly 'null'.
+lib/useAuth.ts(22,9): error TS18047: 'supabase' is possibly 'null'.
+src/services/hedera/walletTransactions.ts(12,31): error TS2307: Cannot find module '@hashgraph/hedera-wallet-connect' or its corresponding type declarations.
+tests/comprehensive.test.ts(22,3): error TS2304: Cannot find name 'beforeEach'.
+tests/comprehensive.test.ts(87,5): error TS2304: Cannot find name 'beforeEach'.
+tests/comprehensive.test.ts(192,5): error TS2304: Cannot find name 'beforeEach'.
+tests/comprehensive.test.ts(240,5): error TS2304: Cannot find name 'beforeEach'.

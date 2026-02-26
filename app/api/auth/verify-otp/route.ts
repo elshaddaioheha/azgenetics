@@ -3,6 +3,13 @@ import { supabase } from '@/app/api/_context';
 
 export async function POST(request: NextRequest) {
     try {
+        if (!supabase) {
+            return NextResponse.json(
+                { error: 'Database connection error' },
+                { status: 500 }
+            );
+        }
+
         const { email, code } = await request.json();
 
         if (!email || !code) {

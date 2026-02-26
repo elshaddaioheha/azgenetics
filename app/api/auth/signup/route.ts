@@ -7,6 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/app/api/_context';
 import { sendOTPEmail } from '@/lib/email';
+import { HederaClient } from '@/src/services/hedera/client';
 
 // Rate limiting: max 5 requests per email per hour
 const loginAttempts = new Map<string, { attempts: number; resetAt: number; blockedUntil?: number }>();
@@ -56,6 +57,13 @@ function generateOTP(): string {
 
 export async function POST(request: NextRequest) {
     try {
+        if (!supabase) {
+            return NextResponse.json(
+                { error: 'Database connection error' },
+                { status: 500 }
+            );
+        }
+
         const { email, password, fullName, role } = await request.json();
 
         // Validate inputs
@@ -147,6 +155,20 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        // Generate a new Hedera account for the user (Embedded Wallet)
+        let hederaAccountId = '';
+        let hederaPrivateKey = '';
+        try {
+            const hederaClient = new HederaClient();
+            const hAccount = await hederaClient.createAccount();
+            hederaAccountId = hAccount.accountId;
+            hederaPrivateKey = hAccount.privateKey;
+            console.log(`✅ Default Hedera account ${hederaAccountId} generated for ${email}`);
+        } catch (hErr) {
+            console.error('Failed to generate Hedera account during signup:', hErr);
+            // Non-blocking for now
+        }
+
         // Store user profile in Supabase
         const { error: profileError } = await supabase
             .from('profiles')
@@ -158,10 +180,27 @@ export async function POST(request: NextRequest) {
                 auth_type: 'email',
                 subscription_tier: 'F1', // Default tier
                 email_verified: false,
+                hedera_account_id: hederaAccountId,
+                hedera_private_key: hederaPrivateKey
             });
 
         if (profileError) {
             console.error('Error creating profile:', profileError);
+        }
+
+        // Also add to user_profiles to keep schemas in sync
+        const { error: userProfileError } = await supabase
+            .from('user_profiles')
+            .insert({
+                id: authData.user.id,
+                auth_id: authData.user.id,
+                subscription_tier: 'F1',
+                hedera_account_id: hederaAccountId,
+                hedera_private_key: hederaPrivateKey
+            });
+
+        if (userProfileError) {
+            console.error('Error syncing user_profile:', userProfileError);
         }
 
         // Send OTP via email
