@@ -58,11 +58,9 @@ export async function POST(request: NextRequest) {
             .update({ verified: true })
             .eq('id', otpRecord.id);
 
-        // Update user profile to mark email as verified
+        // Update user profile to mark email as verified securely via RPC
         const { error: updateError } = await supabase
-            .from('profiles')
-            .update({ email_verified: true })
-            .eq('email', email);
+            .rpc('verify_user_email', { p_email: email });
 
         if (updateError) {
             console.error('Error updating profile:', updateError);
