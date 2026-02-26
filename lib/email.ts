@@ -1,36 +1,36 @@
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const getResend = () => new Resend(process.env.RESEND_API_KEY);
 
 interface SendOTPEmailParams {
-    to: string;
-    code: string;
-    userName?: string;
+  to: string;
+  code: string;
+  userName?: string;
 }
 
 export async function sendOTPEmail({ to, code, userName }: SendOTPEmailParams) {
-    try {
-        const { data, error } = await resend.emails.send({
-            from: 'AZ-Genes <noreply@azgenes.com>', // Update with your verified domain
-            to: [to],
-            subject: 'Verify your email address',
-            html: getOTPEmailTemplate(code, userName),
-        });
+  try {
+    const { data, error } = await getResend().emails.send({
+      from: 'AZ-Genes <noreply@azgenes.com>', // Update with your verified domain
+      to: [to],
+      subject: 'Verify your email address',
+      html: getOTPEmailTemplate(code, userName),
+    });
 
-        if (error) {
-            console.error('Error sending email:', error);
-            throw new Error('Failed to send verification email');
-        }
-
-        return { success: true, messageId: data?.id };
-    } catch (error) {
-        console.error('Email service error:', error);
-        throw error;
+    if (error) {
+      console.error('Error sending email:', error);
+      throw new Error('Failed to send verification email');
     }
+
+    return { success: true, messageId: data?.id };
+  } catch (error) {
+    console.error('Email service error:', error);
+    throw error;
+  }
 }
 
 function getOTPEmailTemplate(code: string, userName?: string): string {
-    return `
+  return `
 <!DOCTYPE html>
 <html>
 <head>
@@ -193,7 +193,7 @@ function getOTPEmailTemplate(code: string, userName?: string): string {
 
 // Plain text version for email clients that don't support HTML
 export function getOTPEmailPlainText(code: string, userName?: string): string {
-    return `
+  return `
 Hello${userName ? ` ${userName}` : ''}!
 
 Thank you for signing up for AZ-Genes.
