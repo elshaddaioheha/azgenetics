@@ -30,14 +30,14 @@ export default function Contact() {
 
       <Navbar />
 
-      <section className="relative pt-40 pb-20 px-6 max-w-[1200px] mx-auto min-h-screen flex items-center">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 w-full">
+      <section className="relative pt-32 pb-16 md:pt-40 md:pb-20 px-6 max-w-[1200px] mx-auto min-h-screen flex items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 w-full">
           <div>
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-3 px-5 py-2 mb-8 rounded-full bg-slate-50 border border-slate-100 shadow-sm w-fit">
               <MessageSquare size={14} className="text-med-green" />
               <span className="text-[10px] font-bold uppercase tracking-widest text-[#111]">Get in touch</span>
             </motion.div>
-            <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="text-5xl md:text-7xl font-black text-[#111] tracking-tighter leading-[0.95] mb-6">
+            <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="text-5xl md:text-6xl lg:text-7xl font-black text-[#111] tracking-tighter leading-[0.95] mb-6">
               Contact our <br /> <span className="text-fern inline-block">Clinical Team.</span>
             </motion.h1>
             <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="text-xl text-muted-foreground font-medium mb-12 max-w-md">
@@ -71,10 +71,10 @@ export default function Contact() {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label className="block text-xs font-bold tracking-widest uppercase text-muted-foreground mb-3">Your Name</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   value={formData.name}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   required
                   className="w-full bg-slate-50 border border-border/50 rounded-2xl px-6 py-4 focus:outline-none focus:border-fern focus:ring-1 focus:ring-fern transition-all"
                   placeholder="John Doe"
@@ -82,10 +82,10 @@ export default function Contact() {
               </div>
               <div>
                 <label className="block text-xs font-bold tracking-widest uppercase text-muted-foreground mb-3">Email Address</label>
-                <input 
-                  type="email" 
+                <input
+                  type="email"
                   value={formData.email}
-                  onChange={(e) => setFormData({...formData, email: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   required
                   className="w-full bg-slate-50 border border-border/50 rounded-2xl px-6 py-4 focus:outline-none focus:border-fern focus:ring-1 focus:ring-fern transition-all"
                   placeholder="john@example.com"
@@ -93,17 +93,17 @@ export default function Contact() {
               </div>
               <div>
                 <label className="block text-xs font-bold tracking-widest uppercase text-muted-foreground mb-3">Message</label>
-                <textarea 
+                <textarea
                   rows={4}
                   value={formData.message}
-                  onChange={(e) => setFormData({...formData, message: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                   required
                   className="w-full bg-slate-50 border border-border/50 rounded-2xl px-6 py-4 focus:outline-none focus:border-fern focus:ring-1 focus:ring-fern transition-all resize-none"
                   placeholder="How can we help you?"
                 />
               </div>
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 disabled={loading}
                 className="w-full bg-foreground text-white rounded-full py-5 font-bold uppercase tracking-widest text-sm flex items-center justify-center gap-3 hover:bg-fern hover:text-obsidian transition-all shadow-xl disabled:opacity-50"
               >

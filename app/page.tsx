@@ -57,7 +57,7 @@ export default function Home() {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative pt-36 pb-32 px-10 flex flex-col items-center justify-center text-center overflow-hidden">
+      <section className="relative pt-32 pb-20 md:pt-36 md:pb-32 px-4 md:px-10 flex flex-col items-center justify-center text-center overflow-hidden">
         {/* Abstract background blur */}
         <div className="absolute top-[10%] left-[-10%] w-[500px] h-[500px] bg-med-blue/10 rounded-full blur-[120px] pointer-events-none" />
         <div className="absolute bottom-[10%] right-[-10%] w-[500px] h-[500px] bg-med-purple/10 rounded-full blur-[120px] pointer-events-none" />
@@ -77,45 +77,45 @@ export default function Home() {
 
           <motion.h1
             variants={fadeIn}
-            className="text-5xl md:text-7xl lg:text-[6.5rem] font-bold tracking-tighter text-foreground mb-8 leading-[0.95] text-[#111]"
+            className="text-5xl sm:text-6xl md:text-7xl lg:text-[6.5rem] font-bold tracking-tighter text-foreground mb-6 md:mb-8 leading-[0.95] text-[#111]"
           >
             Own Your<br />Genetic Destiny.
           </motion.h1>
 
           <motion.p
             variants={fadeIn}
-            className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-12 leading-relaxed font-semibold opacity-60"
+            className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-10 md:mb-12 leading-relaxed font-semibold opacity-60 px-2"
           >
             Secure, sovereign genomic data management for the modern era.
             Carry your biological heritage anywhere, protected by decentralized encryption.
           </motion.p>
 
-          <motion.div variants={fadeIn} className="flex gap-10 items-center justify-center mb-16">
-            <div className="flex flex-col items-center">
-              <span className="text-3xl font-bold tracking-tighter">100%</span>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Sovereign</span>
+          <motion.div variants={fadeIn} className="flex flex-wrap md:flex-nowrap gap-6 md:gap-10 items-center justify-center mb-16 px-4">
+            <div className="flex flex-col items-center w-[40%] md:w-auto">
+              <span className="text-2xl sm:text-3xl font-bold tracking-tighter">100%</span>
+              <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-center">Sovereign</span>
             </div>
-            <div className="w-[1px] h-12 bg-border" />
-            <div className="flex flex-col items-center">
-              <span className="text-3xl font-bold tracking-tighter">Hedera</span>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Powered Network</span>
+            <div className="w-[1px] h-12 bg-border hidden md:block" />
+            <div className="flex flex-col items-center w-[40%] md:w-auto">
+              <span className="text-2xl sm:text-3xl font-bold tracking-tighter">Hedera</span>
+              <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-center">Powered Network</span>
             </div>
-            <div className="w-[1px] h-12 bg-border" />
-            <div className="flex flex-col items-center">
-              <span className="text-3xl font-bold tracking-tighter">IPFS</span>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Encrypted Storage</span>
+            <div className="w-[1px] h-12 bg-border hidden md:block" />
+            <div className="flex flex-col items-center w-full md:w-auto mt-2 md:mt-0">
+              <span className="text-2xl sm:text-3xl font-bold tracking-tighter">IPFS</span>
+              <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-center">Encrypted Storage</span>
             </div>
           </motion.div>
         </motion.div>
 
         {/* Bento Grid Features */}
-        <div className="w-full max-w-[1440px] mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 px-6 mb-20">
+        <div className="w-full max-w-[1440px] mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 px-4 sm:px-6 mb-16 sm:mb-20">
           {/* Card 1 - Unified proportions rounded-[2.5rem] */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="group relative overflow-hidden rounded-[2.5rem] bg-med-blue aspect-[4/5] p-10 flex flex-col justify-between text-white shadow-2xl hover:-translate-y-2 transition-transform duration-500"
+            className="group relative overflow-hidden rounded-[2rem] sm:rounded-[2.5rem] bg-med-blue aspect-[4/5] p-8 sm:p-10 flex flex-col justify-between text-white shadow-2xl hover:-translate-y-2 transition-transform duration-500"
           >
             <div className="flex justify-between items-start relative z-10">
               <span className="text-[11px] font-bold uppercase tracking-widest opacity-80">Biological Vault</span>
@@ -144,7 +144,7 @@ export default function Home() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
-            className="group relative overflow-hidden rounded-[2.5rem] bg-med-green aspect-[4/5] p-10 flex flex-col justify-between text-white shadow-2xl hover:-translate-y-2 transition-transform duration-500"
+            className="group relative overflow-hidden rounded-[2rem] sm:rounded-[2.5rem] bg-med-green aspect-[4/5] p-8 sm:p-10 flex flex-col justify-between text-white shadow-2xl hover:-translate-y-2 transition-transform duration-500"
           >
             <div className="flex justify-between items-start relative z-10">
               <span className="text-[11px] font-bold uppercase tracking-widest opacity-80">Clinical Network</span>
@@ -173,7 +173,7 @@ export default function Home() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
-            className="group relative overflow-hidden rounded-[2.5rem] bg-med-tan aspect-[4/5] p-10 flex flex-col justify-between text-white shadow-2xl hover:-translate-y-2 transition-transform duration-500"
+            className="group relative overflow-hidden rounded-[2rem] sm:rounded-[2.5rem] bg-med-tan aspect-[4/5] p-8 sm:p-10 flex flex-col justify-between text-white shadow-2xl hover:-translate-y-2 transition-transform duration-500"
           >
             <div className="flex justify-between items-start relative z-10">
               <span className="text-[11px] font-bold uppercase tracking-widest opacity-80">Encryption Layer</span>
@@ -202,7 +202,7 @@ export default function Home() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.3 }}
-            className="group relative overflow-hidden rounded-[2.5rem] bg-med-purple aspect-[4/5] p-10 flex flex-col justify-between text-white shadow-2xl hover:-translate-y-2 transition-transform duration-500"
+            className="group relative overflow-hidden rounded-[2rem] sm:rounded-[2.5rem] bg-med-purple aspect-[4/5] p-8 sm:p-10 flex flex-col justify-between text-white shadow-2xl hover:-translate-y-2 transition-transform duration-500"
           >
             <div className="flex justify-between items-start relative z-10">
               <span className="text-[11px] font-bold uppercase tracking-widest opacity-80">Global Portability</span>
@@ -229,22 +229,22 @@ export default function Home() {
         </div>
 
         {/* Final CTA Section */}
-        <section className="w-full max-w-[1440px] mx-auto px-6 mb-32 mt-20">
+        <section className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 mb-24 md:mb-32 mt-16 md:mt-20">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
-            className="rounded-[3rem] p-16 md:p-24 bg-indigo-50 border border-indigo-100 flex flex-col md:flex-row items-center justify-between gap-12 group"
+            className="rounded-[2rem] md:rounded-[3rem] p-8 md:p-24 bg-indigo-50 border border-indigo-100 flex flex-col md:flex-row items-center justify-between gap-8 md:gap-12 group text-center md:text-left"
           >
             <div className="max-w-xl">
               <h2 className="text-4xl md:text-6xl font-black text-indigo-950 tracking-tighter leading-[1] mb-6">
                 Ready to secure your biological legacy?
               </h2>
-              <p className="text-xl text-indigo-900/60 font-medium leading-relaxed">
+              <p className="text-lg md:text-xl text-indigo-900/60 font-medium leading-relaxed">
                 Join the protocol. Decentralize your health records and access precision medical AI without compromising privacy.
               </p>
             </div>
-            <Link href="/sign-up" className="px-10 py-6 rounded-full bg-indigo-600 text-white font-bold uppercase tracking-widest text-sm flex items-center gap-4 hover:bg-indigo-700 hover:scale-105 active:scale-95 transition-all shadow-xl whitespace-nowrap">
+            <Link href="/sign-up" className="px-8 py-4 sm:px-10 sm:py-6 rounded-full bg-indigo-600 text-white font-bold uppercase tracking-widest text-xs sm:text-sm flex items-center justify-center gap-3 sm:gap-4 hover:bg-indigo-700 hover:scale-105 active:scale-95 transition-all shadow-xl whitespace-normal text-center min-w-[200px]">
               Initialize Vault <ArrowRight size={20} />
             </Link>
           </motion.div>
@@ -252,20 +252,20 @@ export default function Home() {
       </section>
 
       {/* Social Proof / Trust - Smooth Reveal */}
-      <section className="py-40 border-y border-border bg-[#fdfdfd]">
+      <section className="py-20 md:py-40 border-y border-border bg-[#fdfdfd]">
         <motion.div
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
           variants={fadeIn}
-          className="max-w-[1400px] mx-auto px-10"
+          className="max-w-[1400px] mx-auto px-6 md:px-10"
         >
-          <div className="flex flex-col lg:flex-row items-center justify-between gap-24">
+          <div className="flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-24">
             <div className="max-w-md text-center lg:text-left">
-              <h3 className="text-4xl font-bold tracking-tight mb-4">Strategic Clinical Partners.</h3>
+              <h3 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">Strategic Clinical Partners.</h3>
               <p className="text-muted-foreground font-semibold leading-relaxed opacity-60">Integrated with leading institutions to ensure compliance and robust genomic data security.</p>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-16 opacity-30 grayscale hover:grayscale-0 transition-all duration-700">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-16 opacity-30 grayscale hover:grayscale-0 transition-all duration-700 w-full lg:w-auto">
               <div className="flex flex-col items-center group">
                 <span className="text-2xl font-black italic tracking-tighter uppercase group-hover:text-indigo-600 transition-colors">BioTrust</span>
               </div>
@@ -284,25 +284,25 @@ export default function Home() {
       </section>
 
       {/* Footer - Professional Dark Contrast */}
-      <footer className="py-24 bg-foreground text-white border-t border-white/5 mt-0">
-        <div className="max-w-[1440px] mx-auto px-10">
-          <div className="flex flex-col lg:flex-row justify-between items-start gap-20 mb-20">
+      <footer className="py-16 md:py-24 bg-foreground text-white border-t border-white/5 mt-0">
+        <div className="max-w-[1440px] mx-auto px-6 md:px-10">
+          <div className="flex flex-col lg:flex-row justify-between items-start gap-12 lg:gap-20 mb-12 lg:mb-20">
             <div className="max-w-md">
-              <div className="flex items-center gap-3 mb-10">
+              <div className="flex items-center gap-3 mb-8 md:mb-10">
                 <div className="w-10 h-10 rounded-xl bg-fern flex items-center justify-center text-white font-bold text-sm shadow-sm transition-transform hover:scale-110">AZ</div>
                 <span className="text-white font-bold tracking-tight text-3xl uppercase">genes</span>
               </div>
-              <p className="text-white/60 text-lg font-semibold leading-relaxed">
+              <p className="text-white/60 text-base md:text-lg font-semibold leading-relaxed">
                 The global infrastructure for biological data sovereignty. Built for individuals, refined for institutions.
               </p>
-              <div className="flex gap-4 mt-12">
+              <div className="flex gap-4 mt-8 md:mt-12">
                 <div className="w-11 h-11 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all cursor-pointer shadow-sm"><Smartphone size={20} /></div>
                 <div className="w-11 h-11 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all cursor-pointer shadow-sm"><Dna size={20} /></div>
                 <div className="w-11 h-11 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-all cursor-pointer shadow-sm"><Shield size={20} /></div>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-24">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-10 sm:gap-16 lg:gap-24 w-full lg:w-auto">
               <div>
                 <h5 className="font-bold text-xs mb-10 uppercase tracking-[0.3em] text-white/40">Infrastructure</h5>
                 <ul className="space-y-6 text-[14px] font-bold text-white/60">
@@ -330,9 +330,9 @@ export default function Home() {
               </div>
             </div>
           </div>
-          <div className="pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center text-[11px] font-bold text-white/30 gap-6">
-            <span className="tracking-[0.2em] uppercase">© 2026 AZ Genes Protocol | Clinical Grade Heritage Protection</span>
-            <div className="flex gap-12">
+          <div className="pt-8 md:pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center text-[10px] sm:text-[11px] font-bold text-white/30 gap-6 text-center md:text-left">
+            <span className="tracking-[0.1em] md:tracking-[0.2em] uppercase">© 2026 AZ Genes Protocol | Clinical Grade Heritage Protection</span>
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-8 md:gap-12 items-center">
               <span className="hover:text-white cursor-pointer uppercase transition-colors tracking-widest">Privacy Protocol</span>
               <span className="hover:text-white cursor-pointer uppercase transition-colors tracking-widest">Node Terms</span>
               <span className="text-med-green uppercase tracking-widest">Network Synchronized</span>

@@ -233,7 +233,7 @@ const Dashboard = () => {
       {/* Main Content */}
       <main className="flex-1 flex flex-col relative overflow-hidden bg-[#fdfdfd]">
         {/* Header - Bright */}
-        <header className="h-20 bg-white border-b border-border px-8 flex items-center justify-between z-40 sticky top-0 shadow-sm">
+        <header className="h-20 bg-white border-b border-border px-4 md:px-8 flex items-center justify-between z-40 sticky top-0 shadow-sm">
           <div className="flex items-center gap-4 text-sm font-semibold">
             <span className="text-muted-foreground capitalize">{activeTab === 'overview' ? 'Sovereign Console' : activeTab}</span>
             <ChevronRight size={14} className="text-muted-foreground" />
@@ -268,7 +268,7 @@ const Dashboard = () => {
         </header>
 
         {/* Dashboard Content */}
-        <div className="flex-1 overflow-y-auto p-10 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto p-4 md:p-10 custom-scrollbar">
           <motion.div
             variants={containerVariants}
             initial="hidden"

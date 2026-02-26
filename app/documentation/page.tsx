@@ -34,16 +34,16 @@ export default function Documentation() {
             <BookOpen size={14} className="text-indigo-600" />
             <span className="text-[10px] font-bold uppercase tracking-widest text-[#111]">Technical Documentation</span>
           </motion.div>
-          <motion.h1 variants={fadeIn} className="text-5xl md:text-7xl font-black text-[#111] tracking-tighter leading-[0.95] mb-6">
+          <motion.h1 variants={fadeIn} className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-[#111] tracking-tighter leading-[0.95] mb-6">
             Protocol Docs <br />& Developer Resources.
           </motion.h1>
-          <motion.p variants={fadeIn} className="text-xl text-muted-foreground font-medium max-w-2xl mb-16">
+          <motion.p variants={fadeIn} className="text-lg md:text-xl text-muted-foreground font-medium max-w-2xl mb-16">
             Detailed API endpoints, SDK integrations, and technical research about the AZ Genes decentralization and medical analysis protocol.
           </motion.p>
         </motion.div>
 
         <motion.div initial="hidden" animate="visible" variants={stagger} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          
+
           {/* Doc Card */}
           <motion.div variants={fadeIn} className="p-8 glass-panel bg-white/50 border border-border shadow-sm rounded-3xl group hover:shadow-xl hover:border-indigo-100 transition-all cursor-pointer flex flex-col justify-between">
             <div>

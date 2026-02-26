@@ -49,9 +49,9 @@ export default function HowItWorks() {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative pt-40 pb-20 px-10 flex flex-col items-center justify-center text-center overflow-hidden">
-        <div className="absolute top-[10%] left-[-10%] w-[500px] h-[500px] bg-fern/10 rounded-full blur-[120px] pointer-events-none" />
-        
+      <section className="relative pt-32 pb-16 md:pt-40 md:pb-20 px-6 flex flex-col items-center justify-center text-center overflow-hidden">
+        <div className="absolute top-[10%] left-[-10%] w-[300px] h-[300px] md:w-[500px] md:h-[500px] bg-fern/10 rounded-full blur-[120px] pointer-events-none" />
+
         <motion.div
           initial="hidden"
           animate="visible"
@@ -62,15 +62,15 @@ export default function HowItWorks() {
             <Zap size={14} className="text-fern" />
             <span className="text-[10px] font-bold uppercase tracking-widest text-[#111]">The AZ Protocol</span>
           </motion.div>
-          <motion.h1 
+          <motion.h1
             variants={fadeIn}
-            className="text-6xl md:text-8xl font-black text-[#111] tracking-tighter leading-[0.95] mb-8"
+            className="text-5xl md:text-7xl lg:text-8xl font-black text-[#111] tracking-tighter leading-[0.95] mb-8"
           >
             How it <span className="text-fern relative inline-block">works.<div className="absolute -bottom-2 left-0 w-full h-[8px] bg-fern/20 rounded-full"></div></span>
           </motion.h1>
-          <motion.p 
+          <motion.p
             variants={fadeIn}
-            className="text-xl md:text-2xl text-muted-foreground max-w-2xl font-medium leading-relaxed"
+            className="text-lg md:text-xl lg:text-2xl text-muted-foreground max-w-2xl font-medium leading-relaxed px-4"
           >
             A sovereign infrastructure for your biological data. Explore the encrypted pipeline from sequence upload to infinite secure storage.
           </motion.p>
@@ -80,7 +80,7 @@ export default function HowItWorks() {
       {/* Detailed Graphic / Interactive Infographic Section */}
       <section className="py-20 relative">
         <div className="max-w-[1200px] mx-auto px-6">
-          <div className="relative glass-panel rounded-[3rem] p-12 md:p-24 border border-border shadow-2xl bg-white/50 backdrop-blur-2xl overflow-hidden">
+          <div className="relative glass-panel rounded-[2rem] md:rounded-[3rem] p-8 md:p-24 border border-border shadow-xl md:shadow-2xl bg-white/50 backdrop-blur-2xl overflow-hidden">
             {/* Background glowing line */}
             <div className="absolute top-[50%] left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-fern to-transparent opacity-20 hidden md:block" />
 
@@ -131,7 +131,7 @@ export default function HowItWorks() {
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-6">Engineered for absolute privacy.</h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">We use zero-knowledge principles. We cannot read your genetic data, meaning it can never be sold, mined, or compromised.</p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="p-10 bg-white rounded-[2rem] border border-border shadow-sm hover:shadow-xl transition-all">
               <Lock size={32} className="text-indigo-600 mb-6" />
