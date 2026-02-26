@@ -23,6 +23,7 @@
     "@iconify/react": "^6.0.2",
     "@supabase/supabase-js": "^2.77.0",
     "@types/jest": "^30.0.0",
+    "@vercel/analytics": "^1.6.1",
     "clsx": "^2.1.1",
     "ethers": "^6.15.0",
     "firebase-admin": "^13.0.0",

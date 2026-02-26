@@ -6,7 +6,7 @@ import { AuthContext, corsHeaders } from './utils';
 import { withAuth } from './middleware/auth';
 
 const encryptionService = new EncryptionService();
-const hederaClient = new HederaClient();
+const getHederaClient = () => new HederaClient();
 const ipfsClient = new IPFSClient();
 const TOPIC_ID = process.env.HEDERA_TOPIC_ID ?? '';
 
@@ -120,7 +120,7 @@ async function handleFileUpload(req: Request, context: AuthContext): Promise<Res
     const ipfsCid = await ipfsClient.uploadFile(encryptedData, fileName);
 
     // Submit hash to Hedera
-    const hederaTxId = await hederaClient.submitHash(TOPIC_ID, hash);
+    const hederaTxId = await getHederaClient().submitHash(TOPIC_ID, hash);
 
     // Save file metadata
     const fileMetadata: Partial<FileMetadata> = {

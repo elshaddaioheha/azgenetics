@@ -3,7 +3,7 @@ import { AuthContext, corsHeaders } from './utils';
 import { withAuth } from './middleware/auth';
 import { AccountId, TokenId } from '@hashgraph/sdk';
 
-const hederaClient = new HederaClient();
+const getHederaClient = () => new HederaClient();
 
 interface MintNFTCertificateRequest {
   fileId: string;
@@ -67,7 +67,7 @@ async function handleMintNFTCertificate(req: Request, context: AuthContext): Pro
     // Get the NFT collection token ID from environment or create one
     // For simplicity, we'll assume a collection token ID exists in env
     const collectionTokenId = process.env.HEDERA_NFT_COLLECTION_TOKEN_ID;
-    
+
     if (!collectionTokenId) {
       throw new Error('NFT collection not configured. Please set HEDERA_NFT_COLLECTION_TOKEN_ID');
     }
@@ -93,7 +93,7 @@ async function handleMintNFTCertificate(req: Request, context: AuthContext): Pro
     const metadataBytes = new TextEncoder().encode(JSON.stringify(nftMetadata));
 
     // Mint NFT on Hedera
-    const serialNumber = await hederaClient.mintNFTCertificate(tokenId, metadataBytes);
+    const serialNumber = await getHederaClient().mintNFTCertificate(tokenId, metadataBytes);
 
     // Get operator account for storing transaction info
     const operatorId = AccountId.fromString(process.env.HEDERA_OPERATOR_ID || '');
@@ -148,7 +148,7 @@ async function handleMintNFTCertificate(req: Request, context: AuthContext): Pro
     const message = error instanceof Error ? error.message : 'Unknown error';
     const statusCode = error instanceof Error && message.includes('Unauthorized') ? 403 : 500;
 
-    return new Response(JSON.stringify({ 
+    return new Response(JSON.stringify({
       error: message,
       code: error instanceof Error ? error.name : 'UnknownError'
     }), {
