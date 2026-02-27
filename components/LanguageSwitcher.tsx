@@ -28,6 +28,7 @@ export default function LanguageSwitcher() {
                 <option value="en">EN</option>
                 <option value="de">DE</option>
                 <option value="fr">FR</option>
+                <option value="es">ES</option>
             </select>
         </div>
     );
