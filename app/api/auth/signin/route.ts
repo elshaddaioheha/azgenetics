@@ -92,17 +92,23 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Check if email is verified
+        // Fetch profile for role and email_verified status
         const { data: profile } = await supabase
             .from('profiles')
             .select('email_verified, user_role')
             .eq('id', authData.user.id)
             .single();
 
-        if (!profile?.email_verified) {
+        // Accept if either: our profiles table has email_verified=true,
+        // OR Supabase Auth has confirmed the email (email_confirmed_at is set).
+        // This handles the race condition where verifyOtp sets the Supabase session
+        // before our RPC has a chance to update profiles.email_verified.
+        const isVerified = profile?.email_verified || !!authData.user.email_confirmed_at;
+
+        if (!isVerified) {
             return NextResponse.json(
                 {
-                    error: 'Email not verified',
+                    error: 'Email not verified. Please check your inbox for the verification code.',
                     requiresVerification: true,
                 },
                 { status: 403 }

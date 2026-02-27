@@ -145,16 +145,25 @@ const SignUp: React.FC = () => {
             const data = await response.json();
             if (!response.ok) throw new Error(data.error || 'Verification failed');
 
-            const signInResponse = await fetch('/api/auth/signin', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: formData.email, password: formData.password }),
-            });
-
-            if (signInResponse.ok) {
-                const dashboardPath = formData.role === 'patient' ? '/dashboard' : `/dashboard/${formData.role}`;
-                router.push(dashboardPath);
+            // verifyOtp establishes a Supabase session on the server.
+            // If a session came back, set it in the browser client.
+            if (data.session) {
+                const { createClient } = await import('@supabase/supabase-js');
+                const supabase = createClient(
+                    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+                    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+                );
+                await supabase.auth.setSession({
+                    access_token: data.session.access_token,
+                    refresh_token: data.session.refresh_token,
+                });
             }
+
+            // Redirect to the correct role-specific dashboard
+            const dashboardPath = formData.role === 'patient'
+                ? '/en/dashboard'
+                : `/en/dashboard/${formData.role}`;
+            router.push(dashboardPath);
         } catch (err: any) {
             setError(err.message);
         } finally {
