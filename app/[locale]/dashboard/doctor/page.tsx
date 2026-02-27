@@ -43,6 +43,7 @@ import { DataItem, TokenTransaction, AccessRequest } from '@/types/dashboard';
 import { TransactionStatusModal, TransactionStatus } from '@/components/TransactionStatusModal';
 import { PrivateDataAccessPanel } from '@/components/dashboard/doctor/PrivateDataAccessPanel';
 import { DataItemRow } from '@/components/dashboard/doctor/DataItemRow';
+import { AdvancedWalletPanel } from '@/components/dashboard/AdvancedWalletPanel';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -277,7 +278,7 @@ const AZGenesDashboard = () => {
       >
         <div className="p-6 h-20 mb-4 flex items-center justify-between border-b border-border">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-indigo-500 flex items-center justify-center text-white font-bold text-xs">
+            <div className="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center text-white font-bold text-xs">
               AZ
             </div>
             {sidebarOpen && (
@@ -304,31 +305,32 @@ const AZGenesDashboard = () => {
               key={item.id}
               onClick={() => setActiveTab(item.id)}
               className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all ${activeTab === item.id
-                ? 'bg-indigo-50 text-indigo-600'
+                ? 'bg-emerald-50 text-emerald-600'
                 : 'text-muted-foreground hover:bg-slate-50 hover:text-foreground'
                 }`}
             >
-              <item.icon size={20} className={activeTab === item.id ? 'text-indigo-600' : ''} />
+              <item.icon size={20} className={activeTab === item.id ? 'text-emerald-600' : ''} />
               {sidebarOpen && <span>{item.name}</span>}
             </button>
           ))}
         </nav>
 
         {/* Node Status */}
-        {sidebarOpen && userProfile?.hedera_account_id && (
-          <div className="p-6 border-t border-border">
-            <div className="bg-slate-50 border border-slate-100 p-4 rounded-2xl group hover:border-fern transition-all">
+        {sidebarOpen && (
+          <div className="p-6 border-t border-border space-y-4">
+            <div className="bg-slate-50 border border-slate-100 p-4 rounded-2xl group hover:border-emerald-200 transition-all">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Node Status</span>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Identity</span>
                   <div className="w-1.5 h-1.5 rounded-full bg-med-green animate-pulse"></div>
                 </div>
-                <span className="text-[10px] font-bold text-med-green">ONLINE</span>
+                <span className="text-[10px] font-bold text-med-green">ACTIVE</span>
               </div>
-              <div className="text-[10px] font-bold text-slate-500 truncate">
-                {userProfile.hedera_account_id}
+              <div className="text-[10px] font-bold text-slate-500">
+                Verified & Secure
               </div>
             </div>
+            <AdvancedWalletPanel hederaAccountId={userProfile?.hedera_account_id} />
           </div>
         )}
       </motion.aside>
@@ -338,7 +340,7 @@ const AZGenesDashboard = () => {
         <header className="h-20 flex items-center justify-between px-8 border-b border-border bg-white sticky top-0 z-20 shadow-sm">
           <div className="flex flex-col">
             <div className="flex items-center gap-2 mb-0.5">
-              <ShieldCheck size={14} className="text-indigo-600" />
+              <ShieldCheck size={14} className="text-emerald-600" />
               <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">Protocol Lead Cluster v2.4</span>
             </div>
             <h1 className="text-xl font-bold text-foreground tracking-tight">
@@ -370,9 +372,9 @@ const AZGenesDashboard = () => {
               <div className="flex items-center gap-4 pl-6 border-l border-border">
                 <div className="text-right">
                   <p className="text-sm font-bold leading-none mb-1">{user?.user_metadata?.full_name || 'Medical Lead'}</p>
-                  <p className="text-[10px] text-indigo-600 font-bold uppercase tracking-wider">Protocol Specialist</p>
+                  <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-wider">Protocol Specialist</p>
                 </div>
-                <div className="w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold shadow-sm hover:scale-105 transition-all cursor-pointer">
+                <div className="w-10 h-10 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold shadow-sm hover:scale-105 transition-all cursor-pointer">
                   {(user?.user_metadata?.full_name?.[0] || user?.email?.[0] || 'D').toUpperCase()}
                 </div>
               </div>
@@ -425,10 +427,10 @@ const AZGenesDashboard = () => {
                       <div className="bg-white border border-border rounded-[2.5rem] shadow-sm overflow-hidden flex-1">
                         <div className="p-8 border-b border-border flex items-center justify-between">
                           <div className="flex items-center gap-3">
-                            <div className="p-2 bg-indigo-50 rounded-lg text-indigo-600"><Activity size={20} /></div>
+                            <div className="p-2 bg-indigo-50 rounded-lg text-emerald-600"><Activity size={20} /></div>
                             <h3 className="text-xl font-bold tracking-tight">Active Clinical Assets</h3>
                           </div>
-                          <button onClick={() => setActiveTab('data')} className="text-sm font-bold text-indigo-600 hover:underline">Full Analytics</button>
+                          <button onClick={() => setActiveTab('data')} className="text-sm font-bold text-emerald-600 hover:underline">Full Analytics</button>
                         </div>
                         <div className="overflow-x-auto">
                           <table className="w-full text-left">
@@ -502,7 +504,7 @@ const AZGenesDashboard = () => {
                     <button
                       onClick={handleUploadClick}
                       disabled={isUploading}
-                      className="h-14 px-8 rounded-full bg-foreground text-white text-xs font-bold uppercase tracking-widest flex items-center gap-3 hover:bg-indigo-600 transition-all shadow-md disabled:opacity-50"
+                      className="h-14 px-8 rounded-full bg-foreground text-white text-xs font-bold uppercase tracking-widest flex items-center gap-3 hover:bg-emerald-600 transition-all shadow-md disabled:opacity-50"
                     >
                       {isUploading ? <Spinner size="sm" /> : <Plus size={20} />}
                       {isUploading ? 'Replicating...' : 'Ingest Asset'}
@@ -546,14 +548,14 @@ const AZGenesDashboard = () => {
               {['tokens', 'sharing', 'nft', 'analytics', 'subscriptions', 'settings'].includes(activeTab) && (
                 <motion.div variants={itemVariants} className="flex items-center justify-center py-20">
                   <div className="bg-white border border-border rounded-[3rem] p-20 text-center max-w-2xl shadow-sm group">
-                    <div className="w-24 h-24 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-300 mx-auto mb-10 group-hover:text-indigo-600 transition-colors">
+                    <div className="w-24 h-24 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-300 mx-auto mb-10 group-hover:text-emerald-600 transition-colors">
                       <Lock size={40} />
                     </div>
                     <h3 className="text-2xl font-bold tracking-tight mb-4 capitalize">{activeTab} module restricted</h3>
                     <p className="text-sm font-semibold text-muted-foreground max-w-sm mx-auto mb-10 leading-relaxed">
                       Access to this clinical sub-module requires elevated protocol clearance.
                     </p>
-                    <button className="px-10 py-4 rounded-full bg-foreground text-white text-xs font-bold uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-lg">
+                    <button className="px-10 py-4 rounded-full bg-foreground text-white text-xs font-bold uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-lg">
                       Verify credentials
                     </button>
                   </div>

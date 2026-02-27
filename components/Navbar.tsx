@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link';
+import { Link } from '@/i18n/routing';
 import { User, ArrowRight, Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import LanguageSwitcher from './LanguageSwitcher';
 
 export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -38,6 +39,7 @@ export default function Navbar() {
             Initialize Vault
             <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
           </Link>
+          <LanguageSwitcher />
         </div>
 
         {/* Mobile Menu Toggle */}
@@ -72,6 +74,9 @@ export default function Navbar() {
                 Initialize Vault
                 <ArrowRight size={16} />
               </Link>
+            </div>
+            <div className="flex justify-center mt-4">
+              <LanguageSwitcher />
             </div>
           </motion.div>
         )}

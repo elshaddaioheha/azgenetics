@@ -4,16 +4,17 @@ import {
     Activity,
     FileText,
     Lock,
-    Award,
-    PlusCircle,
     Key,
     Database,
     Eye,
     Share2,
-    RefreshCw
+    RefreshCw,
+    CheckCircle2
 } from 'lucide-react';
 import Spinner from '@/components/ui/Spinner';
 import { DataItem } from '@/types/dashboard';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 interface DataItemRowProps {
     item: DataItem;
@@ -43,10 +44,10 @@ export const DataItemRow: React.FC<DataItemRowProps> = ({
                         <div className="text-sm font-black text-white group-hover:text-fern transition-colors flex items-center gap-4 uppercase tracking-tight italic">
                             {item.name}
                             {item.isPrivate && (
-                                <span className="bg-white/5 text-white/40 text-[9px] px-3 py-1 rounded-full border border-white/10 font-black uppercase tracking-[0.2em] flex items-center gap-2 italic">
+                                <Badge variant="outline" className="bg-white/5 text-white/40 text-[9px] px-3 py-1 rounded-full border border-white/10 font-black uppercase tracking-[0.2em] flex items-center gap-2 italic">
                                     <Lock size={10} />
                                     Restricted
-                                </span>
+                                </Badge>
                             )}
                         </div>
                         <div className="text-[9px] text-white/20 uppercase tracking-[0.3em] font-black mt-2 italic font-mono">{item.accessCount || 0} Telemetry Logs Syncing</div>
@@ -54,38 +55,41 @@ export const DataItemRow: React.FC<DataItemRowProps> = ({
                 </div>
             </td>
             <td className="px-8 py-6 whitespace-nowrap">
-                <span className="inline-flex items-center px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-[0.3em] bg-fern/10 text-fern border border-fern/20 italic">
+                <Badge className="px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-[0.3em] bg-fern/10 text-fern hover:bg-fern/20 border border-fern/20 italic">
                     {item.type}
-                </span>
+                </Badge>
             </td>
             <td className="px-8 py-6 whitespace-nowrap text-[10px] text-white/40 font-black tracking-[0.2em] uppercase italic font-mono">{item.date}</td>
             <td className="px-8 py-6 whitespace-nowrap text-[10px] text-white/40 font-black tracking-[0.2em] uppercase italic font-mono">{item.size}</td>
             <td className="px-8 py-6 whitespace-nowrap">
                 {item.nftCertified ? (
-                    <div className="flex items-center gap-3 text-fern">
-                        <Award size={18} className="animate-pulse shadow-[0_0_10px_#A7C7AB]" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.3em] italic">V_CERTIFIED</span>
+                    <div className="flex items-center gap-3 text-emerald-600">
+                        <CheckCircle2 size={18} className="animate-pulse" />
+                        <span className="text-[10px] font-black uppercase tracking-[0.3em] italic">Certified</span>
                     </div>
                 ) : (
-                    <button
+                    <Button
+                        variant="ghost"
                         onClick={() => onMintNFT(item.id)}
                         disabled={mintingFileId === item.id}
                         className="text-white/20 hover:text-fern text-[9px] font-black uppercase tracking-[0.3em] transition-all disabled:opacity-30 flex items-center gap-3 group/mint"
+                        title="Issue a tamper-proof integrity certificate for this file"
                     >
                         {mintingFileId === item.id ? <Spinner size="sm" /> : <RefreshCw size={16} className="group-hover/mint:rotate-180 transition-transform duration-700" />}
-                        {mintingFileId === item.id ? 'STAMPING' : 'SEAL_PROOF'}
-                    </button>
+                        {mintingFileId === item.id ? 'Certifying…' : 'Certify'}
+                    </Button>
                 )}
             </td>
             <td className="px-8 py-6 whitespace-nowrap text-right">
                 {item.isPrivate && !isPrivateDataUnlocked ? (
-                    <button
+                    <Button
+                        variant="secondary"
                         onClick={onUnlockPrivateData}
-                        className="text-white bg-white/5 border border-white/10 px-6 py-3 rounded-2xl text-[9px] font-black uppercase tracking-[0.3em] flex items-center gap-3 ml-auto hover:bg-fern hover:text-obsidian hover:border-fern transition-all shadow-xl"
+                        className="bg-white/5 border border-white/10 px-6 py-6 rounded-2xl text-[9px] font-black uppercase tracking-[0.3em] ml-auto hover:bg-fern hover:text-obsidian hover:border-fern transition-all shadow-xl"
                     >
-                        <Key size={14} />
+                        <Key size={14} className="mr-3" />
                         Decrypt_Node
-                    </button>
+                    </Button>
                 ) : (
                     <div className="flex items-center justify-end gap-5 opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0">
                         <button className="p-3 rounded-2xl bg-white/5 border border-white/10 text-white/20 hover:text-fern hover:border-fern transition-all hover:scale-110 shadow-inner" title="Share">

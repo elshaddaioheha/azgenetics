@@ -2,6 +2,13 @@ import { Resend } from 'resend';
 
 const getResend = () => new Resend(process.env.RESEND_API_KEY);
 
+// In development, Resend only allows sending FROM their test domain.
+// Your real domain (azgenes.com) must be verified in Resend for production.
+const FROM_ADDRESS =
+  process.env.NODE_ENV === 'development'
+    ? 'AZ-Genes <onboarding@resend.dev>'          // Resend sandbox — no domain verification needed
+    : `AZ-Genes <${process.env.EMAIL_FROM ?? 'noreply@azgenes.com'}>`; // Production verified domain
+
 interface SendOTPEmailParams {
   to: string;
   code: string;
@@ -11,7 +18,7 @@ interface SendOTPEmailParams {
 export async function sendOTPEmail({ to, code, userName }: SendOTPEmailParams) {
   try {
     const { data, error } = await getResend().emails.send({
-      from: 'AZ-Genes <noreply@azgenes.com>', // Update with your verified domain
+      from: FROM_ADDRESS,
       to: [to],
       subject: 'Verify your email address',
       html: getOTPEmailTemplate(code, userName),

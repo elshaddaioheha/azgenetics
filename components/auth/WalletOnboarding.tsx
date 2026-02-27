@@ -87,7 +87,7 @@ const WalletOnboarding: React.FC<WalletOnboardingProps> = ({
                                 {step === 'role' ? 'Choose your role' : 'Select your subscription tier'}
                             </p>
                             <p className="text-emerald-100 mt-2 text-xs font-mono">
-                                Wallet: {walletAddress.slice(0, 8)}...{walletAddress.slice(-6)}
+                                Digital ID: {walletAddress.slice(0, 8)}...{walletAddress.slice(-6)}
                             </p>
                         </div>
                         <div className="flex items-center space-x-2">
@@ -111,8 +111,8 @@ const WalletOnboarding: React.FC<WalletOnboardingProps> = ({
                                         key={role.value}
                                         onClick={() => handleRoleSelect(role.value)}
                                         className={`p-6 border-2 rounded-xl text-center transition-all duration-200 hover:scale-105 ${selectedRole === role.value
-                                                ? 'border-emerald-500 bg-emerald-50 shadow-lg'
-                                                : 'border-slate-200 hover:border-emerald-300 hover:bg-slate-50'
+                                            ? 'border-emerald-500 bg-emerald-50 shadow-lg'
+                                            : 'border-slate-200 hover:border-emerald-300 hover:bg-slate-50'
                                             }`}
                                     >
                                         <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-600 mx-auto mb-4">
@@ -136,8 +136,8 @@ const WalletOnboarding: React.FC<WalletOnboardingProps> = ({
                                     <div
                                         key={tier.tier}
                                         className={`relative p-6 border-2 rounded-2xl transition-all cursor-pointer ${selectedTier === tier.tier
-                                                ? 'border-emerald-500 bg-emerald-50 shadow-lg transform scale-105'
-                                                : 'border-slate-200 hover:border-emerald-300'
+                                            ? 'border-emerald-500 bg-emerald-50 shadow-lg transform scale-105'
+                                            : 'border-slate-200 hover:border-emerald-300'
                                             } ${tier.popular ? 'ring-2 ring-emerald-500/30' : ''}`}
                                         onClick={() => setSelectedTier(tier.tier)}
                                     >

@@ -97,7 +97,12 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Create user with Supabase Auth (replaces Firebase)
+        // Create user with Supabase Auth.
+        // NOTE: Do NOT pass emailRedirectTo here — that causes Supabase to send its
+        // own magic-link/confirmation email on top of our custom OTP email.
+        // Email verification is handled entirely by our custom OTP flow (sendOTPEmail +
+        // otp_verifications table). Ensure "Confirm email" is DISABLED in the Supabase
+        // Dashboard → Authentication → Email settings.
         const { data: authData, error: authError } = await supabase.auth.signUp({
             email,
             password,
@@ -106,7 +111,6 @@ export async function POST(request: NextRequest) {
                     full_name: fullName,
                     user_role: role,
                 },
-                emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/dashboard`,
             },
         });
 
@@ -204,6 +208,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Send OTP via email
+        let emailError: string | undefined;
         try {
             await sendOTPEmail({
                 to: email,
@@ -211,9 +216,17 @@ export async function POST(request: NextRequest) {
                 userName: fullName,
             });
             console.log(`✅ OTP email sent to ${email}`);
-        } catch (emailError) {
-            console.error('Failed to send OTP email:', emailError);
-            // Don't fail the signup if email fails
+        } catch (err: any) {
+            emailError = err?.message ?? 'Unknown email error';
+            console.error('Failed to send OTP email:', err);
+            // In production we don't block signup on email failure,
+            // but surface the error in dev so it's visible.
+            if (process.env.NODE_ENV === 'development') {
+                return NextResponse.json(
+                    { error: `Email failed to send: ${emailError}. The account was created — check server logs or use _dev_otp below.`, _dev_otp: otp },
+                    { status: 500 }
+                );
+            }
         }
 
         return NextResponse.json({

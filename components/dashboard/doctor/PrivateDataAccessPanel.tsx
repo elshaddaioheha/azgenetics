@@ -1,5 +1,6 @@
 import React from 'react';
 import { ShieldCheck, Lock, LogOut } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface PrivateDataAccessPanelProps {
     isPrivateDataUnlocked: boolean;
@@ -43,21 +44,22 @@ export const PrivateDataAccessPanel: React.FC<PrivateDataAccessPanelProps> = ({
                     )}
 
                     {!isPrivateDataUnlocked ? (
-                        <button
+                        <Button
                             onClick={onUnlock}
-                            className="bg-fern hover:bg-[#A7C7AB] text-obsidian px-10 py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] italic transition-all flex items-center gap-4 hover:scale-[1.02] active:scale-[0.98] shadow-[0_0_30px_rgba(167,199,171,0.2)]"
+                            className="bg-fern hover:bg-[#A7C7AB] text-obsidian px-10 py-6 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] italic transition-all shadow-[0_0_30px_rgba(167,199,171,0.2)]"
                         >
-                            <Lock size={18} />
-                            <span>Decrypt Node</span>
-                        </button>
+                            <Lock size={18} className="mr-3" />
+                            Decrypt Node
+                        </Button>
                     ) : (
-                        <button
+                        <Button
                             onClick={onLock}
-                            className="bg-white/5 border border-white/10 text-white/40 hover:text-red-400 hover:bg-red-900/10 hover:border-red-900/30 px-10 py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] italic transition-all flex items-center gap-4"
+                            variant="destructive"
+                            className="bg-white/5 border border-white/10 text-white/80 hover:bg-red-900/40 hover:text-white px-10 py-6 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] italic transition-all"
                         >
-                            <LogOut size={18} />
-                            <span>Terminate Session</span>
-                        </button>
+                            <LogOut size={18} className="mr-3" />
+                            Terminate Session
+                        </Button>
                     )}
                 </div>
             </div>

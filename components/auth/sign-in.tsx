@@ -141,10 +141,24 @@ const SignIn: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="text-center mt-10">
+                <div className="text-center mt-10 space-y-4">
                     <p className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-[0.3em]">
                         Sovereign Data Protection Protocol v2.4
                     </p>
+                    <div className="flex justify-center items-center gap-6 flex-wrap">
+                        <div className="flex items-center gap-2 text-muted-foreground opacity-60">
+                            <Lock size={14} />
+                            <span className="text-[10px] font-bold uppercase tracking-widest">End-to-End Encrypted</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-muted-foreground opacity-60">
+                            <ShieldCheck size={14} />
+                            <span className="text-[10px] font-bold uppercase tracking-widest">GDPR Compliant</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-muted-foreground opacity-60">
+                            <Fingerprint size={14} />
+                            <span className="text-[10px] font-bold uppercase tracking-widest">Powered by Hedera</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

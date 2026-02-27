@@ -29,7 +29,8 @@ import {
   Zap,
   Globe,
   Fingerprint,
-  Heart
+  Heart,
+  ShieldCheck
 } from 'lucide-react';
 import { useAuth } from '@/lib/useAuth';
 import { api } from '@/lib/apiClient';
@@ -43,6 +44,30 @@ import Spinner from '@/components/ui/Spinner';
 import { DataItem, UserProfile } from '@/types/dashboard';
 import { PrivateDataAccessPanel } from '@/components/dashboard/doctor/PrivateDataAccessPanel';
 import { DataItemRow } from '@/components/dashboard/doctor/DataItemRow';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { AdvancedWalletPanel } from '@/components/dashboard/AdvancedWalletPanel';
+import { Progress } from '@/components/ui/progress';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { AreaChart, Area, XAxis, CartesianGrid } from "recharts";
+
+const earningData = [
+  { month: "Jan", tokens: 120 },
+  { month: "Feb", tokens: 210 },
+  { month: "Mar", tokens: 180 },
+  { month: "Apr", tokens: 320 },
+  { month: "May", tokens: 290 },
+  { month: "Jun", tokens: 450 },
+];
+
+const chartConfig = {
+  tokens: {
+    label: "Tokens Earned",
+    color: "#A7C7AB",
+  },
+};
+
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -75,6 +100,7 @@ const Dashboard = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [mintingFileId, setMintingFileId] = useState<string | null>(null);
   const [tokenBalance, setTokenBalance] = useState(0);
+  const [isDeleting, setIsDeleting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load Data Functions
@@ -161,6 +187,30 @@ const Dashboard = () => {
     finally { setMintingFileId(null); }
   };
 
+  const handleDeleteData = async () => {
+    if (!confirm('Are you absolutely sure? This will execute your Right to be Forgotten under GDPR regulations and securely wipe all off-chain data linked to your identity. This action cannot be reversed.')) {
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      const response = await api.delete('auth/delete-data');
+      if (response.ok) {
+        toast.success('Right to be Forgotten executed. All off-chain data has been securely wiped.');
+        setTimeout(() => {
+          handleLogout();
+        }, 3000);
+      } else {
+        const data = await response.json();
+        toast.error(data.error || 'Failed to wipe data');
+      }
+    } catch (err) {
+      toast.error('Error executing Right to be Forgotten.');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   const handleLogout = () => { router.push('/sign-in'); };
 
   const statsList = [
@@ -237,7 +287,7 @@ const Dashboard = () => {
           <div className="flex items-center gap-4 text-sm font-semibold">
             <span className="text-muted-foreground capitalize">{activeTab === 'overview' ? 'Sovereign Console' : activeTab}</span>
             <ChevronRight size={14} className="text-muted-foreground" />
-            <span className="text-foreground">Node {userProfile?.hedera_account_id?.slice(-8) || '...'}</span>
+            <span className="text-foreground">Sovereign Vault</span>
           </div>
 
           <div className="flex items-center gap-6">
@@ -279,7 +329,12 @@ const Dashboard = () => {
             <motion.div variants={itemVariants} className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-4">
               <div>
                 <h1 className="text-4xl font-bold tracking-tight mb-2">Welcome back, {user?.user_metadata?.full_name?.split(' ')[0] || 'Member'}</h1>
-                <p className="text-muted-foreground font-medium">Your health and genetic records are secured and up to date.</p>
+                <p className="text-muted-foreground font-medium mb-4">Your health and genetic records are secured and up to date.</p>
+                <div className="flex items-center gap-3">
+                  <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 flex items-center gap-1.5 shadow-sm"><ShieldCheck size={12} /> GDPR Compliant</Badge>
+                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 flex items-center gap-1.5 shadow-sm"><Lock size={12} /> AES-256 Encrypted</Badge>
+                  <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200 flex items-center gap-1.5 shadow-sm"><Fingerprint size={12} /> Hedera DLT</Badge>
+                </div>
               </div>
               <button
                 onClick={() => fileInputRef.current?.click()}
@@ -381,29 +436,68 @@ const Dashboard = () => {
                     ))}
                   </div>
                 </div>
+
+                {/* Token Earnings Chart */}
+                <Card className="rounded-[2.5rem] border border-border shadow-sm">
+                  <CardHeader className="p-8 pb-4">
+                    <CardTitle className="text-xl font-bold tracking-tight">Token Yield</CardTitle>
+                    <CardDescription>AZG tokens generated over the last 6 months from research utilization</CardDescription>
+                  </CardHeader>
+                  <CardContent className="px-8 pb-8">
+                    <ChartContainer config={chartConfig} className="h-[200px] w-full">
+                      <AreaChart accessibilityLayer data={earningData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                        <defs>
+                          <linearGradient id="colorTokens" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="var(--color-tokens)" stopOpacity={0.8} />
+                            <stop offset="95%" stopColor="var(--color-tokens)" stopOpacity={0.1} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} strokeOpacity={0.2} />
+                        <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} />
+                        <ChartTooltip content={<ChartTooltipContent />} />
+                        <Area type="monotone" dataKey="tokens" stroke="var(--color-tokens)" fillOpacity={1} fill="url(#colorTokens)" />
+                      </AreaChart>
+                    </ChartContainer>
+                  </CardContent>
+                </Card>
               </div>
 
               {/* Sidebar Info Column */}
               <div className="lg:col-span-4 space-y-8">
-                {/* Hedera Status */}
+                {/* Vault Profile Completion */}
+                <Card className="rounded-[2.5rem] border-border shadow-sm border">
+                  <CardHeader className="p-8 pb-4">
+                    <CardTitle className="text-xl font-bold tracking-tight">Security Profile</CardTitle>
+                    <CardDescription className="text-sm font-medium">85% Secured (Multi-sig pending)</CardDescription>
+                  </CardHeader>
+                  <CardContent className="px-8 pb-8">
+                    <Progress value={85} className="h-2 bg-muted/50 w-full" />
+                  </CardContent>
+                </Card>
+
+                {/* Identity Vault Status — no raw blockchain data shown */}
                 <div className="bg-white rounded-[2.5rem] border border-border shadow-sm p-8 group">
-                  <div className="flex items-center gap-4 mb-8">
-                    <div className="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 flex items-center justify-center border border-border group-hover:text-fern transition-colors">
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100 group-hover:bg-emerald-100 transition-colors">
                       <Fingerprint size={20} />
                     </div>
                     <div>
-                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Hedera Ledger Node</p>
-                      <p className="text-sm font-bold truncate max-w-[120px]">{userProfile?.hedera_account_id || 'Connecting...'}</p>
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Identity Vault</p>
+                      <p className="text-sm font-bold text-foreground">{userProfile?.hedera_account_id ? 'Active & Synced' : 'Connecting…'}</p>
                     </div>
                   </div>
                   <div className="space-y-4">
                     <div className="flex justify-between items-center text-xs font-bold">
-                      <span className="text-muted-foreground uppercase tracking-tight">Network Health</span>
-                      <span className="text-med-green">Stable</span>
+                      <span className="text-muted-foreground uppercase tracking-tight">Security Health</span>
+                      <span className="text-emerald-600">Stable</span>
                     </div>
-                    <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
-                      <div className="h-full bg-med-green w-4/5" />
+                    <div className="w-full mt-2">
+                      <Progress value={80} className="h-1.5 bg-muted" />
                     </div>
+                  </div>
+                  {/* Raw wallet details gated here */}
+                  <div className="mt-6">
+                    <AdvancedWalletPanel hederaAccountId={userProfile?.hedera_account_id} />
                   </div>
                 </div>
 
@@ -412,11 +506,18 @@ const Dashboard = () => {
                   <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-125 transition-transform duration-700">
                     <Shield size={64} />
                   </div>
-                  <h4 className="text-xl font-bold mb-3 tracking-tight">Security Lockdown</h4>
-                  <p className="text-white/60 text-sm font-medium mb-8 leading-relaxed">Ensure multi-sigs are enabled for sensitive sequence transfers.</p>
-                  <button className="text-white font-bold text-xs uppercase tracking-widest flex items-center gap-2 hover:gap-4 transition-all">
-                    Configure security <ArrowRight size={16} />
-                  </button>
+                  <h4 className="text-xl font-bold mb-3 tracking-tight">Data Sovereignty</h4>
+                  <p className="text-white/60 text-sm font-medium mb-8 leading-relaxed">
+                    Under GDPR guidelines, you maintain absolute control. You can exercise your right to be forgotten below by wiping all off-chain data from our private servers. This does not alter anonymous ledger proofs.
+                  </p>
+                  <Button
+                    variant="destructive"
+                    onClick={handleDeleteData}
+                    disabled={isDeleting}
+                    className="font-bold text-xs uppercase tracking-widest flex items-center gap-2"
+                  >
+                    {isDeleting ? 'Wiping Node...' : 'Wipe Off-Chain Data'}
+                  </Button>
                 </div>
 
                 {/* Family Card */}

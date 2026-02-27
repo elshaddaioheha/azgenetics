@@ -38,7 +38,7 @@ async function mintTestNFT() {
   }
 
   const client = Client.forTestnet();
-  
+
   try {
     client.setOperator(AccountId.fromString(operatorId), PrivateKey.fromString(operatorKey));
     console.log("✅ Client created and operator set.");
@@ -49,15 +49,17 @@ async function mintTestNFT() {
     return;
   }
 
-  // Create minimal metadata (Hedera has a ~100 byte limit for on-chain metadata)
+  // Create exhibition-ready metadata
   const metadata = {
-    name: "Genetic Data Cert",
-    description: "VCF Certificate",
-    creator: "AZ-Genes"
+    name: "Exhibition Data Vault",
+    description: "Verified GDPR-Compliant Genomic Sequence (Testnet)",
+    permissions: "Patient-Controlled",
+    creator: "AZ-Genes Demo",
+    dataHash: "0x8f4d9b3a7c6e2..."
   };
 
   const metadataBytes = new TextEncoder().encode(JSON.stringify(metadata));
-  
+
   // Check metadata size
   console.log(`\n📏 Metadata size: ${metadataBytes.length} bytes`);
   if (metadataBytes.length > 100) {
@@ -80,7 +82,7 @@ async function mintTestNFT() {
     console.log("\n✅ NFT Certificate minted successfully!");
     console.log("📄 Transaction ID:", txResponse.transactionId.toString());
     console.log("🔗 View on explorer:", `https://hashscan.io/testnet/transaction/${txResponse.transactionId.toString()}`);
-    
+
     // Try to get serial number from various sources
     let serialNumber = "Unknown";
     if (receipt && 'serials' in receipt) {
@@ -89,14 +91,14 @@ async function mintTestNFT() {
         serialNumber = receipt.serials[0].toString();
       }
     }
-    
+
     console.log("\n🎫 Serial Number:", serialNumber);
     console.log("💡 You can query your NFTs using TokenNftInfoQuery");
 
   } catch (err) {
     console.error("\n❌ Error minting NFT:");
     console.error(err);
-    
+
     if (err.toString().includes('INVALID_ACCOUNT_ID')) {
       console.log("\n💡 Make sure your HEDERA_OPERATOR_ID is correct");
     } else if (err.toString().includes('INSUFFICIENT_ACCOUNT_BALANCE')) {
