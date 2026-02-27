@@ -1,7 +1,7 @@
 /**
  * POST /api/auth/resend-otp
- * Triggers Supabase Auth to resend a 6-digit OTP email to the user.
- * Supabase handles generation, storage, expiry, and delivery internally.
+ * Resends the signup confirmation OTP email via Supabase Auth.
+ * Uses supabase.auth.resend() — the correct API for resending signup emails.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -46,30 +46,29 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Delegate entirely to Supabase Auth — it generates, stores, and emails the OTP
-        const { error } = await supabase.auth.signInWithOtp({
+        // Use Supabase's official resend API for signup confirmation emails.
+        // This resends the same OTP that was generated at signup.
+        const { error } = await supabase.auth.resend({
+            type: 'signup',
             email,
-            options: {
-                shouldCreateUser: false, // user already exists
-            },
         });
 
         if (error) {
-            console.error('Supabase resend OTP error:', error.message);
-            // Supabase rate-limits OTP sends (typically 60s cooldown)
+            console.error('Supabase resend error:', error.message);
+            // Supabase enforces a 60s cooldown between resend attempts
             if (error.message.toLowerCase().includes('rate') || error.status === 429) {
                 return NextResponse.json(
-                    { error: 'Please wait before requesting another code' },
+                    { error: 'Please wait 60 seconds before requesting another code' },
                     { status: 429 }
                 );
             }
             return NextResponse.json(
-                { error: 'Failed to send verification email' },
+                { error: 'Failed to resend verification email. Please try again.' },
                 { status: 500 }
             );
         }
 
-        console.log(`✅ Supabase OTP resent to ${email}`);
+        console.log(`✅ Supabase signup OTP resent to ${email}`);
 
         return NextResponse.json({
             success: true,

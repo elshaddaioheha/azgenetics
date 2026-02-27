@@ -1,7 +1,7 @@
 /**
  * POST /api/auth/verify-otp
- * Verifies the 6-digit OTP code using Supabase Auth's native verifyOtp method.
- * Supabase handles all validation (code match, expiry, single-use) internally.
+ * Verifies the 6-digit OTP code using Supabase Auth's native verifyOtp.
+ * Uses type: 'signup' to match the confirmation email sent by supabase.auth.signUp().
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -25,12 +25,13 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Verify the OTP code through Supabase Auth
-        // Supabase checks expiry, single-use, and code match internally
+        // Verify the OTP code via Supabase Auth.
+        // type: 'signup' matches the confirmation email sent by supabase.auth.signUp().
+        // Supabase validates expiry, single-use, and code match internally.
         const { data, error } = await supabase.auth.verifyOtp({
             email,
             token: code,
-            type: 'email',
+            type: 'signup',
         });
 
         if (error) {
@@ -43,13 +44,20 @@ export async function POST(request: NextRequest) {
                 );
             }
 
+            if (error.message.toLowerCase().includes('invalid')) {
+                return NextResponse.json(
+                    { error: 'Invalid verification code. Please check and try again.' },
+                    { status: 400 }
+                );
+            }
+
             return NextResponse.json(
-                { error: 'Invalid verification code' },
+                { error: 'Verification failed. Please try again.' },
                 { status: 400 }
             );
         }
 
-        // Mark email as verified in our profiles table
+        // Also mark email as verified in our profiles table
         const { error: updateError } = await supabase
             .rpc('verify_user_email', { p_email: email });
 
@@ -57,6 +65,8 @@ export async function POST(request: NextRequest) {
             console.error('Error updating profile verification status:', updateError);
             // Non-blocking — Supabase Auth session is already established
         }
+
+        console.log(`✅ Email verified for ${email}`);
 
         return NextResponse.json({
             success: true,

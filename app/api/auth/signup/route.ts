@@ -94,11 +94,9 @@ export async function POST(request: NextRequest) {
         }
 
         // Create user with Supabase Auth.
-        // NOTE: Do NOT pass emailRedirectTo here — that causes Supabase to send its
-        // own magic-link/confirmation email on top of our custom OTP email.
-        // Email verification is handled entirely by our custom OTP flow (sendOTPEmail +
-        // otp_verifications table). Ensure "Confirm email" is DISABLED in the Supabase
-        // Dashboard → Authentication → Email settings.
+        // With "Confirm email" ENABLED in Supabase Dashboard, calling signUp()
+        // automatically sends a 6-digit OTP to the user's email.
+        // The email template must include {{ .Token }} to show the numeric code.
         const { data: authData, error: authError } = await supabase.auth.signUp({
             email,
             password,
@@ -185,24 +183,11 @@ export async function POST(request: NextRequest) {
             console.error('Error syncing user_profile:', userProfileError);
         }
 
-        // Send OTP via Supabase Auth's built-in email delivery
-        try {
-            const { error: otpError } = await supabase.auth.signInWithOtp({
-                email,
-                options: { shouldCreateUser: false },
-            });
-            if (otpError) throw new Error(otpError.message);
-            console.log(`✅ Supabase OTP email sent to ${email}`);
-        } catch (err: any) {
-            console.error('Failed to send OTP email:', err);
-            // Non-blocking in production — account still created
-            if (process.env.NODE_ENV === 'development') {
-                return NextResponse.json(
-                    { error: `Email failed to send: ${err.message}. Account was created.` },
-                    { status: 500 }
-                );
-            }
-        }
+        // Supabase Auth sends the OTP confirmation email automatically
+        // when signUp() is called, as long as "Confirm email" is ENABLED
+        // in Supabase Dashboard → Authentication → Email.
+        // The email template should show {{ .Token }} for the 6-digit code.
+        console.log(`✅ User created — Supabase will send confirmation OTP to ${email}`);
 
         return NextResponse.json({
             success: true,
