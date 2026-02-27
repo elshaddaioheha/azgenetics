@@ -320,6 +320,7 @@ const Dashboard = () => {
         {/* Dashboard Content */}
         <div className="flex-1 overflow-y-auto p-4 md:p-10 custom-scrollbar">
           <motion.div
+            key={activeTab}
             variants={containerVariants}
             initial="hidden"
             animate="visible"
@@ -346,14 +347,11 @@ const Dashboard = () => {
               </button>
             </motion.div>
 
-            {/* Stats Grid - Colored based on reference */}
+            {/* Stats Grid — always visible */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {statsList.map((stat, i) => (
-                <motion.div
-                  key={i}
-                  variants={itemVariants}
-                  className="bg-white rounded-[2rem] p-8 border border-border shadow-sm group hover:shadow-md transition-all cursor-default"
-                >
+                <motion.div key={i} variants={itemVariants}
+                  className="bg-white rounded-[2rem] p-8 border border-border shadow-sm group hover:shadow-md transition-all cursor-default">
                   <div className="flex items-start justify-between mb-6">
                     <div className={`w-12 h-12 rounded-2xl ${stat.color} flex items-center justify-center text-white shadow-sm group-hover:scale-110 transition-transform`}>
                       <stat.icon size={22} />
@@ -368,86 +366,187 @@ const Dashboard = () => {
               ))}
             </div>
 
-            {/* Main Content Area */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-              {/* Asset Table Column */}
-              <div className="lg:col-span-8 space-y-8">
-                <div className="bg-white rounded-[2.5rem] border border-border shadow-sm overflow-hidden">
-                  <div className="p-8 border-b border-border flex justify-between items-center">
-                    <div className="flex items-center gap-3">
-                      <div className="bg-med-blue/10 p-2 rounded-lg text-med-blue">
-                        <FileText size={20} />
+            {/* ── TAB PANELS ── */}
+
+            {/* OVERVIEW TAB */}
+            {activeTab === 'overview' && (
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <div className="lg:col-span-8 space-y-8">
+                  <div className="bg-white rounded-[2.5rem] border border-border shadow-sm overflow-hidden">
+                    <div className="p-8 border-b border-border flex justify-between items-center">
+                      <div className="flex items-center gap-3">
+                        <div className="bg-med-blue/10 p-2 rounded-lg text-med-blue"><FileText size={20} /></div>
+                        <h3 className="text-xl font-bold tracking-tight">Recent genetic assets</h3>
                       </div>
-                      <h3 className="text-xl font-bold tracking-tight">Recent genetic assets</h3>
+                      <button onClick={() => setActiveTab('data')} className="text-sm font-bold text-fern hover:underline">View all</button>
                     </div>
-                    <button onClick={() => setActiveTab('data')} className="text-sm font-bold text-fern hover:underline">View all</button>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left">
+                        <thead>
+                          <tr className="bg-muted/30">
+                            <th className="px-8 py-4 text-[12px] font-bold text-muted-foreground uppercase tracking-wider">File Name</th>
+                            <th className="px-8 py-4 text-[12px] font-bold text-muted-foreground uppercase tracking-wider">Type</th>
+                            <th className="px-8 py-4 text-[12px] font-bold text-muted-foreground uppercase tracking-wider">Date</th>
+                            <th className="px-8 py-4 text-right text-[12px] font-bold text-muted-foreground uppercase tracking-wider">Options</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-border">
+                          {loadingFiles ? (
+                            <tr><td colSpan={4} className="p-8"><TableSkeleton rows={3} /></td></tr>
+                          ) : userData.length === 0 ? (
+                            <tr><td colSpan={4} className="p-16 text-center text-muted-foreground font-medium">No sequences uploaded yet.</td></tr>
+                          ) : (
+                            userData.slice(0, 5).map(item => (
+                              <DataItemRow key={item.id} item={item} mintingFileId={mintingFileId} onMintNFT={handleMintNFT} isPrivateDataUnlocked={isPrivateDataUnlocked} onUnlockPrivateData={() => setIsPrivateDataUnlocked(true)} />
+                            ))
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left">
-                      <thead>
-                        <tr className="bg-muted/30">
-                          <th className="px-8 py-4 text-[12px] font-bold text-muted-foreground uppercase tracking-wider">File Name</th>
-                          <th className="px-8 py-4 text-[12px] font-bold text-muted-foreground uppercase tracking-wider">Type</th>
-                          <th className="px-8 py-4 text-[12px] font-bold text-muted-foreground uppercase tracking-wider">Date</th>
-                          <th className="px-8 py-4 text-right text-[12px] font-bold text-muted-foreground uppercase tracking-wider">Options</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-border">
-                        {loadingFiles ? (
-                          <tr><td colSpan={4} className="p-8"><TableSkeleton rows={3} /></td></tr>
-                        ) : userData.length === 0 ? (
-                          <tr><td colSpan={4} className="p-16 text-center text-muted-foreground font-medium">No sequences uploaded yet.</td></tr>
-                        ) : (
-                          userData.slice(0, 5).map(item => (
-                            <DataItemRow
-                              key={item.id}
-                              item={item}
-                              mintingFileId={mintingFileId}
-                              onMintNFT={handleMintNFT}
-                              isPrivateDataUnlocked={isPrivateDataUnlocked}
-                              onUnlockPrivateData={() => setIsPrivateDataUnlocked(true)}
-                            />
-                          ))
-                        )}
-                      </tbody>
-                    </table>
+                  <Card className="rounded-[2.5rem] border border-border shadow-sm">
+                    <CardHeader className="p-8 pb-4">
+                      <CardTitle className="text-xl font-bold tracking-tight">Token Yield</CardTitle>
+                      <CardDescription>AZG tokens generated over the last 6 months from research utilization</CardDescription>
+                    </CardHeader>
+                    <CardContent className="px-8 pb-8">
+                      <ChartContainer config={chartConfig} className="h-[200px] w-full">
+                        <AreaChart accessibilityLayer data={earningData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                          <defs>
+                            <linearGradient id="colorTokens" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="var(--color-tokens)" stopOpacity={0.8} />
+                              <stop offset="95%" stopColor="var(--color-tokens)" stopOpacity={0.1} />
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} strokeOpacity={0.2} />
+                          <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} />
+                          <ChartTooltip content={<ChartTooltipContent />} />
+                          <Area type="monotone" dataKey="tokens" stroke="var(--color-tokens)" fillOpacity={1} fill="url(#colorTokens)" />
+                        </AreaChart>
+                      </ChartContainer>
+                    </CardContent>
+                  </Card>
+                </div>
+                <div className="lg:col-span-4 space-y-8">
+                  <Card className="rounded-[2.5rem] border-border shadow-sm border">
+                    <CardHeader className="p-8 pb-4">
+                      <CardTitle className="text-xl font-bold tracking-tight">Security Profile</CardTitle>
+                      <CardDescription className="text-sm font-medium">85% Secured (Multi-sig pending)</CardDescription>
+                    </CardHeader>
+                    <CardContent className="px-8 pb-8">
+                      <Progress value={85} className="h-2 bg-muted/50 w-full" />
+                    </CardContent>
+                  </Card>
+                  <div className="bg-white rounded-[2.5rem] border border-border shadow-sm p-8 group">
+                    <div className="flex items-center gap-4 mb-6">
+                      <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100"><Fingerprint size={20} /></div>
+                      <div>
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Identity Vault</p>
+                        <p className="text-sm font-bold text-foreground">{userProfile?.hedera_account_id ? 'Active & Synced' : 'Connecting…'}</p>
+                      </div>
+                    </div>
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center text-xs font-bold">
+                        <span className="text-muted-foreground uppercase tracking-tight">Security Health</span>
+                        <span className="text-emerald-600">Stable</span>
+                      </div>
+                      <Progress value={80} className="h-1.5 bg-muted" />
+                    </div>
+                    <div className="mt-6"><AdvancedWalletPanel hederaAccountId={userProfile?.hedera_account_id} /></div>
+                  </div>
+                  <div className="bg-foreground text-white rounded-[2.5rem] p-8 relative overflow-hidden group shadow-lg">
+                    <div className="absolute top-0 right-0 p-6 opacity-10"><Shield size={64} /></div>
+                    <h4 className="text-xl font-bold mb-3 tracking-tight">Data Sovereignty</h4>
+                    <p className="text-white/60 text-sm font-medium mb-8 leading-relaxed">Under GDPR guidelines, you maintain absolute control. You can exercise your right to be forgotten below by wiping all off-chain data from our private servers. This does not alter anonymous ledger proofs.</p>
+                    <Button variant="destructive" onClick={handleDeleteData} disabled={isDeleting} className="font-bold text-xs uppercase tracking-widest flex items-center gap-2">
+                      {isDeleting ? 'Wiping Node...' : 'Wipe Off-Chain Data'}
+                    </Button>
                   </div>
                 </div>
+              </div>
+            )}
 
-                {/* Health Insights Preview */}
-                <div className="bg-white rounded-[2.5rem] border border-border shadow-sm p-8">
-                  <div className="flex justify-between items-center mb-8">
-                    <div className="flex items-center gap-3">
-                      <div className="bg-med-green/10 p-2 rounded-lg text-med-green">
-                        <Activity size={20} />
-                      </div>
-                      <h3 className="text-xl font-bold tracking-tight">Biological Insights</h3>
-                    </div>
+            {/* DATA TAB — full genetic asset table */}
+            {activeTab === 'data' && (
+              <motion.div variants={itemVariants} className="bg-white rounded-[2.5rem] border border-border shadow-sm overflow-hidden">
+                <div className="p-8 border-b border-border flex justify-between items-center">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-med-blue/10 p-2 rounded-lg text-med-blue"><Dna size={20} /></div>
+                    <h3 className="text-xl font-bold tracking-tight">All Genetic Assets</h3>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <button onClick={() => fileInputRef.current?.click()} disabled={isUploading}
+                    className="bg-foreground text-white px-6 py-2.5 rounded-full text-xs font-bold flex items-center gap-2 shadow hover:opacity-90 transition-all disabled:opacity-50">
+                    {isUploading ? <Spinner size="sm" /> : <UploadCloud size={14} />}
+                    {isUploading ? 'Uploading…' : 'Upload file'}
+                  </button>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left">
+                    <thead>
+                      <tr className="bg-muted/30">
+                        <th className="px-8 py-4 text-[12px] font-bold text-muted-foreground uppercase tracking-wider">File Name</th>
+                        <th className="px-8 py-4 text-[12px] font-bold text-muted-foreground uppercase tracking-wider">Type</th>
+                        <th className="px-8 py-4 text-[12px] font-bold text-muted-foreground uppercase tracking-wider">Date</th>
+                        <th className="px-8 py-4 text-right text-[12px] font-bold text-muted-foreground uppercase tracking-wider">Options</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border">
+                      {loadingFiles ? (
+                        <tr><td colSpan={4} className="p-8"><TableSkeleton rows={5} /></td></tr>
+                      ) : userData.length === 0 ? (
+                        <tr><td colSpan={4} className="p-16 text-center">
+                          <div className="flex flex-col items-center gap-4">
+                            <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center"><Dna size={28} className="text-muted-foreground" /></div>
+                            <p className="font-semibold text-muted-foreground mb-2">No files uploaded yet</p>
+                            <button onClick={() => fileInputRef.current?.click()} className="text-sm font-bold text-fern hover:underline flex items-center gap-1"><UploadCloud size={14} /> Upload your first file</button>
+                          </div>
+                        </td></tr>
+                      ) : (
+                        userData.map(item => (
+                          <DataItemRow key={item.id} item={item} mintingFileId={mintingFileId} onMintNFT={handleMintNFT} isPrivateDataUnlocked={isPrivateDataUnlocked} onUnlockPrivateData={() => setIsPrivateDataUnlocked(true)} />
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </motion.div>
+            )}
+
+            {/* INSIGHTS TAB */}
+            {activeTab === 'insights' && (
+              <motion.div variants={itemVariants} className="space-y-8">
+                <div className="bg-white rounded-[2.5rem] border border-border shadow-sm p-8">
+                  <div className="flex items-center gap-3 mb-8">
+                    <div className="bg-med-green/10 p-2 rounded-lg text-med-green"><Activity size={20} /></div>
+                    <h3 className="text-xl font-bold tracking-tight">Biological Insights</h3>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {[
-                      { title: 'Lactose Sensitivity', level: 'High', color: 'text-orange-500' },
-                      { title: 'Muscle Profile', level: 'Power-type', color: 'text-fern' },
+                      { title: 'Lactose Sensitivity', level: 'High', color: 'text-orange-500', bg: 'bg-orange-50', progress: 80 },
+                      { title: 'Muscle Profile', level: 'Power-type', color: 'text-fern', bg: 'bg-emerald-50', progress: 70 },
+                      { title: 'Vitamin D Processing', level: 'Normal', color: 'text-blue-500', bg: 'bg-blue-50', progress: 55 },
+                      { title: 'Caffeine Metabolism', level: 'Fast', color: 'text-purple-500', bg: 'bg-purple-50', progress: 90 },
+                      { title: 'Omega-3 Absorption', level: 'Moderate', color: 'text-amber-500', bg: 'bg-amber-50', progress: 60 },
+                      { title: 'Stress Response', level: 'Low Resilience', color: 'text-red-500', bg: 'bg-red-50', progress: 35 },
                     ].map((insight, i) => (
-                      <div key={i} className="bg-muted/30 rounded-2xl p-6 border border-border/50">
-                        <p className="text-xs font-bold text-muted-foreground uppercase mb-1">{insight.title}</p>
-                        <p className={`text-lg font-bold ${insight.color}`}>{insight.level}</p>
+                      <div key={i} className={`${insight.bg} rounded-2xl p-6 border border-border/30`}>
+                        <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">{insight.title}</p>
+                        <p className={`text-lg font-bold mb-4 ${insight.color}`}>{insight.level}</p>
+                        <Progress value={insight.progress} className="h-1.5 bg-white/60" />
                       </div>
                     ))}
                   </div>
                 </div>
-
-                {/* Token Earnings Chart */}
                 <Card className="rounded-[2.5rem] border border-border shadow-sm">
                   <CardHeader className="p-8 pb-4">
-                    <CardTitle className="text-xl font-bold tracking-tight">Token Yield</CardTitle>
-                    <CardDescription>AZG tokens generated over the last 6 months from research utilization</CardDescription>
+                    <CardTitle className="text-xl font-bold tracking-tight">Token Yield History</CardTitle>
+                    <CardDescription>AZG tokens earned from research data usage</CardDescription>
                   </CardHeader>
                   <CardContent className="px-8 pb-8">
                     <ChartContainer config={chartConfig} className="h-[200px] w-full">
                       <AreaChart accessibilityLayer data={earningData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                         <defs>
-                          <linearGradient id="colorTokens" x1="0" y1="0" x2="0" y2="1">
+                          <linearGradient id="colorTokens2" x1="0" y1="0" x2="0" y2="1">
                             <stop offset="5%" stopColor="var(--color-tokens)" stopOpacity={0.8} />
                             <stop offset="95%" stopColor="var(--color-tokens)" stopOpacity={0.1} />
                           </linearGradient>
@@ -455,88 +554,113 @@ const Dashboard = () => {
                         <CartesianGrid strokeDasharray="3 3" vertical={false} strokeOpacity={0.2} />
                         <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} />
                         <ChartTooltip content={<ChartTooltipContent />} />
-                        <Area type="monotone" dataKey="tokens" stroke="var(--color-tokens)" fillOpacity={1} fill="url(#colorTokens)" />
+                        <Area type="monotone" dataKey="tokens" stroke="var(--color-tokens)" fillOpacity={1} fill="url(#colorTokens2)" />
                       </AreaChart>
                     </ChartContainer>
                   </CardContent>
                 </Card>
-              </div>
+              </motion.div>
+            )}
 
-              {/* Sidebar Info Column */}
-              <div className="lg:col-span-4 space-y-8">
-                {/* Vault Profile Completion */}
-                <Card className="rounded-[2.5rem] border-border shadow-sm border">
-                  <CardHeader className="p-8 pb-4">
-                    <CardTitle className="text-xl font-bold tracking-tight">Security Profile</CardTitle>
-                    <CardDescription className="text-sm font-medium">85% Secured (Multi-sig pending)</CardDescription>
-                  </CardHeader>
-                  <CardContent className="px-8 pb-8">
-                    <Progress value={85} className="h-2 bg-muted/50 w-full" />
-                  </CardContent>
-                </Card>
-
-                {/* Identity Vault Status — no raw blockchain data shown */}
-                <div className="bg-white rounded-[2.5rem] border border-border shadow-sm p-8 group">
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100 group-hover:bg-emerald-100 transition-colors">
-                      <Fingerprint size={20} />
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Identity Vault</p>
-                      <p className="text-sm font-bold text-foreground">{userProfile?.hedera_account_id ? 'Active & Synced' : 'Connecting…'}</p>
-                    </div>
+            {/* FAMILY TAB */}
+            {activeTab === 'family' && (
+              <motion.div variants={itemVariants} className="space-y-8">
+                <div className="bg-white rounded-[2.5rem] border border-border shadow-sm p-8">
+                  <div className="flex items-center gap-3 mb-8">
+                    <div className="bg-amber-50 p-2 rounded-lg text-amber-600"><Share2 size={20} /></div>
+                    <h3 className="text-xl font-bold tracking-tight">Biological Network</h3>
                   </div>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center text-xs font-bold">
-                      <span className="text-muted-foreground uppercase tracking-tight">Security Health</span>
-                      <span className="text-emerald-600">Stable</span>
-                    </div>
-                    <div className="w-full mt-2">
-                      <Progress value={80} className="h-1.5 bg-muted" />
-                    </div>
-                  </div>
-                  {/* Raw wallet details gated here */}
-                  <div className="mt-6">
-                    <AdvancedWalletPanel hederaAccountId={userProfile?.hedera_account_id} />
-                  </div>
-                </div>
-
-                {/* Security Banner */}
-                <div className="bg-foreground text-white rounded-[2.5rem] p-8 relative overflow-hidden group shadow-lg">
-                  <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-125 transition-transform duration-700">
-                    <Shield size={64} />
-                  </div>
-                  <h4 className="text-xl font-bold mb-3 tracking-tight">Data Sovereignty</h4>
-                  <p className="text-white/60 text-sm font-medium mb-8 leading-relaxed">
-                    Under GDPR guidelines, you maintain absolute control. You can exercise your right to be forgotten below by wiping all off-chain data from our private servers. This does not alter anonymous ledger proofs.
-                  </p>
-                  <Button
-                    variant="destructive"
-                    onClick={handleDeleteData}
-                    disabled={isDeleting}
-                    className="font-bold text-xs uppercase tracking-widest flex items-center gap-2"
-                  >
-                    {isDeleting ? 'Wiping Node...' : 'Wipe Off-Chain Data'}
-                  </Button>
-                </div>
-
-                {/* Family Card */}
-                <div className="bg-med-tan text-white rounded-[2.5rem] p-8 shadow-md">
-                  <h4 className="font-bold text-lg mb-4">Biological Network</h4>
-                  <div className="flex -space-x-3 mb-6">
-                    {[1, 2].map(i => (
-                      <div key={i} className="w-10 h-10 rounded-full border-2 border-med-tan bg-white/20 flex items-center justify-center font-bold text-xs">
-                        {i === 1 ? 'MC' : 'SC'}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {[
+                      { initials: 'MC', name: 'Maria Cortez', relation: 'Mother', shared: 3, status: 'Active' },
+                      { initials: 'SC', name: 'Samuel Cortez', relation: 'Brother', shared: 1, status: 'Pending' },
+                    ].map((member, i) => (
+                      <div key={i} className="bg-muted/30 rounded-2xl p-6 border border-border/50 flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-full bg-fern text-white flex items-center justify-center font-bold text-sm shrink-0">{member.initials}</div>
+                        <div className="flex-1">
+                          <p className="font-bold text-sm">{member.name}</p>
+                          <p className="text-xs text-muted-foreground">{member.relation} · {member.shared} records shared</p>
+                        </div>
+                        <Badge variant="outline" className={member.status === 'Active' ? 'border-emerald-200 text-emerald-700 bg-emerald-50' : 'border-amber-200 text-amber-700 bg-amber-50'}>{member.status}</Badge>
                       </div>
                     ))}
-                    <div className="w-10 h-10 rounded-full border-2 border-med-tan bg-white/10 flex items-center justify-center text-xs">
-                      <Plus size={14} />
+                    <button className="border-2 border-dashed border-border rounded-2xl p-6 flex items-center justify-center gap-3 text-muted-foreground hover:border-fern hover:text-fern transition-all font-semibold text-sm">
+                      <Plus size={18} /> Add family member
+                    </button>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-6 leading-relaxed">Shared records are read-only for family members. You can revoke access at any time.</p>
+                </div>
+              </motion.div>
+            )}
+
+            {/* NFT TAB */}
+            {activeTab === 'nft' && (
+              <motion.div variants={itemVariants} className="space-y-8">
+                <div className="bg-white rounded-[2.5rem] border border-border shadow-sm p-8">
+                  <div className="flex items-center gap-3 mb-8">
+                    <div className="bg-purple-50 p-2 rounded-lg text-purple-600"><Award size={20} /></div>
+                    <h3 className="text-xl font-bold tracking-tight">Proof Certificates</h3>
+                  </div>
+                  {userData.filter(i => i.nftCertified).length === 0 ? (
+                    <div className="text-center py-16">
+                      <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mx-auto mb-4"><Award size={28} className="text-muted-foreground" /></div>
+                      <p className="font-semibold text-muted-foreground mb-2">No certificates yet</p>
+                      <p className="text-sm text-muted-foreground">Go to <button onClick={() => setActiveTab('data')} className="text-fern font-bold hover:underline">Genetic Assets</button> and certify a file to generate your first proof token.</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {userData.filter(i => i.nftCertified).map(item => (
+                        <div key={item.id} className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl p-6 border border-purple-100">
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="w-10 h-10 rounded-xl bg-purple-600 flex items-center justify-center"><Award size={18} className="text-white" /></div>
+                            <Badge variant="outline" className="border-purple-200 text-purple-700 bg-white">Certified</Badge>
+                          </div>
+                          <p className="font-bold text-sm mb-1 truncate">{item.name}</p>
+                          <p className="text-xs text-muted-foreground">{item.date}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            )}
+
+            {/* SETTINGS TAB */}
+            {activeTab === 'settings' && (
+              <motion.div variants={itemVariants} className="space-y-8 max-w-2xl">
+                <div className="bg-white rounded-[2.5rem] border border-border shadow-sm p-8">
+                  <div className="flex items-center gap-3 mb-8">
+                    <div className="bg-muted p-2 rounded-lg"><Settings size={20} /></div>
+                    <h3 className="text-xl font-bold tracking-tight">Node Settings</h3>
+                  </div>
+                  <div className="space-y-6">
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Display Name</label>
+                      <input type="text" defaultValue={user?.user_metadata?.full_name || ''} readOnly className="w-full bg-muted/40 border border-border rounded-2xl px-5 py-3 text-sm font-medium focus:outline-none cursor-not-allowed opacity-70" />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Email Address</label>
+                      <input type="email" defaultValue={user?.email || ''} readOnly className="w-full bg-muted/40 border border-border rounded-2xl px-5 py-3 text-sm font-medium focus:outline-none cursor-not-allowed opacity-70" />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Account Role</label>
+                      <input type="text" defaultValue={userProfile?.user_role || 'patient'} readOnly className="w-full bg-muted/40 border border-border rounded-2xl px-5 py-3 text-sm font-medium capitalize focus:outline-none cursor-not-allowed opacity-70" />
                     </div>
                   </div>
-                  <button className="bg-white/10 hover:bg-white/20 px-6 py-2 rounded-full text-[10px] font-bold uppercase transition-all">Manage Network</button>
                 </div>
-              </div>
-            </div>
+                <div className="bg-foreground text-white rounded-[2.5rem] p-8 relative overflow-hidden shadow-lg">
+                  <div className="absolute top-0 right-0 p-6 opacity-10"><Shield size={64} /></div>
+                  <h4 className="text-xl font-bold mb-3 tracking-tight">Data Sovereignty</h4>
+                  <p className="text-white/60 text-sm font-medium mb-8 leading-relaxed">
+                    Under GDPR Article 17, you may request permanent erasure of all off-chain data linked to your identity. This action is irreversible.
+                  </p>
+                  <Button variant="destructive" onClick={handleDeleteData} disabled={isDeleting} className="font-bold text-xs uppercase tracking-widest flex items-center gap-2">
+                    {isDeleting ? 'Wiping Node...' : 'Exercise Right to be Forgotten'}
+                  </Button>
+                </div>
+              </motion.div>
+            )}
+
           </motion.div>
         </div>
       </main>
