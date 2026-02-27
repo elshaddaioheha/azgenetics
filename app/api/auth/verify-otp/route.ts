@@ -1,3 +1,9 @@
+/**
+ * POST /api/auth/verify-otp
+ * Verifies the 6-digit OTP code using Supabase Auth's native verifyOtp method.
+ * Supabase handles all validation (code match, expiry, single-use) internally.
+ */
+
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/app/api/_context';
 
@@ -19,56 +25,43 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Get the latest OTP for this email
-        const { data: otpRecord, error: otpError } = await supabase
-            .from('otp_verifications')
-            .select('*')
-            .eq('email', email)
-            .eq('verified', false)
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .single();
+        // Verify the OTP code through Supabase Auth
+        // Supabase checks expiry, single-use, and code match internally
+        const { data, error } = await supabase.auth.verifyOtp({
+            email,
+            token: code,
+            type: 'email',
+        });
 
-        if (otpError || !otpRecord) {
-            return NextResponse.json(
-                { error: 'No pending verification found' },
-                { status: 404 }
-            );
-        }
+        if (error) {
+            console.error('Supabase OTP verify error:', error.message);
 
-        // Check if OTP is expired
-        if (new Date(otpRecord.expires_at) < new Date()) {
-            return NextResponse.json(
-                { error: 'Verification code expired. Please request a new one.' },
-                { status: 400 }
-            );
-        }
+            if (error.message.toLowerCase().includes('expired')) {
+                return NextResponse.json(
+                    { error: 'Verification code expired. Please request a new one.' },
+                    { status: 400 }
+                );
+            }
 
-        // Verify the code
-        if (otpRecord.code !== code) {
             return NextResponse.json(
                 { error: 'Invalid verification code' },
                 { status: 400 }
             );
         }
 
-        // Mark OTP as verified
-        await supabase
-            .from('otp_verifications')
-            .update({ verified: true })
-            .eq('id', otpRecord.id);
-
-        // Update user profile to mark email as verified securely via RPC
+        // Mark email as verified in our profiles table
         const { error: updateError } = await supabase
             .rpc('verify_user_email', { p_email: email });
 
         if (updateError) {
-            console.error('Error updating profile:', updateError);
+            console.error('Error updating profile verification status:', updateError);
+            // Non-blocking — Supabase Auth session is already established
         }
 
         return NextResponse.json({
             success: true,
             message: 'Email verified successfully',
+            session: data.session,
         });
 
     } catch (error) {

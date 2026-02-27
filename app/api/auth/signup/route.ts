@@ -6,7 +6,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/app/api/_context';
-import { sendOTPEmail } from '@/lib/email';
 import { HederaClient } from '@/src/services/hedera/client';
 
 // Rate limiting: max 5 requests per email per hour
@@ -51,9 +50,6 @@ function checkRateLimit(email: string): { allowed: boolean; message?: string } {
     return { allowed: true };
 }
 
-function generateOTP(): string {
-    return Math.floor(100000 + Math.random() * 900000).toString();
-}
 
 export async function POST(request: NextRequest) {
     try {
@@ -137,27 +133,9 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Generate OTP
-        const otp = generateOTP();
-        const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
-
-        // Store OTP in Supabase
-        const { error: otpError } = await supabase
-            .from('otp_verifications')
-            .insert({
-                email,
-                code: otp,
-                expires_at: new Date(expiresAt).toISOString(),
-                verified: false,
-            });
-
-        if (otpError) {
-            console.error('Error storing OTP:', otpError);
-            return NextResponse.json(
-                { error: 'Failed to generate verification code' },
-                { status: 500 }
-            );
-        }
+        // OTP is handled entirely by Supabase Auth — no custom table needed.
+        // signInWithOtp sends the 6-digit code to the user's email using
+        // Supabase's built-in email service. No Resend/SMTP key required.
 
         // Generate a new Hedera account for the user (Embedded Wallet)
         let hederaAccountId = '';
@@ -207,23 +185,20 @@ export async function POST(request: NextRequest) {
             console.error('Error syncing user_profile:', userProfileError);
         }
 
-        // Send OTP via email
-        let emailError: string | undefined;
+        // Send OTP via Supabase Auth's built-in email delivery
         try {
-            await sendOTPEmail({
-                to: email,
-                code: otp,
-                userName: fullName,
+            const { error: otpError } = await supabase.auth.signInWithOtp({
+                email,
+                options: { shouldCreateUser: false },
             });
-            console.log(`✅ OTP email sent to ${email}`);
+            if (otpError) throw new Error(otpError.message);
+            console.log(`✅ Supabase OTP email sent to ${email}`);
         } catch (err: any) {
-            emailError = err?.message ?? 'Unknown email error';
             console.error('Failed to send OTP email:', err);
-            // In production we don't block signup on email failure,
-            // but surface the error in dev so it's visible.
+            // Non-blocking in production — account still created
             if (process.env.NODE_ENV === 'development') {
                 return NextResponse.json(
-                    { error: `Email failed to send: ${emailError}. The account was created — check server logs or use _dev_otp below.`, _dev_otp: otp },
+                    { error: `Email failed to send: ${err.message}. Account was created.` },
                     { status: 500 }
                 );
             }
@@ -233,8 +208,6 @@ export async function POST(request: NextRequest) {
             success: true,
             message: 'Account created. Please check your email for the verification code.',
             userId: authData.user.id,
-            // For development only - remove in production
-            _dev_otp: process.env.NODE_ENV === 'development' ? otp : undefined,
         });
 
     } catch (error: any) {
