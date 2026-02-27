@@ -129,7 +129,7 @@ export async function POST(request: NextRequest) {
             user: {
                 id: authData.user.id,
                 email: authData.user.email,
-                role: profile.user_role,
+                role: profile?.user_role ?? authData.user.user_metadata?.user_role ?? 'patient',
             },
             session: authData.session,
         });
