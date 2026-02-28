@@ -4,6 +4,8 @@ export interface UserProfile {
   subscription_tier: 'F1' | 'F2' | 'F3';
   created_at: string;
   updated_at: string;
+  region?: string;
+  age_range?: string;
 }
 
 export interface FileMetadata {

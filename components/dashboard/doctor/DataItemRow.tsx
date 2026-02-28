@@ -9,7 +9,8 @@ import {
     Eye,
     Share2,
     RefreshCw,
-    CheckCircle2
+    CheckCircle2,
+    ShieldCheck
 } from 'lucide-react';
 import Spinner from '@/components/ui/Spinner';
 import { DataItem } from '@/types/dashboard';
@@ -92,6 +93,17 @@ export const DataItemRow: React.FC<DataItemRowProps> = ({
                     </Button>
                 ) : (
                     <div className="flex items-center justify-end gap-5 opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0">
+                        {item.hedera_transaction_id && (
+                            <a
+                                href={`https://hashscan.io/testnet/transaction/${item.hedera_transaction_id.replace('@', '-')}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="p-3 rounded-2xl bg-white/5 border border-white/10 text-white/20 hover:text-fern hover:border-fern transition-all hover:scale-110 shadow-inner"
+                                title="Verify Integrity on Hedera Explorer"
+                            >
+                                <ShieldCheck size={18} />
+                            </a>
+                        )}
                         <button className="p-3 rounded-2xl bg-white/5 border border-white/10 text-white/20 hover:text-fern hover:border-fern transition-all hover:scale-110 shadow-inner" title="Share">
                             <Share2 size={18} />
                         </button>

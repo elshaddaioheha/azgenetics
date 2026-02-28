@@ -8,6 +8,8 @@ export interface DataItem {
     nftCertified: boolean;
     isPrivate: boolean;
     encrypted: boolean;
+    hash?: string;
+    hedera_transaction_id?: string;
 }
 
 export interface TokenTransaction {

@@ -4,10 +4,12 @@ import { IPFSClient } from '../../services/ipfs/client';
 import { FileMetadata } from './types';
 import { AuthContext, corsHeaders } from './utils';
 import { withAuth } from './middleware/auth';
+import { GeneticETLService } from '../../services/genetic/etl';
 
 const encryptionService = new EncryptionService();
 const getHederaClient = () => new HederaClient();
 const ipfsClient = new IPFSClient();
+const etlService = new GeneticETLService();
 const TOPIC_ID = process.env.HEDERA_TOPIC_ID ?? '';
 
 // Constants
@@ -109,6 +111,36 @@ async function handleFileUpload(req: Request, context: AuthContext): Promise<Res
       throw new Error('Invalid genetic file format');
     }
 
+    // Process genetic data for analytics if it's a VCF or CSV file
+    let extractedMarkers: string[] = [];
+    const isVcf = file.name.toLowerCase().endsWith('.vcf') || file.type === 'chemical/x-vcf';
+    const isCsv = file.name.toLowerCase().endsWith('.csv') || file.type === 'text/csv';
+
+    if (isVcf || isCsv) {
+      try {
+        const content = fileBuffer.toString('utf-8');
+        const processedData = isVcf
+          ? await etlService.processVCFFile(content)
+          : await etlService.processCSVFile(content);
+
+        const normalizedData = await etlService.normalizeData(processedData);
+
+        // Extract markers for researcher analytics
+        extractedMarkers = normalizedData.variants
+          .map(v => {
+            if (v.id && v.id !== '.') return v.id;
+            if (v.info.rsID) return String(v.info.rsID);
+            if (v.info.GENE) return String(v.info.GENE); // For CSV reports
+            return null;
+          })
+          .filter((id): id is string => id !== null && id !== undefined)
+          .slice(0, 50); // Capture representative sample of markers
+      } catch (error) {
+        console.error('Error processing genetic file:', error);
+        // Continue upload even if ETL fails - availability first
+      }
+    }
+
     // Encrypt file
     const { encryptedData, key, iv, hash } = await encryptionService.encryptFile(fileBuffer);
 
@@ -143,6 +175,23 @@ async function handleFileUpload(req: Request, context: AuthContext): Promise<Res
 
     if (saveError) {
       throw saveError;
+    }
+
+    // Log analytics event if markers were extracted (for F3 researchers)
+    if (extractedMarkers.length > 0) {
+      const { error: analyticsError } = await context.supabase
+        .from('analytics_events')
+        .insert({
+          event_type: 'GENETIC_ASSET_UPLOAD',
+          file_type: file.type,
+          region: (profile as any).region || 'Global',
+          age_range: (profile as any).age_range || 'Unknown',
+          genetic_markers: extractedMarkers
+        });
+
+      if (analyticsError) {
+        console.error('Failed to log analytics event:', analyticsError);
+      }
     }
 
     return new Response(JSON.stringify(savedFile), {

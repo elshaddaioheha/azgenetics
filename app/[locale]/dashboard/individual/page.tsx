@@ -35,6 +35,8 @@ interface GeneticData {
   size: string;
   nftCertified: boolean;
   sharedWith: number;
+  hash: string;
+  hedera_transaction_id: string;
 }
 
 interface HealthInsight {
@@ -111,6 +113,8 @@ const IndividualDashboard = () => {
         size: '100 MB', // mock size for now
         nftCertified: !!file.nft_token_id,
         sharedWith: 0, // Mock for now
+        hash: file.hash,
+        hedera_transaction_id: file.hedera_transaction_id
       }));
 
       setUserData(transformedFiles);
@@ -409,10 +413,22 @@ const IndividualDashboard = () => {
                                 <span className="text-[10px] text-white/20 font-black uppercase font-mono tracking-widest italic">{item.size}</span>
                                 <span className="w-1 h-1 rounded-full bg-white/10"></span>
                                 <span className="text-[10px] text-fern font-black uppercase tracking-[0.3em] italic">SHARED_NODES: {item.sharedWith}</span>
+                                <span className="w-1 h-1 rounded-full bg-white/10"></span>
+                                <span className="text-[10px] text-white/40 font-black uppercase tracking-[0.2em] italic font-mono truncate max-w-[150px]" title={item.hash}>NOTARIZED: {item.hash?.slice(0, 10)}...</span>
                               </div>
                             </div>
                           </div>
                           <div className="flex items-center gap-6">
+                            {item.hedera_transaction_id && (
+                              <a
+                                href={`https://hashscan.io/testnet/transaction/${item.hedera_transaction_id.replace('@', '-')}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="px-6 py-2 rounded-full border border-fern/30 bg-fern/5 text-fern text-[9px] font-black uppercase tracking-[0.4em] italic hover:bg-fern/20 transition-all flex items-center gap-3 decoration-transparent"
+                              >
+                                <ShieldCheck size={14} /> Verify_On_Hedera
+                              </a>
+                            )}
                             {item.nftCertified ? (
                               <div className="px-6 py-2 rounded-full border border-fern/30 bg-fern/10 text-fern text-[9px] font-black uppercase tracking-[0.4em] italic">PROTOCOL_CERTIFIED</div>
                             ) : (

@@ -3,6 +3,7 @@ import * as forge from 'node-forge';
 export interface GeneticVariant {
   chromosome: string;
   position: number;
+  id: string;
   reference: string;
   alternate: string;
   quality: number;
@@ -69,6 +70,7 @@ export class GeneticETLService {
       const variant: GeneticVariant = {
         chromosome: parts[0],
         position: parseInt(parts[1], 10),
+        id: parts[2],
         reference: parts[3],
         alternate: parts[4],
         quality: parts[5] === '.' ? 0 : parseFloat(parts[5]),
@@ -105,11 +107,75 @@ export class GeneticETLService {
   }
 
   /**
+   * Processes CSV genetic report and extracts variants
+   */
+  async processCSVFile(csvContent: string): Promise<ProcessedGeneticData> {
+    const lines = csvContent.split('\n');
+    const variants: GeneticVariant[] = [];
+
+    // Simple CSV parser for genetic reports
+    // Expected header: CHROMOSOME,POSITION,REFERENCE,ALTERNATE,GENE,...
+    const header = lines[0].toLowerCase();
+    const isGeneticCSV = header.includes('chromosome') && header.includes('position');
+
+    if (!isGeneticCSV) {
+      throw new Error('Invalid CSV format: Missing genetic headers');
+    }
+
+    const columns = lines[0].split(',');
+    const chromIdx = columns.findIndex(c => c.toLowerCase().includes('chromosome'));
+    const posIdx = columns.findIndex(c => c.toLowerCase().includes('position'));
+    const refIdx = columns.findIndex(c => c.toLowerCase().includes('reference'));
+    const altIdx = columns.findIndex(c => c.toLowerCase().includes('alternate'));
+
+    for (let i = 1; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!line) continue;
+
+      const parts = line.split(',');
+      if (parts.length < 4) continue;
+
+      const variant: GeneticVariant = {
+        chromosome: parts[chromIdx] || 'Unknown',
+        position: parseInt(parts[posIdx], 10) || 0,
+        id: '.',
+        reference: parts[refIdx] || '',
+        alternate: parts[altIdx] || '',
+        quality: 100, // Reports are usually high confidence
+        filter: 'PASS',
+        info: { source: 'CSV_REPORT' }
+      };
+
+      // Add extra columns to info
+      columns.forEach((col, idx) => {
+        if (![chromIdx, posIdx, refIdx, altIdx].includes(idx)) {
+          variant.info[col.trim()] = parts[idx]?.trim();
+        }
+      });
+
+      variants.push(variant);
+    }
+
+    return {
+      variants: variants.slice(0, 1000),
+      totalVariants: variants.length,
+      chromosomes: Array.from(new Set(variants.map(v => v.chromosome))).sort(),
+      qualityStats: { min: 100, max: 100, average: 100 },
+      metadata: {
+        fileFormat: 'CSV_GENETIC_REPORT',
+        source: 'User Upload',
+        referenceGenome: 'Unknown',
+        processedAt: new Date().toISOString()
+      }
+    };
+  }
+
+  /**
    * Parses INFO field from VCF format
    */
   private parseInfoField(infoString: string): Record<string, any> {
     const info: Record<string, any> = {};
-    
+
     if (!infoString || infoString === '.') {
       return info;
     }
@@ -136,7 +202,7 @@ export class GeneticETLService {
    */
   async normalizeData(processedData: ProcessedGeneticData): Promise<ProcessedGeneticData> {
     // Remove low-quality variants
-    const filteredVariants = processedData.variants.filter(v => 
+    const filteredVariants = processedData.variants.filter(v =>
       v.quality > 20 || v.filter === 'PASS'
     );
 
@@ -170,7 +236,7 @@ export class GeneticETLService {
       qualityStats: processedData.qualityStats,
       metadata: processedData.metadata
     });
-    
+
     return forge.md.sha256.create().update(dataString).digest().toHex();
   }
 }

@@ -73,6 +73,8 @@ const ResearcherDashboard = () => {
     const [activeTab, setActiveTab] = useState('overview');
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [userProfile, setUserProfile] = useState<any>(null);
+    const [realAnalytics, setRealAnalytics] = useState<any>(null);
+    const [loadingAnalytics, setLoadingAnalytics] = useState(false);
     const toast = useToast();
 
     // Redirect if not authenticated
@@ -98,10 +100,29 @@ const ResearcherDashboard = () => {
         if (user) loadProfile();
     }, [user]);
 
+    // Load real-time analytics
+    useEffect(() => {
+        const loadAnalytics = async () => {
+            setLoadingAnalytics(true);
+            try {
+                const response = await api.get('get-analytics');
+                if (response.ok) {
+                    const result = await response.json();
+                    setRealAnalytics(result.data);
+                }
+            } catch (err) {
+                console.error('Failed to load real analytics:', err);
+            } finally {
+                setLoadingAnalytics(false);
+            }
+        };
+        if (user && activeTab === 'overview') loadAnalytics();
+    }, [user, activeTab]);
+
     const analytics: AnalyticsData[] = [
         { id: '1', metric: 'Genomic Diversity Index', value: '0.84', trend: 'up', color: 'text-med-purple', bgClass: 'bg-med-purple' },
-        { id: '2', metric: 'Anonymized Records', value: '14,202', trend: 'up', color: 'text-med-blue', bgClass: 'bg-med-blue' },
-        { id: '3', metric: 'System Latency', value: '0.4s', trend: 'down', color: 'text-med-green', bgClass: 'bg-med-green' },
+        { id: '2', metric: 'Real-time Genetic Records', value: realAnalytics?.total_records?.toLocaleString() || '---', trend: 'up', color: 'text-med-blue', bgClass: 'bg-med-blue' },
+        { id: '3', metric: 'Extracted Markers', value: realAnalytics?.events?.[0]?.markers?.length?.toString() || '0', trend: 'up', color: 'text-med-green', bgClass: 'bg-med-green' },
         { id: '4', metric: 'Consensus Stability', value: '99.9%', trend: 'stable', color: 'text-med-tan', bgClass: 'bg-med-tan' },
     ];
 
@@ -284,7 +305,20 @@ const ResearcherDashboard = () => {
                                                 <div className="relative">
                                                     <Dna size={80} className="text-violet-600/10 animate-[spin_20s_linear_infinite] mb-6" />
                                                 </div>
-                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.4em] animate-pulse">Processing sharded telemetry...</p>
+                                                {loadingAnalytics ? (
+                                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.4em] animate-pulse">Syncing with Mainnet Node...</p>
+                                                ) : realAnalytics ? (
+                                                    <div className="text-center px-10">
+                                                        <p className="text-[10px] font-bold text-violet-600 uppercase tracking-[0.4em] mb-4">Latest Population Variants Detected</p>
+                                                        <div className="flex flex-wrap justify-center gap-2">
+                                                            {realAnalytics.events?.[0]?.markers?.slice(0, 10).map((m: string) => (
+                                                                <span key={m} className="bg-violet-50 text-violet-600 px-3 py-1 rounded-lg text-[10px] font-mono border border-indigo-100 font-black">{m}</span>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.4em] animate-pulse">Initialising sharded telemetry...</p>
+                                                )}
                                             </div>
 
                                             <div className="grid grid-cols-3 gap-6 mt-10">

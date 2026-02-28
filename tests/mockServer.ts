@@ -61,9 +61,15 @@ export function startMockApiServer(p = 3000) {
             return;
           }
 
-          // create a fake file record; tests expect file_name 'test.vcf'
           const id = genId();
-          const file = { id, owner_auth_id: user.id, file_name: 'test.vcf' };
+          const file = {
+            id,
+            owner_auth_id: user.id,
+            file_name: 'patient_genomics.vcf',
+            hash: '7d6e...fc31',
+            hedera_transaction_id: '0.0.1234@' + Date.now(),
+            encryption_key: 'isolated-key-001'
+          };
           files.set(id, file);
 
           res.writeHead(201, { 'Content-Type': 'application/json' });
@@ -88,7 +94,6 @@ export function startMockApiServer(p = 3000) {
             return;
           }
 
-          // Only owner can grant
           if (file.owner_auth_id !== user.id) {
             res.writeHead(403, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ error: 'Forbidden' }));
@@ -96,12 +101,10 @@ export function startMockApiServer(p = 3000) {
           }
 
           const set = grants.get(fileId) ?? new Set<string>();
-          // support placeholder grantee IDs used in tests (e.g. 'F2_USER_ID')
           if (granteeId === 'F2_USER_ID') {
             const found = findUserIdByTier('F2');
             if (found) set.add(found);
           } else {
-            // granteeId may be a profile id (user_profiles.id) - map to auth id if so
             const possibleAuth = findAuthIdByProfileId(granteeId);
             if (possibleAuth) set.add(possibleAuth);
             else set.add(granteeId);
@@ -109,7 +112,7 @@ export function startMockApiServer(p = 3000) {
           grants.set(fileId, set);
 
           res.writeHead(201, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ success: true }));
+          res.end(JSON.stringify({ success: true, status: 'active' }));
           return;
         }
 
@@ -129,7 +132,6 @@ export function startMockApiServer(p = 3000) {
             return;
           }
 
-          // allowed if owner or granted
           const allowed = file.owner_auth_id === user.id || (grants.get(fileId ?? '')?.has(user.id));
           if (!allowed) {
             res.writeHead(403, { 'Content-Type': 'application/json' });
@@ -137,9 +139,8 @@ export function startMockApiServer(p = 3000) {
             return;
           }
 
-          // Return file binary surrogate with expected content-type used in tests
           res.writeHead(200, { 'Content-Type': 'chemical/x-vcf' });
-          res.end('VCF-DATA');
+          res.end('##fileformat=VCF\n#CHROM POS ID REF ALT\nchr1 1000 . A T');
           return;
         }
 
@@ -159,7 +160,6 @@ export function startMockApiServer(p = 3000) {
             return;
           }
 
-          // Only owner can delete
           if (file.owner_auth_id !== user.id) {
             res.writeHead(403, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ error: 'Forbidden' }));
@@ -189,7 +189,13 @@ export function startMockApiServer(p = 3000) {
           }
 
           res.writeHead(200, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ data: [], metadata: {} }));
+          res.end(JSON.stringify({
+            data: {
+              total_records: 50,
+              events: [{ event_type: 'GENETIC_ASSET_UPLOAD', markers: ['rs123', 'rs456'] }]
+            },
+            metadata: {}
+          }));
           return;
         }
 
