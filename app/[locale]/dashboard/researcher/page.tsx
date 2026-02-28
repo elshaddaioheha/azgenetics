@@ -78,7 +78,7 @@ const ResearcherDashboard = () => {
     // Redirect if not authenticated
     useEffect(() => {
         if (!authLoading && !user) {
-            router.push('/sign-in');
+            router.push('/en/sign-in');
         }
     }, [authLoading, user, router]);
 

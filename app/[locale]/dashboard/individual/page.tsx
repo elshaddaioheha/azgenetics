@@ -68,7 +68,7 @@ const IndividualDashboard = () => {
   // Redirect to sign-in if not authenticated
   useEffect(() => {
     if (!authLoading && !user) {
-      router.push('/sign-in');
+      router.push('/en/sign-in');
     }
   }, [authLoading, user, router]);
 
@@ -81,7 +81,7 @@ const IndividualDashboard = () => {
           const profile = await response.json();
           setUserProfile(profile);
           if (profile.user_role !== 'patient') {
-            router.push('/dashboard');
+            router.push('/en/dashboard');
           }
         }
       } catch (error) {
@@ -224,8 +224,8 @@ const IndividualDashboard = () => {
               key={item.id}
               onClick={() => setActiveTab(item.id)}
               className={`w-full flex items-center px-6 py-5 rounded-2xl transition-all group ${activeTab === item.id
-                  ? 'bg-fern text-obsidian shadow-[0_0_30px_rgba(167,199,171,0.2)]'
-                  : 'text-white/30 hover:text-white hover:bg-white/5'
+                ? 'bg-fern text-obsidian shadow-[0_0_30px_rgba(167,199,171,0.2)]'
+                : 'text-white/30 hover:text-white hover:bg-white/5'
                 }`}
             >
               <item.icon size={22} className={activeTab === item.id ? 'scale-110' : 'group-hover:scale-110 transition-transform'} />
@@ -273,7 +273,7 @@ const IndividualDashboard = () => {
               disabled={isUploading}
               className="bg-fern text-obsidian px-10 py-5 rounded-3xl text-[10px] font-black uppercase tracking-[0.4em] italic flex items-center gap-4 hover:bg-[#A7C7AB] transition-all shadow-[0_0_40px_rgba(167,199,171,0.2)] disabled:opacity-50"
             >
-              {isUploading ? <Spinner size="sm" /> : <UploadCloud size={20} />} 
+              {isUploading ? <Spinner size="sm" /> : <UploadCloud size={20} />}
               {isUploading ? 'UPLOADING...' : 'UPLOAD_SEQUENCE'}
             </button>
             <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-fern hover:border-fern/30 transition-all cursor-pointer group shadow-inner">
@@ -332,8 +332,8 @@ const IndividualDashboard = () => {
                             </div>
                             <div className="flex items-center gap-3 mb-8">
                               <span className={`px-4 py-1.5 rounded-full text-[8px] font-black uppercase tracking-[0.3em] italic ${insight.priority === 'high' ? 'bg-red-400/10 text-red-400 border border-red-400/20' :
-                                  insight.priority === 'medium' ? 'bg-yellow-400/10 text-yellow-400 border border-yellow-400/20' :
-                                    'bg-fern/10 text-fern border border-fern/20'
+                                insight.priority === 'medium' ? 'bg-yellow-400/10 text-yellow-400 border border-yellow-400/20' :
+                                  'bg-fern/10 text-fern border border-fern/20'
                                 }`}>
                                 {insight.priority}_PRIORITY
                               </span>
@@ -396,32 +396,32 @@ const IndividualDashboard = () => {
                       </div>
                     ) : (
                       userData.map((item) => (
-                      <div key={item.id} className="glass-panel border-white/5 rounded-3xl p-8 flex items-center justify-between group hover:bg-white/[0.02] transition-all bg-white/[0.01]">
-                        <div className="flex items-center gap-10">
-                          <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-white/20 group-hover:text-fern transition-all group-hover:scale-110 shadow-inner">
-                            {item.type === 'genetic' ? <Dna size={26} /> : <ClipboardList size={26} />}
-                          </div>
-                          <div>
-                            <h4 className="text-2xl font-black text-white uppercase tracking-tighter italic group-hover:text-fern transition-colors">{item.name}</h4>
-                            <div className="flex items-center gap-6 mt-3">
-                              <span className="text-[10px] text-white/20 font-black uppercase font-mono tracking-widest italic">{item.date}</span>
-                              <span className="w-1 h-1 rounded-full bg-white/10"></span>
-                              <span className="text-[10px] text-white/20 font-black uppercase font-mono tracking-widest italic">{item.size}</span>
-                              <span className="w-1 h-1 rounded-full bg-white/10"></span>
-                              <span className="text-[10px] text-fern font-black uppercase tracking-[0.3em] italic">SHARED_NODES: {item.sharedWith}</span>
+                        <div key={item.id} className="glass-panel border-white/5 rounded-3xl p-8 flex items-center justify-between group hover:bg-white/[0.02] transition-all bg-white/[0.01]">
+                          <div className="flex items-center gap-10">
+                            <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-white/20 group-hover:text-fern transition-all group-hover:scale-110 shadow-inner">
+                              {item.type === 'genetic' ? <Dna size={26} /> : <ClipboardList size={26} />}
+                            </div>
+                            <div>
+                              <h4 className="text-2xl font-black text-white uppercase tracking-tighter italic group-hover:text-fern transition-colors">{item.name}</h4>
+                              <div className="flex items-center gap-6 mt-3">
+                                <span className="text-[10px] text-white/20 font-black uppercase font-mono tracking-widest italic">{item.date}</span>
+                                <span className="w-1 h-1 rounded-full bg-white/10"></span>
+                                <span className="text-[10px] text-white/20 font-black uppercase font-mono tracking-widest italic">{item.size}</span>
+                                <span className="w-1 h-1 rounded-full bg-white/10"></span>
+                                <span className="text-[10px] text-fern font-black uppercase tracking-[0.3em] italic">SHARED_NODES: {item.sharedWith}</span>
+                              </div>
                             </div>
                           </div>
+                          <div className="flex items-center gap-6">
+                            {item.nftCertified ? (
+                              <div className="px-6 py-2 rounded-full border border-fern/30 bg-fern/10 text-fern text-[9px] font-black uppercase tracking-[0.4em] italic">PROTOCOL_CERTIFIED</div>
+                            ) : (
+                              <button className="h-12 px-10 rounded-3xl bg-white/5 border border-white/10 text-white text-[9px] font-black uppercase tracking-[0.4em] italic transition-all hover:bg-fern hover:text-obsidian hover:border-fern">INITIALIZE_PROOF</button>
+                            )}
+                            <button className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 text-white/20 flex items-center justify-center hover:text-white transition-colors"><ExternalLink size={18} /></button>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-6">
-                          {item.nftCertified ? (
-                            <div className="px-6 py-2 rounded-full border border-fern/30 bg-fern/10 text-fern text-[9px] font-black uppercase tracking-[0.4em] italic">PROTOCOL_CERTIFIED</div>
-                          ) : (
-                            <button className="h-12 px-10 rounded-3xl bg-white/5 border border-white/10 text-white text-[9px] font-black uppercase tracking-[0.4em] italic transition-all hover:bg-fern hover:text-obsidian hover:border-fern">INITIALIZE_PROOF</button>
-                          )}
-                          <button className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 text-white/20 flex items-center justify-center hover:text-white transition-colors"><ExternalLink size={18} /></button>
-                        </div>
-                      </div>
-                    )))}
+                      )))}
                   </div>
                 </div>
               )}

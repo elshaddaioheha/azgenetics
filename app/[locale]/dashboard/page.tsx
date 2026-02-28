@@ -154,8 +154,8 @@ const Dashboard = () => {
   // Redirection Logic
   useEffect(() => {
     if (userProfile && !authLoading) {
-      if (userProfile.user_role === 'doctor') router.push('/dashboard/doctor');
-      else if (userProfile.user_role === 'researcher') router.push('/dashboard/researcher');
+      if (userProfile.user_role === 'doctor') router.push('/en/dashboard/doctor');
+      else if (userProfile.user_role === 'researcher') router.push('/en/dashboard/researcher');
     }
   }, [userProfile, authLoading, router]);
 
@@ -211,7 +211,7 @@ const Dashboard = () => {
     }
   };
 
-  const handleLogout = () => { router.push('/sign-in'); };
+  const handleLogout = () => { router.push('/en/sign-in'); };
 
   const statsList = [
     { label: 'Storage Used', value: userData.length > 0 ? `${userData.length * 100} MB` : '0 MB', icon: Database, color: 'bg-med-blue' },

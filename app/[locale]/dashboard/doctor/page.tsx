@@ -96,7 +96,7 @@ const AZGenesDashboard = () => {
   // Redirect to sign-in if not authenticated
   useEffect(() => {
     if (!authLoading && !user) {
-      router.push('/sign-in');
+      router.push('/en/sign-in');
     }
   }, [authLoading, user, router]);
 
@@ -109,7 +109,7 @@ const AZGenesDashboard = () => {
           const profile = await response.json();
           setUserProfile(profile);
           if (profile.user_role !== 'doctor') {
-            router.push('/dashboard');
+            router.push('/en/dashboard');
           }
         }
       } catch (error) {

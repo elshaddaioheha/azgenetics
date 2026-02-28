@@ -40,8 +40,26 @@ const SignIn: React.FC = () => {
                 throw new Error(data.error || 'Authentication failed');
             }
 
-            const role = data.user.role;
-            const dashboardPath = role === 'patient' ? '/dashboard' : `/dashboard/${role}`;
+            // Establish the Supabase session in the browser client.
+            // The API route signs in server-side; we must sync the session
+            // to the browser so useAuth() sees a valid user on the dashboard.
+            if (data.session) {
+                const { createClient } = await import('@supabase/supabase-js');
+                const supabase = createClient(
+                    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+                    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+                );
+                await supabase.auth.setSession({
+                    access_token: data.session.access_token,
+                    refresh_token: data.session.refresh_token,
+                });
+            }
+
+            // Redirect to the correct localized dashboard path
+            const role = data.user?.role ?? 'patient';
+            const dashboardPath = role === 'patient'
+                ? '/en/dashboard'
+                : `/en/dashboard/${role}`;
             router.push(dashboardPath);
 
         } catch (err: any) {
