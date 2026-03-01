@@ -1,7 +1,7 @@
 import { HederaClient } from '../../services/hedera/client';
 import { AuthContext, corsHeaders } from './utils';
 import { withAuth } from './middleware/auth';
-import { AccountId, TokenId } from '@hashgraph/sdk';
+import { TokenId } from '@hashgraph/sdk';
 
 const getHederaClient = () => new HederaClient();
 
@@ -93,14 +93,11 @@ async function handleMintNFTCertificate(req: Request, context: AuthContext): Pro
     const metadataBytes = new TextEncoder().encode(JSON.stringify(nftMetadata));
 
     // Mint NFT on Hedera
-    const serialNumber = await getHederaClient().mintNFTCertificate(tokenId, metadataBytes);
+    const mintResult = await getHederaClient().mintNFTCertificate(tokenId, metadataBytes);
+    const serialNumber = mintResult.serialNumber;
 
-    // Get operator account for storing transaction info
-    const operatorId = AccountId.fromString(process.env.HEDERA_OPERATOR_ID || '');
-
-    // Create transaction ID (we'll use a placeholder since we only get serial number back)
-    // In production, you'd want to get the actual transaction ID from the mint operation
-    const hederaTxId = `${tokenId.toString()}-${serialNumber}`;
+    // Persist actual Hedera transaction id returned by mint operation
+    const hederaTxId = mintResult.transactionId;
 
     // Update file with NFT information
     const { data: updatedFile, error: updateError } = await context.supabase
