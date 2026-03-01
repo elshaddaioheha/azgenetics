@@ -176,7 +176,7 @@ export class HederaClient {
     tokenId: TokenId,
     metadata: Uint8Array,
     _serialNumber?: number
-  ): Promise<string> {
+  ): Promise<{ serialNumber: string; transactionId: string }> {
     const transaction = await new TokenMintTransaction()
       .setTokenId(tokenId)
       .addMetadata(metadata)
@@ -188,7 +188,10 @@ export class HederaClient {
 
     // Extract serial number from receipt
     if (receipt && 'serials' in receipt && Array.isArray(receipt.serials) && receipt.serials.length > 0) {
-      return receipt.serials[0].toString();
+      return {
+        serialNumber: receipt.serials[0].toString(),
+        transactionId: response.transactionId.toString()
+      };
     }
 
     throw new Error("Failed to retrieve serial number from mint transaction");
