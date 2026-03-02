@@ -45,7 +45,11 @@ const stagger = {
   }
 };
 
+import { useTranslations } from 'next-intl';
+
 export default function Home() {
+  const t = useTranslations('Index');
+
   return (
     <div className="bg-[#fdfdfd] text-foreground font-sans selection:bg-fern/10 selection:text-fern overflow-x-hidden min-h-screen">
       <Head>
@@ -79,15 +83,14 @@ export default function Home() {
             variants={fadeIn}
             className="text-5xl sm:text-6xl md:text-7xl lg:text-[6.5rem] font-bold tracking-tighter text-foreground mb-6 md:mb-8 leading-[0.95] text-[#111]"
           >
-            Own Your<br />Genetic Destiny.
+            {t('title')}
           </motion.h1>
 
           <motion.p
             variants={fadeIn}
             className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto mb-10 md:mb-12 leading-relaxed font-semibold opacity-60 px-2"
           >
-            Secure, sovereign genomic data management for the modern era.
-            Carry your biological heritage anywhere, protected by decentralized encryption.
+            {t('description')}
           </motion.p>
 
           <motion.div variants={fadeIn} className="flex flex-wrap md:flex-nowrap gap-6 md:gap-10 items-center justify-center mb-16 px-4">

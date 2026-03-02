@@ -44,6 +44,9 @@ import { TransactionStatusModal, TransactionStatus } from '@/components/Transact
 import { PrivateDataAccessPanel } from '@/components/dashboard/doctor/PrivateDataAccessPanel';
 import { DataItemRow } from '@/components/dashboard/doctor/DataItemRow';
 import { AdvancedWalletPanel } from '@/components/dashboard/AdvancedWalletPanel';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
+import { useSearchParams } from 'next/navigation';
+import { usePathname } from '@/i18n/routing';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -73,7 +76,16 @@ const sidebarVariants = {
 const AZGenesDashboard = () => {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState('overview');
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const activeTab = searchParams.get('tab') || 'overview';
+  const setActiveTab = (tab: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('tab', tab);
+    router.replace(`${pathname}?${params.toString()}`);
+  };
+
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isPrivateDataUnlocked, setIsPrivateDataUnlocked] = useState(false);
   const [nftCertificates, setNftCertificates] = useState<any[]>([]);
@@ -184,21 +196,34 @@ const AZGenesDashboard = () => {
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
+
+    setTxModalOpen(true);
+    setTxStatus('preparing');
+    setTxError('');
+    setTxId('');
+
     setIsUploading(true);
     try {
+      setTxStatus('signing');
       const formData = new FormData();
       formData.append('file', file);
       const response = await api.post('upload-file', formData);
       if (!response.ok) {
         const error = await response.json();
-        toast.error(`Upload failed: ${error.error}`);
-        return;
+        throw new Error(error.error || 'Upload failed');
       }
+
+      const result = await response.json();
+      setTxStatus('confirmed');
+      setTxId(result.hedera_transaction_id || '');
+
       await loadFiles();
       toast.success('Clinical asset uploaded successfully');
     } catch (error) {
       console.error('Error uploading file:', error);
-      toast.error('Connection error');
+      const errorMessage = error instanceof Error ? error.message : 'Connection error';
+      setTxStatus('failed');
+      setTxError(errorMessage);
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -369,6 +394,8 @@ const AZGenesDashboard = () => {
                 <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
               </button>
 
+              <LanguageSwitcher />
+
               <div className="flex items-center gap-4 pl-6 border-l border-border">
                 <div className="text-right">
                   <p className="text-sm font-bold leading-none mb-1">{user?.user_metadata?.full_name || 'Medical Lead'}</p>
@@ -435,16 +462,30 @@ const AZGenesDashboard = () => {
                         <div className="overflow-x-auto">
                           <table className="w-full text-left">
                             <tbody className="divide-y divide-border">
-                              {userData.slice(0, 5).map(item => (
-                                <DataItemRow
-                                  key={item.id}
-                                  item={item}
-                                  mintingFileId={mintingFileId}
-                                  onMintNFT={handleMintNFT}
-                                  isPrivateDataUnlocked={isPrivateDataUnlocked}
-                                  onUnlockPrivateData={handleUnlockPrivateData}
-                                />
-                              ))}
+                              {loadingFiles ? (
+                                <tr>
+                                  <td colSpan={6} className="p-10">
+                                    <TableSkeleton rows={3} />
+                                  </td>
+                                </tr>
+                              ) : userData.length === 0 ? (
+                                <tr>
+                                  <td colSpan={6} className="p-10 text-center text-muted-foreground font-semibold italic">
+                                    No clinical records found.
+                                  </td>
+                                </tr>
+                              ) : (
+                                userData.slice(0, 5).map(item => (
+                                  <DataItemRow
+                                    key={item.id}
+                                    item={item}
+                                    mintingFileId={mintingFileId}
+                                    onMintNFT={handleMintNFT}
+                                    isPrivateDataUnlocked={isPrivateDataUnlocked}
+                                    onUnlockPrivateData={handleUnlockPrivateData}
+                                  />
+                                ))
+                              )}
                             </tbody>
                           </table>
                         </div>

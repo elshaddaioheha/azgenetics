@@ -39,6 +39,10 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { TableSkeleton } from '@/components/ui/Skeleton';
 import Spinner from '@/components/ui/Spinner';
+import { TransactionStatusModal, TransactionStatus } from '@/components/TransactionStatusModal';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
+import { useSearchParams } from 'next/navigation';
+import { usePathname } from '@/i18n/routing';
 
 // Imports from shared components/types
 import { DataItem, UserProfile } from '@/types/dashboard';
@@ -89,9 +93,17 @@ const itemVariants = {
 const Dashboard = () => {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const toast = useToast();
 
-  const [activeTab, setActiveTab] = useState('overview');
+  const activeTab = searchParams.get('tab') || 'overview';
+  const setActiveTab = (tab: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('tab', tab);
+    router.replace(`${pathname}?${params.toString()}`);
+  };
+
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isPrivateDataUnlocked, setIsPrivateDataUnlocked] = useState(false);
   const [userData, setUserData] = useState<DataItem[]>([]);
@@ -101,7 +113,15 @@ const Dashboard = () => {
   const [mintingFileId, setMintingFileId] = useState<string | null>(null);
   const [tokenBalance, setTokenBalance] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [completeness, setCompleteness] = useState(0);
+  const [earningHistory, setEarningHistory] = useState(earningData);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Transaction modal state
+  const [txModalOpen, setTxModalOpen] = useState(false);
+  const [txStatus, setTxStatus] = useState<TransactionStatus>('preparing');
+  const [txError, setTxError] = useState<string>('');
+  const [txId, setTxId] = useState<string>('');
 
   // Load Data Functions
   const loadFiles = async () => {
@@ -139,6 +159,19 @@ const Dashboard = () => {
         const balance = transactions.reduce((acc: number, tx: any) =>
           acc + (tx.type === 'received' || tx.type === 'earned' ? Number(tx.amount) : -Number(tx.amount)), 0);
         setTokenBalance(balance);
+
+        if (transactions.length > 0) {
+          const monthlyMap: Record<string, number> = {};
+          transactions.forEach((tx: any) => {
+            if (tx.type === 'received' || tx.type === 'earned') {
+              const m = new Date(tx.timestamp || Date.now()).toLocaleString('en-US', { month: 'short' });
+              monthlyMap[m] = (monthlyMap[m] || 0) + Number(tx.amount);
+            }
+          });
+          const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+          const history = months.map(m => ({ month: m, tokens: monthlyMap[m] || 0 }));
+          setEarningHistory(history.filter(h => h.tokens > 0).length > 0 ? history : earningData);
+        }
       }
     } catch (err) { console.error(err); }
   };
@@ -151,6 +184,16 @@ const Dashboard = () => {
     }
   }, [user, authLoading]);
 
+  // Calculate Data Completeness
+  useEffect(() => {
+    let score = 20; // Initialized
+    if (userProfile?.email_verified) score += 20;
+    if (userData.length > 0) score += 20;
+    if (userData.some(i => i.isPrivate)) score += 20;
+    if (userData.some(i => i.nftCertified)) score += 20;
+    setCompleteness(score);
+  }, [userProfile, userData]);
+
   // Redirection Logic
   useEffect(() => {
     if (userProfile && !authLoading) {
@@ -162,28 +205,62 @@ const Dashboard = () => {
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
+
+    setTxModalOpen(true);
+    setTxStatus('preparing');
+    setTxError('');
+    setTxId('');
+
     setIsUploading(true);
     try {
+      setTxStatus('signing');
       const formData = new FormData();
       formData.append('file', file);
       const response = await api.post('upload-file', formData);
       if (response.ok) {
+        const result = await response.json();
+        setTxStatus('confirmed');
+        setTxId(result.hedera_transaction_id || '');
         toast.success('Sequence captured successfully');
         loadFiles();
       } else {
-        toast.error('Upload failed');
+        const error = await response.json();
+        throw new Error(error.error || 'Upload failed');
       }
-    } catch (err) { toast.error('Error connecting to encryption node'); }
+    } catch (err) {
+      console.error(err);
+      const errorMessage = err instanceof Error ? err.message : 'Error connecting to encryption node';
+      setTxStatus('failed');
+      setTxError(errorMessage);
+    }
     finally { setIsUploading(false); if (fileInputRef.current) fileInputRef.current.value = ''; }
   };
 
   const handleMintNFT = async (fileId: string) => {
     setMintingFileId(fileId);
+    setTxModalOpen(true);
+    setTxStatus('preparing');
+    setTxError('');
+    setTxId('');
     try {
+      setTxStatus('signing');
       const response = await api.post('mint-nft-certificate', { fileId });
-      if (response.ok) { toast.success('Proof certificate minted'); loadFiles(); }
-      else toast.error('Minting failed');
-    } catch (err) { toast.error('Blockchain synchronization error'); }
+      if (response.ok) {
+        const result = await response.json();
+        setTxStatus('confirmed');
+        setTxId(result.nft?.hedera_transaction_id || '');
+        toast.success('Proof certificate minted');
+        loadFiles();
+      } else {
+        const error = await response.json();
+        throw new Error(error.error || 'Minting failed');
+      }
+    } catch (err) {
+      console.error(err);
+      const errorMessage = err instanceof Error ? err.message : 'Blockchain synchronization error';
+      setTxStatus('failed');
+      setTxError(errorMessage);
+    }
     finally { setMintingFileId(null); }
   };
 
@@ -228,6 +305,14 @@ const Dashboard = () => {
       <Head>
         <title>Sovereign Vault | AZ genes</title>
       </Head>
+
+      <TransactionStatusModal
+        isOpen={txModalOpen}
+        onClose={() => setTxModalOpen(false)}
+        status={txStatus}
+        error={txError}
+        transactionId={txId}
+      />
 
       <input ref={fileInputRef} type="file" onChange={handleFileUpload} className="hidden" accept=".vcf,.csv,.txt,.pdf" />
 
@@ -300,6 +385,8 @@ const Dashboard = () => {
               <Bell size={20} />
               <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
             </button>
+
+            <LanguageSwitcher />
 
             <div className="flex items-center gap-3 pl-6 border-l border-border">
               <div className="text-right hidden sm:block">
@@ -411,7 +498,7 @@ const Dashboard = () => {
                     </CardHeader>
                     <CardContent className="px-8 pb-8">
                       <ChartContainer config={chartConfig} className="h-[200px] w-full">
-                        <AreaChart accessibilityLayer data={earningData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                        <AreaChart accessibilityLayer data={earningHistory} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                           <defs>
                             <linearGradient id="colorTokens" x1="0" y1="0" x2="0" y2="1">
                               <stop offset="5%" stopColor="var(--color-tokens)" stopOpacity={0.8} />
@@ -430,11 +517,11 @@ const Dashboard = () => {
                 <div className="lg:col-span-4 space-y-8">
                   <Card className="rounded-[2.5rem] border-border shadow-sm border">
                     <CardHeader className="p-8 pb-4">
-                      <CardTitle className="text-xl font-bold tracking-tight">Security Profile</CardTitle>
-                      <CardDescription className="text-sm font-medium">85% Secured (Multi-sig pending)</CardDescription>
+                      <CardTitle className="text-xl font-bold tracking-tight">Vault Completeness</CardTitle>
+                      <CardDescription className="text-sm font-medium">{completeness}% Secured & Indexed</CardDescription>
                     </CardHeader>
                     <CardContent className="px-8 pb-8">
-                      <Progress value={85} className="h-2 bg-muted/50 w-full" />
+                      <Progress value={completeness} className="h-2 bg-muted/50 w-full" />
                     </CardContent>
                   </Card>
                   <div className="bg-white rounded-[2.5rem] border border-border shadow-sm p-8 group">

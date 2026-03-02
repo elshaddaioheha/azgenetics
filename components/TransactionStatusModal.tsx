@@ -11,6 +11,8 @@ interface TransactionStatusModalProps {
     error?: string;
     network?: string;
     onClose: () => void;
+    title?: string;
+    description?: string;
 }
 
 export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
@@ -20,6 +22,8 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
     error,
     network = 'testnet',
     onClose,
+    title,
+    description,
 }) => {
     if (!isOpen) return null;
 
@@ -50,37 +54,43 @@ export const TransactionStatusModal: React.FC<TransactionStatusModalProps> = ({
 
     // User-friendly, no Web3 jargon
     const getStatusText = () => {
+        if (title && description) {
+            return { title, description };
+        }
+
         switch (status) {
             case 'preparing':
                 return {
-                    title: 'Generating Certificate',
-                    description: 'We are preparing your proof of data integrity…',
+                    title: title || 'Generating Certificate',
+                    description: description || 'We are preparing your proof of data integrity…',
                 };
             case 'signing':
                 return {
-                    title: 'Securing Record',
-                    description: 'Applying cryptographic signature to your data…',
+                    title: title || 'Securing Record',
+                    description: description || 'Applying cryptographic signature to your data…',
                 };
             case 'submitting':
                 return {
-                    title: 'Registering Certificate',
-                    description: 'Your integrity certificate is being stored securely…',
+                    title: title || 'Registering Certificate',
+                    description: description || 'Your integrity certificate is being stored securely…',
                 };
             case 'confirmed':
                 return {
-                    title: 'Certificate Issued',
-                    description: 'Your data integrity is now certified and tamper-proof.',
+                    title: title || 'Certificate Issued',
+                    description: description || 'Your data integrity is now certified and tamper-proof.',
                 };
             case 'failed':
                 return {
-                    title: 'Certification Failed',
+                    title: title || 'Certification Failed',
                     description: error || 'Something went wrong. Please try again.',
                 };
         }
     };
 
     const statusInfo = getStatusText();
-    const explorerUrl = transactionId ? `https://hashscan.io/${network}/transaction/${transactionId}` : null;
+    // Hedera TX ID format: 0.0.ID@Timestamp.Nanos -> Explorer format: 0.0.ID-Timestamp-Nanos
+    const formattedTxId = transactionId ? transactionId.replace('@', '-').replace(/\.(\d+)$/, '-$1') : null;
+    const explorerUrl = formattedTxId ? `https://hashscan.io/${network}/transaction/${formattedTxId}` : null;
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">

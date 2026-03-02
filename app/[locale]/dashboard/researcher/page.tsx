@@ -36,6 +36,9 @@ import { useAuth } from '@/lib/useAuth';
 import { useRouter } from 'next/navigation';
 import Spinner from '@/components/ui/Spinner';
 import { AdvancedWalletPanel } from '@/components/dashboard/AdvancedWalletPanel';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
+import { useSearchParams } from 'next/navigation';
+import { usePathname } from '@/i18n/routing';
 
 // Types
 interface AnalyticsData {
@@ -70,7 +73,16 @@ const itemVariants = {
 const ResearcherDashboard = () => {
     const { user, loading: authLoading } = useAuth();
     const router = useRouter();
-    const [activeTab, setActiveTab] = useState('overview');
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+
+    const activeTab = searchParams.get('tab') || 'overview';
+    const setActiveTab = (tab: string) => {
+        const params = new URLSearchParams(searchParams.toString());
+        params.set('tab', tab);
+        router.replace(`${pathname}?${params.toString()}`);
+    };
+
     const [sidebarOpen, setSidebarOpen] = useState(true);
     const [userProfile, setUserProfile] = useState<any>(null);
     const [realAnalytics, setRealAnalytics] = useState<any>(null);
@@ -230,10 +242,12 @@ const ResearcherDashboard = () => {
                         </div>
 
                         <div className="flex items-center gap-4">
-                            <button className="p-2.5 rounded-full border border-border text-muted-foreground hover:text-foreground transition-all">
+                            <button className="p-2.5 rounded-full border border-border text-muted-foreground hover:text-foreground transition-all relative">
                                 <Bell size={20} />
                                 <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
                             </button>
+
+                            <LanguageSwitcher />
 
                             <div className="flex items-center gap-4 pl-6 border-l border-border">
                                 <div className="text-right flex flex-col">

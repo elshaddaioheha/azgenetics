@@ -1,14 +1,13 @@
-/**
- * POST /api/auth/verify-otp
- * Verifies the 6-digit OTP code using Supabase Auth's native verifyOtp.
- * Uses type: 'signup' to match the confirmation email sent by supabase.auth.signUp().
- */
-
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/app/api/_context';
+import { withRateLimit } from '@/lib/rateLimit';
 
 export async function POST(request: NextRequest) {
     try {
+        // Upstash Rate Limiting: Authentication policy
+        const rateLimitRes = await withRateLimit(request, 'auth');
+        if (rateLimitRes) return rateLimitRes;
+
         if (!supabase) {
             return NextResponse.json(
                 { error: 'Database connection error' },

@@ -7,52 +7,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/app/api/_context';
 import { HederaClient } from '@/src/services/hedera/client';
-
-// Rate limiting: max 5 requests per email per hour
-const loginAttempts = new Map<string, { attempts: number; resetAt: number; blockedUntil?: number }>();
-
-const MAX_ATTEMPTS = 5;
-const BLOCK_DURATION = 60 * 60 * 1000; // 1 hour
-const RESET_INTERVAL = 60 * 60 * 1000; // 1 hour
-
-function checkRateLimit(email: string): { allowed: boolean; message?: string } {
-    const now = Date.now();
-    const record = loginAttempts.get(email);
-
-    if (!record) {
-        loginAttempts.set(email, { attempts: 1, resetAt: now + RESET_INTERVAL });
-        return { allowed: true };
-    }
-
-    if (record.blockedUntil && now < record.blockedUntil) {
-        const minutesLeft = Math.ceil((record.blockedUntil - now) / 60000);
-        return {
-            allowed: false,
-            message: `Too many attempts. Try again in ${minutesLeft} minutes.`
-        };
-    }
-
-    if (now > record.resetAt) {
-        loginAttempts.set(email, { attempts: 1, resetAt: now + RESET_INTERVAL });
-        return { allowed: true };
-    }
-
-    record.attempts++;
-
-    if (record.attempts > MAX_ATTEMPTS) {
-        record.blockedUntil = now + BLOCK_DURATION;
-        return {
-            allowed: false,
-            message: 'Too many login attempts. Please try again in 1 hour.'
-        };
-    }
-
-    return { allowed: true };
-}
-
+import { withRateLimit } from '@/lib/rateLimit';
 
 export async function POST(request: NextRequest) {
     try {
+        // Upstash Rate Limiting: Authentication policy
+        const rateLimitRes = await withRateLimit(request, 'auth');
+        if (rateLimitRes) return rateLimitRes;
+
         if (!supabase) {
             return NextResponse.json(
                 { error: 'Database connection error' },
@@ -81,15 +43,6 @@ export async function POST(request: NextRequest) {
             return NextResponse.json(
                 { error: 'Password must be at least 6 characters' },
                 { status: 400 }
-            );
-        }
-
-        // Check rate limit
-        const rateLimitCheck = checkRateLimit(email);
-        if (!rateLimitCheck.allowed) {
-            return NextResponse.json(
-                { error: rateLimitCheck.message },
-                { status: 429 }
             );
         }
 

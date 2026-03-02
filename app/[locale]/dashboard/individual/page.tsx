@@ -25,6 +25,10 @@ import {
 } from 'lucide-react';
 import Spinner from '@/components/ui/Spinner';
 import { motion, AnimatePresence } from 'framer-motion';
+import { TransactionStatusModal, TransactionStatus } from '@/components/TransactionStatusModal';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
+import { useSearchParams } from 'next/navigation';
+import { usePathname } from '@/i18n/routing';
 
 // Types
 interface GeneticData {
@@ -59,13 +63,29 @@ interface FamilyMember {
 const IndividualDashboard = () => {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState('overview');
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const activeTab = searchParams.get('tab') || 'overview';
+  const setActiveTab = (tab: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('tab', tab);
+    router.replace(`${pathname}?${params.toString()}`);
+  };
+
   const [userProfile, setUserProfile] = useState<any>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [userData, setUserData] = useState<GeneticData[]>([]);
   const [loadingFiles, setLoadingFiles] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [mintingFileId, setMintingFileId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Transaction modal state
+  const [txModalOpen, setTxModalOpen] = useState(false);
+  const [txStatus, setTxStatus] = useState<TransactionStatus>('preparing');
+  const [txError, setTxError] = useState<string>('');
+  const [txId, setTxId] = useState<string>('');
 
   // Redirect to sign-in if not authenticated
   useEffect(() => {
@@ -134,24 +154,64 @@ const IndividualDashboard = () => {
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
+
+    setTxModalOpen(true);
+    setTxStatus('preparing');
+    setTxError('');
+    setTxId('');
+
     setIsUploading(true);
     try {
+      setTxStatus('signing');
       const formData = new FormData();
       formData.append('file', file);
       const response = await api.post('upload-file', formData);
       if (!response.ok) {
         const error = await response.json();
-        toast.error(`Upload failed: ${error.error}`);
-        return;
+        throw new Error(error.error || 'Upload failed');
       }
+
+      const result = await response.json();
+      setTxStatus('confirmed');
+      setTxId(result.hedera_transaction_id || '');
+
       await loadFiles();
       toast.success('Genetic asset uploaded successfully');
     } catch (error) {
       console.error('Error uploading file:', error);
-      toast.error('Connection error');
+      const errorMessage = error instanceof Error ? error.message : 'Connection error';
+      setTxStatus('failed');
+      setTxError(errorMessage);
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const handleMintNFT = async (fileId: string) => {
+    setMintingFileId(fileId);
+    setTxModalOpen(true);
+    setTxStatus('preparing');
+    setTxError('');
+    setTxId('');
+    try {
+      setTxStatus('signing');
+      const response = await api.post('mint-nft-certificate', { fileId });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Minting failed');
+      }
+      const result = await response.json();
+      setTxStatus('confirmed');
+      setTxId(result.nft?.hedera_transaction_id || '');
+      await loadFiles();
+    } catch (error) {
+      console.error('Error minting NFT:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to mint certification';
+      setTxStatus('failed');
+      setTxError(errorMessage);
+    } finally {
+      setMintingFileId(null);
     }
   };
 
@@ -200,6 +260,13 @@ const IndividualDashboard = () => {
 
   return (
     <div className="min-h-screen bg-obsidian text-white selection:bg-fern/20 selection:text-white relative overflow-hidden flex">
+      <TransactionStatusModal
+        isOpen={txModalOpen}
+        onClose={() => setTxModalOpen(false)}
+        status={txStatus}
+        error={txError}
+        transactionId={txId}
+      />
       {/* Sidebar */}
       <motion.aside
         initial={false}
@@ -265,6 +332,7 @@ const IndividualDashboard = () => {
             </div>
           </div>
           <div className="flex items-center gap-8">
+            <LanguageSwitcher />
             <input
               type="file"
               ref={fileInputRef}
@@ -394,7 +462,20 @@ const IndividualDashboard = () => {
                   </div>
 
                   <div className="space-y-6">
-                    {userData.length === 0 ? (
+                    {loadingFiles ? (
+                      Array.from({ length: 3 }).map((_, i) => (
+                        <div key={i} className="glass-panel border-white/5 rounded-3xl p-8 flex items-center justify-between animate-pulse bg-white/[0.01]">
+                          <div className="flex items-center gap-10">
+                            <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10" />
+                            <div className="space-y-3">
+                              <div className="h-6 w-48 bg-white/5 rounded" />
+                              <div className="h-3 w-64 bg-white/5 rounded" />
+                            </div>
+                          </div>
+                          <div className="h-10 w-32 bg-white/5 rounded-full" />
+                        </div>
+                      ))
+                    ) : userData.length === 0 ? (
                       <div className="text-center py-20 text-white/30 text-sm font-bold uppercase tracking-widest italic border border-white/5 rounded-[3rem] border-dashed">
                         No genetic sequences detected in this vault.
                       </div>
@@ -432,7 +513,13 @@ const IndividualDashboard = () => {
                             {item.nftCertified ? (
                               <div className="px-6 py-2 rounded-full border border-fern/30 bg-fern/10 text-fern text-[9px] font-black uppercase tracking-[0.4em] italic">PROTOCOL_CERTIFIED</div>
                             ) : (
-                              <button className="h-12 px-10 rounded-3xl bg-white/5 border border-white/10 text-white text-[9px] font-black uppercase tracking-[0.4em] italic transition-all hover:bg-fern hover:text-obsidian hover:border-fern">INITIALIZE_PROOF</button>
+                              <button
+                                onClick={() => handleMintNFT(item.id)}
+                                disabled={mintingFileId === item.id}
+                                className="h-12 px-10 rounded-3xl bg-white/5 border border-white/10 text-white text-[9px] font-black uppercase tracking-[0.4em] italic transition-all hover:bg-fern hover:text-obsidian hover:border-fern disabled:opacity-50"
+                              >
+                                {mintingFileId === item.id ? 'CERTIFYING...' : 'INITIALIZE_PROOF'}
+                              </button>
                             )}
                             <button className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 text-white/20 flex items-center justify-center hover:text-white transition-colors"><ExternalLink size={18} /></button>
                           </div>
