@@ -151,8 +151,13 @@ async function handleFileUpload(req: Request, context: AuthContext): Promise<Res
     // Convert Buffer to CID via IPFS
     const ipfsCid = await ipfsClient.uploadFile(encryptedData, fileName);
 
-    // Submit hash to Hedera
-    const hederaTxId = await getHederaClient().submitHash(TOPIC_ID, hash);
+    // Submit hash to Hedera (non-blocking — upload succeeds even if Hedera is slow)
+    let hederaTxId = '';
+    try {
+      hederaTxId = await getHederaClient().submitHash(TOPIC_ID, hash);
+    } catch (hErr) {
+      console.warn('Hedera hash submission failed (non-fatal):', (hErr as Error).message);
+    }
 
     // Save file metadata
     const fileMetadata: Partial<FileMetadata> = {

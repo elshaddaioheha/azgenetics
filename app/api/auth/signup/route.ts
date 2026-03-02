@@ -102,38 +102,21 @@ export async function POST(request: NextRequest) {
             // Non-blocking for now
         }
 
-        // Store user profile in Supabase
-        const { error: profileError } = await supabase
-            .from('profiles')
-            .insert({
-                id: authData.user.id,
-                email,
-                name: fullName,
-                user_role: role,
-                auth_type: 'email',
-                subscription_tier: 'F1', // Default tier
-                email_verified: false,
-                hedera_account_id: hederaAccountId,
-                hedera_private_key: hederaPrivateKey
-            });
-
-        if (profileError) {
-            console.error('Error creating profile:', profileError);
-        }
-
-        // Also add to user_profiles to keep schemas in sync
+        // Store user profile in user_profiles (canonical table)
+        // Columns: id, auth_id, subscription_tier, created_at, updated_at, name, email, user_role
         const { error: userProfileError } = await supabase
             .from('user_profiles')
             .insert({
-                id: authData.user.id,
                 auth_id: authData.user.id,
+                email,
+                name: fullName,
+                user_role: role,
                 subscription_tier: 'F1',
-                hedera_account_id: hederaAccountId,
-                hedera_private_key: hederaPrivateKey
             });
 
         if (userProfileError) {
-            console.error('Error syncing user_profile:', userProfileError);
+            console.error('Error creating user_profile:', userProfileError.message);
+            // Non-fatal — auth account exists, profile can be synced on next login
         }
 
         // Supabase Auth sends the OTP confirmation email automatically

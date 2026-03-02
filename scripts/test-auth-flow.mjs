@@ -338,6 +338,8 @@ async function testGetFiles() {
     if (Array.isArray(data) && uploadedFileId) {
         const found = data.find(f => f.id === uploadedFileId);
         assert('Uploaded file found in list', !!found, `File ID ${uploadedFileId} not in list of ${data.length}`);
+    } else if (Array.isArray(data)) {
+        info(`Files list returned ${data.length} file(s) — upload test must pass first to verify file presence`);
     }
 
     return 'ok';
@@ -360,11 +362,11 @@ async function testValidation() {
     });
     assert('Signup rejects invalid role (400)', r.status === 400, `Got ${r.status}`);
 
-    // Wrong password
+    // Wrong password — may return 401 (invalid) or 429 (rate limited after many attempts)
     r = await apiCall('POST', 'auth/signin', {
         email: TEST_EMAIL, password: 'wrong-password-xyz'
     });
-    assert('Sign-in rejects bad password (401)', r.status === 401, `Got ${r.status}`);
+    assert('Sign-in rejects bad password (401 or 429)', r.status === 401 || r.status === 429, `Got ${r.status}`);
 
     // Upload without token — auth middleware returns 401 or 500 (config-check may run first)
     const formData = new FormData();

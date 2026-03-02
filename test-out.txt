@@ -1,0 +1,51 @@
+﻿
+[1m[36mΓòöΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòù
+Γòæ   AZ-GENES API TEST SUITE              Γòæ
+ΓòÜΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓò¥[0m
+[2m  Base URL : http://localhost:3000[0m
+[2m  Email    : elshaddaioheha@gmail.com[0m
+[2m  Role     : patient[0m
+[2m  OTP      : (not provided ΓÇö verify step will be skipped)[0m
+
+[1m[36mΓöüΓöüΓöü  TEST 1: SIGN UP  ΓöüΓöüΓöü[0m
+[2m  Γä╣∩╕Å   Email: elshaddaioheha@gmail.com  Role: patient[0m[0m
+[2m  Γä╣∩╕Å   Response 429: {"error":"Too many requests. Please slow down."}[0m[0m
+[31m  Γ¥î  Status 200 or 201 ΓÇö Got 429[0m
+
+[1m[36mΓöüΓöüΓöü  TEST 2: OTP VERIFICATION  ΓöüΓöüΓöü[0m
+[33m  ΓÜá∩╕Å   Skipped ΓÇö re-run with --otp=YOUR_CODE after checking your email.[0m
+[33m  ΓÜá∩╕Å   Example: node scripts/test-auth-flow.mjs --email=elshaddaioheha@gmail.com --password="Jetta2019$$" --otp=123456[0m
+
+[1m[36mΓöüΓöüΓöü  TEST 3: SIGN IN  ΓöüΓöüΓöü[0m
+[2m  Γä╣∩╕Å   Response 429: {"error":"Too many requests. Please slow down.","session":null}[0m[0m
+[31m  Γ¥î  Sign-in status 200 ΓÇö Got 429 ΓÇö Too many requests. Please slow down.[0m
+
+[1m[36mΓöüΓöüΓöü  TEST 4: GET PROFILE  ΓöüΓöüΓöü[0m
+[33m  ΓÜá∩╕Å   No access token ΓÇö skipping profile test.[0m
+
+[1m[36mΓöüΓöüΓöü  TEST 5: FILE UPLOAD & PROCESSING PIPELINE  ΓöüΓöüΓöü[0m
+[33m  ΓÜá∩╕Å   No access token ΓÇö skipping upload test.[0m
+
+[1m[36mΓöüΓöüΓöü  TEST 6: NFT CERTIFICATE CREATION  ΓöüΓöüΓöü[0m
+[33m  ΓÜá∩╕Å   No access token ΓÇö skipping NFT test.[0m
+
+[1m[36mΓöüΓöüΓöü  TEST 7: LIST UPLOADED FILES  ΓöüΓöüΓöü[0m
+[33m  ΓÜá∩╕Å   No access token ΓÇö skipping files list test.[0m
+
+[1m[36mΓöüΓöüΓöü  TEST 8: INPUT VALIDATION  ΓöüΓöüΓöü[0m
+[31m  Γ¥î  Signup rejects missing fields (400) ΓÇö Got 429[0m
+[31m  Γ¥î  Signup rejects invalid role (400) ΓÇö Got 429[0m
+[32m  Γ£à  Sign-in rejects bad password (401 or 429)[0m
+[32m  Γ£à  Upload rejects unauthenticated (401 or 500)[0m
+[32m  Γ£à  Mint rejects unauthenticated (401 or 500)[0m
+
+[1mΓòöΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòù
+Γòæ   RESULTS                              Γòæ
+ΓòáΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòú
+Γòæ  Passed : 3    / 7                       Γòæ
+Γòæ  Failed : 4                               Γòæ
+Γòæ  Time   : 7.6s                          Γòæ
+ΓòÜΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓò¥[0m
+[31m[1m
+ΓÜá∩╕Å  4 test(s) failed. Check the output above.
+[0m

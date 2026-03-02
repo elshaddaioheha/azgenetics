@@ -55,16 +55,23 @@ export class HederaClient {
 
   /**
    * Submits a file hash to Hedera Consensus Service
+   * Times out after 12 seconds to avoid blocking uploads on slow testnet
    */
   async submitHash(topicId: string, hash: string): Promise<string> {
-    const transaction = new TopicMessageSubmitTransaction()
-      .setTopicId(topicId)
-      .setMessage(hash);
+    const submitPromise = async () => {
+      const transaction = new TopicMessageSubmitTransaction()
+        .setTopicId(topicId)
+        .setMessage(hash);
+      const response = await transaction.execute(this.client);
+      await response.getReceipt(this.client);
+      return response.transactionId.toString();
+    };
 
-    const response = await transaction.execute(this.client);
-    await response.getReceipt(this.client); // Wait for consensus
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('Hedera submitHash timed out after 12s')), 12000)
+    );
 
-    return response.transactionId.toString();
+    return Promise.race([submitPromise(), timeoutPromise]);
   }
 
   /**
