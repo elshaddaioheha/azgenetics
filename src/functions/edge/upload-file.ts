@@ -159,18 +159,18 @@ async function handleFileUpload(req: Request, context: AuthContext): Promise<Res
       console.warn('Hedera hash submission failed (non-fatal):', (hErr as Error).message);
     }
 
-    // Save file metadata
-    const fileMetadata: Partial<FileMetadata> = {
+    // Save file metadata — only include columns that exist in the files table
+    const fileMetadata: Record<string, any> = {
       owner_id: profile.id,
       file_name: file.name,
       file_type: file.type,
-      storage_path: undefined, // Legacy field
       ipfs_cid: ipfsCid,
       encryption_key: key,
       encryption_iv: iv,
       hash,
-      hedera_transaction_id: hederaTxId
     };
+    // Only add Hedera tx ID if we got one (column may be optional)
+    if (hederaTxId) fileMetadata.hedera_transaction_id = hederaTxId;
 
     const { data: savedFile, error: saveError } = await context.supabase
       .from('files')
@@ -179,7 +179,8 @@ async function handleFileUpload(req: Request, context: AuthContext): Promise<Res
       .single();
 
     if (saveError) {
-      throw saveError;
+      // PostgrestError has .message but doesn't extend Error — wrap it so catch works
+      throw new Error(`DB insert failed: ${saveError.message} (code: ${saveError.code})`);
     }
 
     // Log analytics event if markers were extracted (for F3 researchers)
@@ -205,16 +206,19 @@ async function handleFileUpload(req: Request, context: AuthContext): Promise<Res
     });
 
   } catch (error) {
-    // IPFS uploads are immutable, so we don't have a simple "remove" like Supabase Storage
-    // unless we unpin from Pinata, but for now we skip cleanup since it's decentralized.
+    // Extract message from Error, PostgrestError, or any object with .message
+    const message =
+      error instanceof Error ? error.message
+        : (error as any)?.message ? (error as any).message
+          : JSON.stringify(error);
 
-    const message = error instanceof Error ? error.message : 'Unknown error';
-    const statusCode = error instanceof Error &&
-      (message.includes('Rate limit') || message.includes('Invalid file type')) ? 400 : 500;
+    console.error('[Upload] Error:', message);
+
+    const statusCode = (message.includes('Rate limit') || message.includes('Invalid file type')) ? 400 : 500;
 
     return new Response(JSON.stringify({
       error: message,
-      code: error instanceof Error ? error.name : 'UnknownError'
+      code: error instanceof Error ? error.name : 'Error'
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: statusCode

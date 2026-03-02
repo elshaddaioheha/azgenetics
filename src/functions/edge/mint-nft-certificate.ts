@@ -74,12 +74,17 @@ async function handleMintNFTCertificate(req: Request, context: AuthContext): Pro
 
     const tokenId = TokenId.fromString(collectionTokenId);
 
-    // Prepare metadata following HIP-412 standard
+    // Hedera NFT metadata is limited to 100 bytes per serial.
+    // Store a compact identifier on-chain; full metadata lives in our DB.
+    // Format: "azg:v1:<fileId_prefix>" — always well under 100 bytes.
+    const onChainMeta = `azg:v1:${fileId.substring(0, 36)}`;
+    const metadataBytes = new TextEncoder().encode(onChainMeta);
+
+    // Full off-chain metadata for our database record
     const nftMetadata = {
       name: metadata?.name || `${file.file_name} Certificate`,
       description: metadata?.description || `NFT Certificate for ${file.file_name}`,
       creator: 'AZ-Genes',
-      image: metadata?.image || '',
       type: 'Certificate',
       version: '1.0',
       attributes: metadata?.attributes || [
@@ -89,11 +94,20 @@ async function handleMintNFTCertificate(req: Request, context: AuthContext): Pro
       ]
     };
 
-    // Convert metadata to bytes
-    const metadataBytes = new TextEncoder().encode(JSON.stringify(nftMetadata));
-
-    // Mint NFT on Hedera
-    const mintResult = await getHederaClient().mintNFTCertificate(tokenId, metadataBytes);
+    // Mint NFT on Hedera (with 15s timeout — testnet can be slow)
+    let mintResult: { serialNumber: string; transactionId: string };
+    try {
+      const mintPromise = getHederaClient().mintNFTCertificate(tokenId, metadataBytes);
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Hedera mint timed out after 15s — try again')), 15000)
+      );
+      mintResult = await Promise.race([mintPromise, timeoutPromise]);
+    } catch (hErr: any) {
+      // Surface the actual Hedera status code for debugging
+      const hMsg = hErr?.message || String(hErr);
+      console.error('[NFT Mint] Hedera error:', hMsg);
+      throw new Error(`Hedera mint failed: ${hMsg}`);
+    }
     const serialNumber = mintResult.serialNumber;
 
     // Persist actual Hedera transaction id returned by mint operation
