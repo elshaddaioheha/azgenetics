@@ -148,8 +148,18 @@ async function handleFileUpload(req: Request, context: AuthContext): Promise<Res
     const timestamp = new Date().toISOString();
     const fileName = `${timestamp}-${file.name}`;
 
-    // Convert Buffer to CID via IPFS
-    const ipfsCid = await ipfsClient.uploadFile(encryptedData, fileName);
+    // Upload encrypted file to IPFS via Pinata (with retry for transient network errors)
+    let ipfsCid = '';
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        ipfsCid = await ipfsClient.uploadFile(encryptedData, fileName);
+        break; // success
+      } catch (ipfsErr: any) {
+        if (attempt === 3) throw new Error(`IPFS upload failed after 3 attempts: ${ipfsErr.message}`);
+        console.warn(`[Upload] IPFS attempt ${attempt} failed, retrying...`);
+        await new Promise(r => setTimeout(r, 2000 * attempt));
+      }
+    }
 
     // Submit hash to Hedera (non-blocking — upload succeeds even if Hedera is slow)
     let hederaTxId = '';
