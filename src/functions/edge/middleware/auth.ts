@@ -1,5 +1,4 @@
 import { createClient } from '@supabase/supabase-js';
-
 import { AuthContext, EdgeFunctionConfig, getEdgeConfig, corsHeaders, createTestClient } from '../utils';
 
 // Import mock verification only in test mode to avoid bundling test code
@@ -35,8 +34,8 @@ export async function withAuth(
     const token = authHeader.replace('Bearer ', '');
 
     try {
-      // In test mode, use mock verification with enhanced error handling
       if (process.env.NODE_ENV === 'test') {
+        // In test mode, use mock token verification
         const mockUser = verifyMockToken(token);
         if (!mockUser) {
           throw new Error('Test token validation failed: Invalid or expired token');
@@ -53,26 +52,39 @@ export async function withAuth(
         };
       } else {
         // Use Supabase auth to verify the token
-        if (context.supabase) {
-          console.log('[Auth] Verifying token with Supabase...');
-          const { data: { user }, error: userError } = await context.supabase.auth.getUser(token);
-          if (userError) {
-            console.error('[Auth] Supabase auth error:', userError.message);
-            throw new Error(`Token validation failed: ${userError.message}`);
-          }
-          if (!user) {
-            console.error('[Auth] Supabase auth: No user found');
-            throw new Error('Token validation failed: No user found');
-          }
-          console.log('[Auth] Supabase auth verified:', user.id);
-          context.user = user;
-        } else {
-          console.error('[Auth] No authentication provider configured');
+        if (!context.supabase) {
           throw new Error('No authentication provider configured');
         }
+
+        console.log('[Auth] Verifying token with Supabase...');
+        const { data: { user }, error: userError } = await context.supabase.auth.getUser(token);
+        if (userError) {
+          console.error('[Auth] Supabase auth error:', userError.message);
+          throw new Error(`Token validation failed: ${userError.message}`);
+        }
+        if (!user) {
+          console.error('[Auth] Supabase auth: No user found');
+          throw new Error('Token validation failed: No user found');
+        }
+        console.log('[Auth] Supabase auth verified:', user.id);
+        context.user = user;
+
+        // CRITICAL: Replace the shared anon client with a user-scoped client.
+        // The shared anon client has no user JWT — RLS policies block it from reading
+        // protected rows. By injecting the user's access token as the Authorization
+        // header, Supabase RLS sees auth.uid() = user.id and allows the queries.
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+        const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+        context.supabase = createClient(supabaseUrl, supabaseAnonKey, {
+          global: {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        });
       }
 
-      // Call the handler with auth context
+      // Call the handler with the enriched auth context
       return await handler(req, context);
 
     } catch (err: unknown) {
