@@ -93,13 +93,18 @@ export async function POST(request: NextRequest) {
         }
 
         // Update last login (non-blocking, don't fail if profiles row is missing)
-        supabase
-            .from('profiles')
-            .update({ last_login_at: new Date().toISOString() })
-            .eq('id', authData.user.id)
-            .then(({ error }) => {
-                if (error) console.warn('Could not update last_login_at in profiles:', error.message);
-            });
+        try {
+            const { error: updateError } = await supabase
+                .from('profiles')
+                .update({ last_login_at: new Date().toISOString() })
+                .eq('id', authData.user.id);
+
+            if (updateError) {
+                console.warn('Could not update last_login_at in profiles:', updateError.message);
+            }
+        } catch (e) {
+            console.warn('Error executing profile update:', e);
+        }
 
         return NextResponse.json({
             success: true,

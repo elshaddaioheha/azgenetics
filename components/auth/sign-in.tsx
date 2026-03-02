@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Fingerprint, ArrowRight, ShieldCheck, Key, Mail, Lock, Eye, EyeOff } from "lucide-react";
 import Spinner from "@/components/ui/Spinner";
+import { createClient } from "@supabase/supabase-js";
 
 const SignIn: React.FC = () => {
     const router = useRouter();
@@ -43,10 +44,7 @@ const SignIn: React.FC = () => {
             }
 
             // Establish the Supabase session in the browser client.
-            // The API route signs in server-side; we must sync the session
-            // to the browser so useAuth() sees a valid user on the dashboard.
             if (data.session) {
-                const { createClient } = await import('@supabase/supabase-js');
                 const supabase = createClient(
                     process.env.NEXT_PUBLIC_SUPABASE_URL!,
                     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
