@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Fingerprint, ArrowRight, ShieldCheck, Key, Mail, Lock } from "lucide-react";
+import { Fingerprint, ArrowRight, ShieldCheck, Key, Mail, Lock, Eye, EyeOff } from "lucide-react";
 import Spinner from "@/components/ui/Spinner";
 
 const SignIn: React.FC = () => {
@@ -11,6 +11,8 @@ const SignIn: React.FC = () => {
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
+
 
     const handleSignIn = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -110,15 +112,25 @@ const SignIn: React.FC = () => {
                                 </label>
                                 <Link href="#" className="text-[10px] font-bold text-muted-foreground hover:text-fern transition-colors">Forgot key?</Link>
                             </div>
-                            <input
-                                type="password"
-                                className="w-full bg-slate-50 border border-slate-100 rounded-full px-6 py-4 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-fern focus:bg-white transition-all shadow-sm"
-                                value={password}
-                                onChange={e => setPassword(e.target.value)}
-                                required
-                                placeholder="••••••••••••"
-                            />
+                            <div className="relative">
+                                <input
+                                    type={showPassword ? "text" : "password"}
+                                    className="w-full bg-slate-50 border border-slate-100 rounded-full px-6 py-4 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-fern focus:bg-white transition-all shadow-sm pr-12"
+                                    value={password}
+                                    onChange={e => setPassword(e.target.value)}
+                                    required
+                                    placeholder="••••••••••••"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-fern transition-colors"
+                                >
+                                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                </button>
+                            </div>
                         </div>
+
 
                         {error && (
                             <div className="text-red-500 text-[11px] font-bold p-4 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3">

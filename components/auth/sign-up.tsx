@@ -14,7 +14,11 @@ import {
     RotateCcw,
     Stethoscope,
     Database,
-    Zap
+    Zap,
+    Eye,
+    EyeOff,
+    CheckCircle2,
+    Circle
 } from "lucide-react";
 import Spinner from "@/components/ui/Spinner";
 
@@ -43,11 +47,20 @@ const SignUp: React.FC = () => {
     const [error, setError] = useState('');
     const [devOtp, setDevOtp] = useState('');
     const [resendCooldown, setResendCooldown] = useState(0);
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+    const passwordRequirements = [
+        { label: "At least 8 characters", test: (p: string) => p.length >= 8 },
+        { label: "Contains uppercase letter", test: (p: string) => /[A-Z]/.test(p) },
+        { label: "Contains number or symbol", test: (p: string) => /[0-9!@#$%^&*(),.?":{}|<>]/.test(p) },
+    ];
 
     const handleInputChange = (field: keyof SignUpFormData, value: string) => {
         setFormData(prev => ({ ...prev, [field]: value }));
         setError('');
     };
+
 
     const handleSignUp = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -58,10 +71,17 @@ const SignUp: React.FC = () => {
             return;
         }
 
-        if (formData.password.length < 6) {
-            setError('Account password must be at least 6 characters');
+        if (formData.password.length < 8) {
+            setError('Account password must be at least 8 characters');
             return;
         }
+
+        const missingRequirement = passwordRequirements.find(req => !req.test(formData.password));
+        if (missingRequirement) {
+            setError(`Password must fulfill all requirements: ${missingRequirement.label}`);
+            return;
+        }
+
 
         if (formData.password !== formData.confirmPassword) {
             setError('Passwords do not match');
@@ -226,33 +246,69 @@ const SignUp: React.FC = () => {
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="space-y-2 group">
-                                    <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest px-1 flex items-center gap-2">
-                                        <Lock size={14} className="text-fern" /> Password
-                                    </label>
-                                    <input
-                                        type="password"
-                                        className="w-full bg-slate-50 border border-slate-100 rounded-full px-6 py-4 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-fern focus:bg-white transition-all shadow-sm"
-                                        value={formData.password}
-                                        onChange={e => handleInputChange('password', e.target.value)}
-                                        required
-                                        placeholder="Min. 6 characters"
-                                    />
+                                <div className="space-y-4 group">
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest px-1 flex items-center gap-2">
+                                            <Lock size={14} className="text-fern" /> Password
+                                        </label>
+                                        <div className="relative">
+                                            <input
+                                                type={showPassword ? "text" : "password"}
+                                                className="w-full bg-slate-50 border border-slate-100 rounded-full px-6 py-4 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-fern focus:bg-white transition-all shadow-sm pr-12"
+                                                value={formData.password}
+                                                onChange={e => handleInputChange('password', e.target.value)}
+                                                required
+                                                placeholder="••••••••"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowPassword(!showPassword)}
+                                                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-fern transition-colors"
+                                            >
+                                                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {formData.password && (
+                                        <div className="px-4 space-y-2">
+                                            {passwordRequirements.map((req, i) => {
+                                                const met = req.test(formData.password);
+                                                return (
+                                                    <div key={i} className={`flex items-center gap-2 text-[10px] font-bold transition-colors ${met ? 'text-emerald-500' : 'text-slate-400'}`}>
+                                                        {met ? <CheckCircle2 size={12} /> : <Circle size={12} />}
+                                                        <span className="uppercase tracking-wider">{req.label}</span>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
                                 </div>
+
                                 <div className="space-y-2 group">
                                     <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest px-1 flex items-center gap-2">
                                         <ShieldCheck size={14} className="text-fern" /> Confirm
                                     </label>
-                                    <input
-                                        type="password"
-                                        className="w-full bg-slate-50 border border-slate-100 rounded-full px-6 py-4 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-fern focus:bg-white transition-all shadow-sm"
-                                        value={formData.confirmPassword}
-                                        onChange={e => handleInputChange('confirmPassword', e.target.value)}
-                                        required
-                                        placeholder="Repeat password"
-                                    />
+                                    <div className="relative">
+                                        <input
+                                            type={showConfirmPassword ? "text" : "password"}
+                                            className="w-full bg-slate-50 border border-slate-100 rounded-full px-6 py-4 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-fern focus:bg-white transition-all shadow-sm pr-12"
+                                            value={formData.confirmPassword}
+                                            onChange={e => handleInputChange('confirmPassword', e.target.value)}
+                                            required
+                                            placeholder="••••••••"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                            className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-fern transition-colors"
+                                        >
+                                            {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
+
 
                             <div className="space-y-2 group">
                                 <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest px-1 flex items-center gap-2">
