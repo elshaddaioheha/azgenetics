@@ -7,7 +7,7 @@ export async function onRequest(req: Request, context: AuthContext): Promise<Res
   }
 
   if (req.method !== 'GET' && req.method !== 'POST') {
-    return new Response(JSON.stringify({ 
+    return new Response(JSON.stringify({
       error: 'Method not allowed',
       code: 'MethodNotAllowed'
     }), {
@@ -46,18 +46,18 @@ export async function onRequest(req: Request, context: AuthContext): Promise<Res
         } catch {
           // Request body might not be available or already consumed
         }
-        
+
         const newProfile: any = {
           auth_id: user.id,
           subscription_tier: 'F1',
           email: user.email || null,
           user_role: userRole,
         };
-        
+
         if (profileName) {
           newProfile.name = profileName;
         }
-        
+
         const { data: createdProfile, error: createError } = await supabase
           .from('user_profiles')
           .insert(newProfile)
@@ -68,17 +68,27 @@ export async function onRequest(req: Request, context: AuthContext): Promise<Res
           throw new Error(`Failed to create profile: ${createError.message}`);
         }
 
-        return new Response(JSON.stringify(createdProfile), {
+        return new Response(JSON.stringify({
+          ...createdProfile,
+          email_verified: !!user.email_confirmed_at
+        }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 201,
         });
+
       }
 
-      // Return existing profile
-      return new Response(JSON.stringify(existingProfile), {
+      // Return existing profile with email_verified status from auth object
+      const profileResponse = {
+        ...existingProfile,
+        email_verified: !!user.email_confirmed_at
+      };
+
+      return new Response(JSON.stringify(profileResponse), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     });
+
   } catch (err: unknown) {
     const error = err instanceof Error ? err : new Error(String(err));
     return new Response(JSON.stringify({ error: error.message }), {

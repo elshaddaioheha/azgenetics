@@ -37,4 +37,6 @@ export interface UserProfile {
     subscription_tier?: 'F1' | 'F2' | 'F3';
     user_role?: 'patient' | 'doctor' | 'researcher';
     hedera_account_id?: string;
+    email_verified?: boolean;
 }
+
