@@ -4,18 +4,30 @@ import { NextResponse } from "next/server";
 
 // Create a new ratelimiter, that allows 10 requests per 10 seconds
 // by default. These can be overridden when calling .limit()
+
+const createRedisClient = () => {
+    if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+        return Redis.fromEnv();
+    }
+    // Return a dummy instance if variables are missing to prevent crash during initialization
+    return new Redis({ url: 'https://dummy-url', token: 'dummy-token' });
+};
+
+const redisClient = createRedisClient();
+
 export const rateLimit = {
     // Authentication routes: More restrictive
     auth: new Ratelimit({
-        redis: Redis.fromEnv(),
+        redis: redisClient,
         limiter: Ratelimit.slidingWindow(5, "60 s"),
         analytics: true,
         prefix: "@upstash/ratelimit/auth",
     }),
 
+
     // Transaction routes: Prevent drainage of treasury
     transactions: new Ratelimit({
-        redis: Redis.fromEnv(),
+        redis: redisClient,
         limiter: Ratelimit.slidingWindow(10, "10 s"), // Max 10 per 10s
         analytics: true,
         prefix: "@upstash/ratelimit/tx",
@@ -23,7 +35,7 @@ export const rateLimit = {
 
     // General API: Standard protection
     api: new Ratelimit({
-        redis: Redis.fromEnv(),
+        redis: redisClient,
         limiter: Ratelimit.slidingWindow(60, "60 s"),
         analytics: true,
         prefix: "@upstash/ratelimit/api",
@@ -47,6 +59,13 @@ export async function withRateLimit(
     request: Request,
     type: keyof typeof rateLimit = 'api'
 ): Promise<Response | null> {
+    if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
+        if (process.env.NODE_ENV !== 'production') {
+            console.warn('Upstash Redis env variables missing. Rate limiting bypassed.');
+        }
+        return null; // Bypass rate limiter
+    }
+
     const ip = getIP(request);
     const { success, limit, remaining, reset } = await rateLimit[type].limit(ip);
 
