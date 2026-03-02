@@ -26,8 +26,21 @@ export class HederaClient {
   constructor() {
     // Initialize from environment variables
     const operatorId = AccountId.fromString(process.env.HEDERA_OPERATOR_ID || '');
-    const operatorKey = PrivateKey.fromString(process.env.HEDERA_OPERATOR_KEY || '');
     const network = process.env.HEDERA_NETWORK || 'testnet';
+
+    // Smart key parser: handles 0x-prefixed ECDSA hex (from Hedera portal), DER-encoded, and ED25519
+    const rawKeyStr = process.env.HEDERA_OPERATOR_KEY || '';
+    const rawKey = rawKeyStr.startsWith('0x') ? rawKeyStr.slice(2) : rawKeyStr;
+    let operatorKey: PrivateKey;
+    try {
+      operatorKey = PrivateKey.fromStringECDSA(rawKey);
+    } catch {
+      try {
+        operatorKey = PrivateKey.fromStringDer(rawKey);
+      } catch {
+        operatorKey = PrivateKey.fromStringED25519(rawKey);
+      }
+    }
 
     this.operatorId = operatorId;
     this.operatorKey = operatorKey;
