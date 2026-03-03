@@ -30,7 +30,8 @@ import {
   Globe,
   Fingerprint,
   Heart,
-  ShieldCheck
+  ShieldCheck,
+  Menu
 } from 'lucide-react';
 import { useAuth } from '@/lib/useAuth';
 import { api } from '@/lib/apiClient';
@@ -322,11 +323,17 @@ const Dashboard = () => {
 
       <input ref={fileInputRef} type="file" onChange={handleFileUpload} className="hidden" accept=".vcf,.csv,.txt,.pdf" />
 
+      {/* Mobile Overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/20 z-40 md:hidden backdrop-blur-sm"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar - Bright & Professional */}
-      <motion.aside
-        initial={false}
-        animate={{ width: sidebarOpen ? 280 : 80 }}
-        className="bg-white border-r border-border flex flex-col relative z-50 shadow-sm"
+      <aside
+        className={`bg-white border-r border-border flex flex-col fixed inset-y-0 left-0 md:relative z-50 shadow-sm h-full overflow-hidden transition-all duration-300 ${sidebarOpen ? 'w-[280px] translate-x-0' : 'w-[280px] -translate-x-full md:w-[80px] md:translate-x-0'}`}
       >
         <div className="p-6 h-20 flex items-center justify-between border-b border-border">
           <div className="flex items-center gap-3">
@@ -367,16 +374,19 @@ const Dashboard = () => {
             {sidebarOpen && <span>Sign out</span>}
           </button>
         </div>
-      </motion.aside>
+      </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col relative overflow-hidden bg-[#fdfdfd]">
+      <main className="flex-1 flex flex-col relative overflow-hidden bg-[#fdfdfd] w-full">
         {/* Header - Bright */}
-        <header className="h-20 bg-white border-b border-border px-4 md:px-8 flex items-center justify-between z-40 sticky top-0 shadow-sm">
-          <div className="flex items-center gap-4 text-sm font-semibold">
-            <span className="text-muted-foreground capitalize">{activeTab === 'overview' ? 'Sovereign Console' : activeTab}</span>
-            <ChevronRight size={14} className="text-muted-foreground" />
-            <span className="text-foreground">Sovereign Vault</span>
+        <header className="h-20 bg-white border-b border-border px-4 md:px-8 flex items-center justify-between z-30 sticky top-0 shadow-sm">
+          <div className="flex items-center gap-2 md:gap-4 text-sm font-semibold">
+            <button className="md:hidden p-2 text-muted-foreground hover:text-foreground hover:bg-slate-100 rounded-md transition-colors" onClick={() => setSidebarOpen(true)}>
+              <Menu size={20} />
+            </button>
+            <span className="text-muted-foreground capitalize hidden sm:block">{activeTab === 'overview' ? 'Sovereign Console' : activeTab}</span>
+            <ChevronRight size={14} className="text-muted-foreground hidden sm:block" />
+            <span className="text-foreground tracking-tight">Sovereign Vault</span>
           </div>
 
           <div className="flex items-center gap-6">

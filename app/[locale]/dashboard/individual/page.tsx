@@ -21,7 +21,9 @@ import {
   ClipboardList,
   Star,
   ExternalLink,
-  ShieldCheck
+  ExternalLink,
+  ShieldCheck,
+  Menu
 } from 'lucide-react';
 import Spinner from '@/components/ui/Spinner';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -270,11 +272,17 @@ const IndividualDashboard = () => {
         error={txError}
         transactionId={txId}
       />
+      {/* Mobile Overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/60 z-40 md:hidden backdrop-blur-md transition-opacity"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <motion.aside
-        initial={false}
-        animate={{ width: sidebarOpen ? 320 : 100 }}
-        className="h-screen sticky top-0 bg-[#0c0c0c] border-r border-white/5 flex flex-col z-50 overflow-hidden"
+      <aside
+        className={`bg-[#0c0c0c] border-r border-white/5 flex flex-col fixed inset-y-0 left-0 md:relative z-50 h-full overflow-hidden transition-all duration-300 ${sidebarOpen ? 'w-[320px] translate-x-0' : 'w-[320px] -translate-x-full md:w-[100px] md:translate-x-0'}`}
       >
         <div className="p-8 flex items-center gap-4 mb-20">
           <img src="/logo.png" alt="AZ Genes" className="w-12 h-12 object-contain shadow-[0_0_30px_rgba(167,199,171,0.4)]" />
@@ -317,7 +325,7 @@ const IndividualDashboard = () => {
             {sidebarOpen && <span className="text-[10px] font-black uppercase tracking-[0.4em] italic">Deauthorize</span>}
           </button>
         </div>
-      </motion.aside>
+      </aside>
 
       <main className="flex-1 min-h-screen relative">
         {/* Background grid */}
@@ -325,14 +333,19 @@ const IndividualDashboard = () => {
         <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-fern/5 blur-full rounded-full -translate-y-1/2 translate-x-1/2 opacity-20 pointer-events-none"></div>
 
         {/* Top Header */}
-        <header className="relative z-10 px-12 py-10 flex items-center justify-between border-b border-white/5 backdrop-blur-md sticky top-0">
-          <div className="flex items-center gap-12">
-            <div>
-              <p className="text-[10px] font-black text-fern uppercase tracking-[0.5em] mb-2 italic">NODE_INITIALIZED</p>
-              <h1 className="text-3xl font-black uppercase tracking-tighter italic">INDIVIDUAL_VAULT <span className="text-white/20 font-light mx-4">•</span> <span className="text-white/40">{userProfile?.full_name?.toUpperCase() || 'ALEX-IDENTITY'}</span></h1>
+        <header className="relative z-30 px-6 md:px-12 py-6 md:py-10 flex flex-col md:flex-row items-start md:items-center justify-between border-b border-white/5 backdrop-blur-md sticky top-0 gap-6 md:gap-0 bg-obsidian/80">
+          <div className="flex items-center gap-4 md:gap-12 w-full md:w-auto overflow-hidden">
+            <button className="md:hidden p-2 text-white/60 hover:text-fern hover:bg-white/5 rounded-xl transition-colors shrink-0" onClick={() => setSidebarOpen(true)}>
+              <Menu size={24} />
+            </button>
+            <div className="min-w-0">
+              <p className="text-[10px] sm:text-xs font-black text-fern uppercase tracking-[0.3em] sm:tracking-[0.5em] mb-1 sm:mb-2 italic truncate">NODE_INITIALIZED</p>
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-black uppercase tracking-tighter italic truncate">
+                INDIVIDUAL_VAULT <span className="text-white/20 font-light mx-2 sm:mx-4">•</span> <span className="text-white/40">{userProfile?.full_name?.toUpperCase() || 'ALEX-IDENTITY'}</span>
+              </h1>
             </div>
           </div>
-          <div className="flex items-center gap-8">
+          <div className="flex items-center gap-4 sm:gap-6 md:gap-8 overflow-x-auto w-full md:w-auto pb-4 md:pb-0 scrollbar-hide">
             <LanguageSwitcher theme="dark" />
             <input
               type="file"
@@ -344,9 +357,9 @@ const IndividualDashboard = () => {
             <button
               onClick={handleUploadClick}
               disabled={isUploading}
-              className="bg-fern text-obsidian px-10 py-5 rounded-3xl text-[10px] font-black uppercase tracking-[0.4em] italic flex items-center gap-4 hover:bg-[#A7C7AB] transition-all shadow-[0_0_40px_rgba(167,199,171,0.2)] disabled:opacity-50"
+              className="bg-fern text-obsidian px-6 sm:px-10 py-4 sm:py-5 rounded-3xl text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] sm:tracking-[0.4em] italic flex items-center gap-2 sm:gap-4 hover:bg-[#A7C7AB] transition-all shadow-[0_0_40px_rgba(167,199,171,0.2)] disabled:opacity-50 shrink-0"
             >
-              {isUploading ? <Spinner size="sm" /> : <UploadCloud size={20} />}
+              {isUploading ? <Spinner size="sm" /> : <UploadCloud size={18} className="sm:w-5 sm:h-5" />}
               {isUploading ? 'UPLOADING...' : 'UPLOAD_SEQUENCE'}
             </button>
             <div className="relative">

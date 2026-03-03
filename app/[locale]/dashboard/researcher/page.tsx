@@ -30,7 +30,8 @@ import {
     ChevronRight,
     SearchIcon,
     Settings,
-    LogOut
+    LogOut,
+    Menu
 } from 'lucide-react';
 import { useToast } from '@/context/ToastContext';
 import { api } from '@/lib/apiClient';
@@ -167,11 +168,17 @@ const ResearcherDashboard = () => {
                 <title>Researcher Console | AZ genes</title>
             </Head>
 
+            {/* Mobile Overlay */}
+            {sidebarOpen && (
+                <div
+                    className="fixed inset-0 bg-black/20 z-40 md:hidden backdrop-blur-sm transition-opacity"
+                    onClick={() => setSidebarOpen(false)}
+                />
+            )}
+
             {/* Sidebar - Clean & Professional */}
-            <motion.aside
-                initial={false}
-                animate={{ width: sidebarOpen ? 280 : 80 }}
-                className="bg-white border-r border-border flex flex-col relative z-30 shadow-sm"
+            <aside
+                className={`bg-white border-r border-border flex flex-col fixed inset-y-0 left-0 md:relative z-50 shadow-sm h-full overflow-hidden transition-all duration-300 ${sidebarOpen ? 'w-[280px] translate-x-0' : 'w-[280px] -translate-x-full md:w-[80px] md:translate-x-0'}`}
             >
                 <div className="p-6 h-20 flex items-center justify-between border-b border-border">
                     <div className="flex items-center gap-3">
@@ -222,18 +229,21 @@ const ResearcherDashboard = () => {
                         <AdvancedWalletPanel hederaAccountId={userProfile?.hedera_account_id} />
                     </div>
                 )}
-            </motion.aside>
+            </aside>
 
             {/* Main Content Area */}
-            <div className="flex-1 flex flex-col relative overflow-hidden">
+            <div className="flex-1 flex flex-col relative overflow-hidden w-full">
                 {/* Header */}
-                <header className="h-20 flex items-center justify-between px-8 border-b border-border bg-white sticky top-0 z-20 shadow-sm">
+                <header className="h-20 flex items-center justify-between px-4 md:px-8 border-b border-border bg-white sticky top-0 z-20 shadow-sm">
                     <div className="flex flex-col">
                         <div className="flex items-center gap-2 mb-0.5">
-                            <ShieldCheck size={14} className="text-violet-600" />
-                            <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">Secure Research Cluster v2.4</span>
+                            <button className="md:hidden p-1 mr-1 text-muted-foreground hover:text-foreground hover:bg-slate-100 rounded-md transition-colors" onClick={() => setSidebarOpen(true)}>
+                                <Menu size={18} />
+                            </button>
+                            <ShieldCheck size={14} className="text-violet-600 hidden sm:block" />
+                            <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest hidden sm:block">Secure Research Cluster v2.4</span>
                         </div>
-                        <h1 className="text-xl font-bold text-foreground tracking-tight">
+                        <h1 className="text-lg md:text-xl font-bold text-foreground tracking-tight">
                             Researcher <span className="text-muted-foreground">Analysis Console</span>
                         </h1>
                     </div>
