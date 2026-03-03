@@ -21,7 +21,6 @@ import {
   ClipboardList,
   Star,
   ExternalLink,
-  ExternalLink,
   ShieldCheck,
   Menu
 } from 'lucide-react';
