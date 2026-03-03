@@ -3,7 +3,8 @@
  * Used only in "use client" components.
  * Reads NEXT_PUBLIC_ env vars which are safe to expose to the browser.
  */
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { createBrowserClient } from '@supabase/ssr';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 let _client: SupabaseClient | null = null;
 
@@ -19,6 +20,7 @@ export function getSupabaseBrowser(): SupabaseClient | null {
         return null;
     }
 
-    _client = createClient(url, key);
+    // createBrowserClient automatically syncs the session tokens to browser cookies!
+    _client = createBrowserClient(url, key);
     return _client;
 }

@@ -28,14 +28,18 @@ import {
     Lock,
     ChevronLeft,
     ChevronRight,
-    SearchIcon
+    SearchIcon,
+    Settings,
+    LogOut
 } from 'lucide-react';
 import { useToast } from '@/context/ToastContext';
 import { api } from '@/lib/apiClient';
 import { useAuth } from '@/lib/useAuth';
+import { getSupabaseBrowser } from '@/lib/supabaseBrowser';
 import { useRouter } from 'next/navigation';
 import Spinner from '@/components/ui/Spinner';
 import { AdvancedWalletPanel } from '@/components/dashboard/AdvancedWalletPanel';
+import { AccountSettings } from '@/components/dashboard/AccountSettings';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { useSearchParams } from 'next/navigation';
 import { usePathname } from '@/i18n/routing';
@@ -87,6 +91,7 @@ const ResearcherDashboard = () => {
     const [userProfile, setUserProfile] = useState<any>(null);
     const [realAnalytics, setRealAnalytics] = useState<any>(null);
     const [loadingAnalytics, setLoadingAnalytics] = useState(false);
+    const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
     const toast = useToast();
 
     // Redirect if not authenticated
@@ -170,9 +175,7 @@ const ResearcherDashboard = () => {
             >
                 <div className="p-6 h-20 flex items-center justify-between border-b border-border">
                     <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-violet-600 flex items-center justify-center text-white font-bold text-xs">
-                            AZ
-                        </div>
+                        <img src="/logo.png" alt="AZ Genes" className="w-8 h-8 object-contain" />
                         {sidebarOpen && (
                             <motion.span
                                 initial={{ opacity: 0 }}
@@ -249,7 +252,7 @@ const ResearcherDashboard = () => {
 
                             <LanguageSwitcher />
 
-                            <div className="flex items-center gap-4 pl-6 border-l border-border">
+                            <div className="flex items-center gap-4 pl-6 border-l border-border relative">
                                 <div className="text-right flex flex-col">
                                     <p className="text-sm font-bold leading-none mb-1">
                                         {userProfile?.name || 'Researcher'}
@@ -258,9 +261,60 @@ const ResearcherDashboard = () => {
                                         Level {userProfile?.subscription_tier || 'F1'} Scientist
                                     </p>
                                 </div>
-                                <div className="w-10 h-10 rounded-full bg-violet-600 text-white flex items-center justify-center font-bold shadow-sm hover:scale-105 transition-all cursor-pointer">
+                                <div
+                                    onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+                                    className="w-10 h-10 rounded-full bg-violet-600 text-white flex items-center justify-center font-bold shadow-sm hover:scale-105 transition-all cursor-pointer"
+                                >
                                     {(userProfile?.name?.[0] || user?.email?.[0] || 'R').toUpperCase()}
                                 </div>
+
+                                {/* Profile Dropdown */}
+                                <AnimatePresence>
+                                    {profileDropdownOpen && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                                            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                            transition={{ duration: 0.2 }}
+                                            className="absolute right-0 top-12 mt-2 w-56 bg-white border border-border rounded-2xl shadow-xl overflow-hidden z-50 flex flex-col"
+                                        >
+                                            <div className="p-4 border-b border-border flex flex-col items-center">
+                                                <div className="w-12 h-12 rounded-full bg-violet-50 flex items-center justify-center text-lg font-bold text-violet-600 mb-3 border border-violet-100">
+                                                    {(userProfile?.name?.[0] || user?.email?.[0] || 'U').toUpperCase()}
+                                                </div>
+                                                <p className="text-sm font-bold text-foreground text-center">
+                                                    {userProfile?.name || user?.email?.split('@')[0] || 'Researcher'}
+                                                </p>
+                                                <p className="text-xs text-muted-foreground mt-1 text-center font-medium capitalize">
+                                                    {userProfile?.user_role || 'Researcher'}
+                                                </p>
+                                            </div>
+
+                                            <div className="p-2 flex-grow">
+                                                <button
+                                                    onClick={() => {
+                                                        setProfileDropdownOpen(false);
+                                                        setActiveTab('settings');
+                                                    }}
+                                                    className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-slate-50 rounded-xl transition-all"
+                                                >
+                                                    <Settings size={16} />
+                                                    Account Settings
+                                                </button>
+                                            </div>
+
+                                            <div className="p-2 border-t border-border">
+                                                <button
+                                                    onClick={() => getSupabaseBrowser()?.auth.signOut().then(() => router.push('/'))}
+                                                    className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-red-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
+                                                >
+                                                    <LogOut size={16} />
+                                                    Log Out
+                                                </button>
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
                             </div>
                         </div>
                     </div>
@@ -479,7 +533,7 @@ const ResearcherDashboard = () => {
                             )}
 
                             {/* Locked States */}
-                            {(activeTab === 'telemetry' || activeTab === 'datasets' || activeTab === 'tokens' || activeTab === 'settings') && (
+                            {(activeTab === 'telemetry' || activeTab === 'datasets' || activeTab === 'tokens') && (
                                 <motion.div variants={itemVariants} className="flex items-center justify-center py-20">
                                     <div className="bg-white border border-border rounded-[3rem] p-20 text-center max-w-2xl shadow-sm relative overflow-hidden group">
                                         <div className="w-24 h-24 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 mx-auto mb-10 group-hover:text-violet-600 transition-colors">
@@ -496,6 +550,22 @@ const ResearcherDashboard = () => {
                                             View access tiers
                                         </button>
                                     </div>
+                                </motion.div>
+                            )}
+
+                            {/* Settings Tab */}
+                            {activeTab === 'settings' && (
+                                <motion.div variants={itemVariants}>
+                                    <AccountSettings
+                                        userProfile={userProfile}
+                                        user={user}
+                                        theme="light"
+                                        onProfileUpdate={() => {
+                                            api.get('get-profile').then(res => res.ok ? res.json() : null).then(data => {
+                                                if (data) setUserProfile(data);
+                                            });
+                                        }}
+                                    />
                                 </motion.div>
                             )}
                         </motion.div>

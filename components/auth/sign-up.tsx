@@ -197,10 +197,11 @@ const SignUp: React.FC = () => {
             <div className="w-full max-w-2xl p-8 relative z-10">
                 <div className="text-center mb-10">
                     <Link href="/" className="inline-flex items-center gap-3 mb-8 group">
-                        <div className="w-10 h-10 rounded-xl bg-fern flex items-center justify-center text-white shadow-sm group-hover:scale-110 transition-transform font-bold text-sm">
-                            AZ
-                        </div>
-                        <span className="text-foreground font-bold tracking-tight text-2xl uppercase">genes</span>
+                        <img
+                            src="/logo.png"
+                            alt="AZ Genes Logo"
+                            className="h-10 w-auto object-contain transition-transform group-hover:scale-110"
+                        />
                     </Link>
                     <h2 className="text-4xl font-bold text-foreground tracking-tight mb-2">
                         {step === 'form' ? 'Create your account' : 'Verify your email'}

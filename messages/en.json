@@ -4,5 +4,34 @@
         "description": "Secure, sovereign genomic data management for the modern era. Carry your biological heritage anywhere, protected by decentralized encryption.",
         "digitalId": "Digital ID",
         "dashboard": "Dashboard"
+    },
+    "Contact": {
+        "pageTitle": "Contact Us | AZ Genes",
+        "getInTouch": "Get in touch",
+        "contactOur": "Contact our",
+        "clinicalTeam": "Clinical Team.",
+        "description": "Whether you are an individual wanting to secure genetic data or an institution seeking protocol integration, we are here to help.",
+        "emailInquiries": "Email inquiries",
+        "emailValue": "clinical@azgenes.app",
+        "researchHub": "Research Hub",
+        "addressValue": "1200 Bio-Tech Avenue, SF",
+        "sendAMessage": "Send a Message",
+        "yourName": "Your Name",
+        "namePlaceholder": "John Doe",
+        "emailAddress": "Email Address",
+        "emailPlaceholder": "john@example.com",
+        "message": "Message",
+        "messagePlaceholder": "How can we help you?",
+        "transmitMessage": "Transmit Message",
+        "sending": "Sending...",
+        "successMessage": "Message sent! Our support team will respond shortly."
+    },
+    "Navbar": {
+        "documentation": "Documentation",
+        "howItWorks": "How it works",
+        "aboutUs": "About Us",
+        "contactUs": "Contact Us",
+        "signIn": "Sign in",
+        "initializeVault": "Initialize Vault"
     }
 }

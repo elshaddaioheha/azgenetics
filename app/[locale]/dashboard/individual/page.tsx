@@ -27,6 +27,7 @@ import Spinner from '@/components/ui/Spinner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TransactionStatusModal, TransactionStatus } from '@/components/TransactionStatusModal';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import { AccountSettings } from '@/components/dashboard/AccountSettings';
 import { useSearchParams } from 'next/navigation';
 import { usePathname } from '@/i18n/routing';
 
@@ -80,6 +81,8 @@ const IndividualDashboard = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [mintingFileId, setMintingFileId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
 
   // Transaction modal state
   const [txModalOpen, setTxModalOpen] = useState(false);
@@ -274,9 +277,7 @@ const IndividualDashboard = () => {
         className="h-screen sticky top-0 bg-[#0c0c0c] border-r border-white/5 flex flex-col z-50 overflow-hidden"
       >
         <div className="p-8 flex items-center gap-4 mb-20">
-          <div className="w-12 h-12 rounded-2xl bg-fern flex items-center justify-center shadow-[0_0_30px_rgba(167,199,171,0.4)]">
-            <Dna size={24} className="text-obsidian" />
-          </div>
+          <img src="/logo.png" alt="AZ Genes" className="w-12 h-12 object-contain shadow-[0_0_30px_rgba(167,199,171,0.4)]" />
           {sidebarOpen && (
             <span className="text-2xl font-black tracking-tighter uppercase italic">genes</span>
           )}
@@ -332,7 +333,7 @@ const IndividualDashboard = () => {
             </div>
           </div>
           <div className="flex items-center gap-8">
-            <LanguageSwitcher />
+            <LanguageSwitcher theme="dark" />
             <input
               type="file"
               ref={fileInputRef}
@@ -348,8 +349,61 @@ const IndividualDashboard = () => {
               {isUploading ? <Spinner size="sm" /> : <UploadCloud size={20} />}
               {isUploading ? 'UPLOADING...' : 'UPLOAD_SEQUENCE'}
             </button>
-            <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-fern hover:border-fern/30 transition-all cursor-pointer group shadow-inner">
-              <Settings size={22} className="group-hover:rotate-90 transition-transform duration-700" />
+            <div className="relative">
+              <div
+                onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+                className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-white/60 hover:text-fern hover:border-fern/30 font-black text-xl italic transition-all cursor-pointer group shadow-inner"
+              >
+                {(userProfile?.full_name?.[0] || user?.email?.[0] || 'U').toUpperCase()}
+              </div>
+
+              {/* Profile Dropdown */}
+              <AnimatePresence>
+                {profileDropdownOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute right-0 mt-4 w-64 bg-[#0c0c0c] border border-white/10 rounded-3xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.8)] overflow-hidden z-50 flex flex-col"
+                  >
+                    <div className="p-6 border-b border-white/5 flex flex-col items-center">
+                      <div className="w-16 h-16 rounded-2xl bg-fern/10 border border-fern/20 text-fern flex items-center justify-center text-2xl font-black italic mb-4 shadow-inner">
+                        {(userProfile?.full_name?.[0] || user?.email?.[0] || 'U').toUpperCase()}
+                      </div>
+                      <p className="text-sm font-black text-white text-center uppercase tracking-wider italic">
+                        {userProfile?.full_name || user?.email?.split('@')[0] || 'User'}
+                      </p>
+                      <p className="text-[9px] text-fern/80 uppercase tracking-[0.3em] font-black italic mt-2 text-center">
+                        {userProfile?.user_role || 'Patient'}
+                      </p>
+                    </div>
+
+                    <div className="p-3">
+                      <button
+                        onClick={() => {
+                          setProfileDropdownOpen(false);
+                          setActiveTab('settings');
+                        }}
+                        className="w-full flex items-center gap-4 px-5 py-4 text-[10px] font-black tracking-[0.2em] italic uppercase text-white/50 hover:text-white hover:bg-white/5 rounded-2xl transition-all"
+                      >
+                        <Settings size={18} />
+                        Node Settings
+                      </button>
+                    </div>
+
+                    <div className="p-3 border-t border-white/5">
+                      <button
+                        onClick={() => getSupabaseBrowser()?.auth.signOut().then(() => router.push('/'))}
+                        className="w-full flex items-center gap-4 px-5 py-4 text-[10px] font-black tracking-[0.2em] italic uppercase text-red-500/70 hover:text-red-400 hover:bg-red-500/10 rounded-2xl transition-all"
+                      >
+                        <LogOut size={18} />
+                        Deauthorize
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
         </header>
@@ -481,21 +535,21 @@ const IndividualDashboard = () => {
                       </div>
                     ) : (
                       userData.map((item) => (
-                        <div key={item.id} className="glass-panel border-white/5 rounded-3xl p-8 flex items-center justify-between group hover:bg-white/[0.02] transition-all bg-white/[0.01]">
+                        <div key={item.id} className="glass-panel border-white/10 rounded-3xl p-8 flex items-center justify-between group hover:bg-white/[0.05] transition-all bg-white/[0.02]">
                           <div className="flex items-center gap-10">
-                            <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-white/20 group-hover:text-fern transition-all group-hover:scale-110 shadow-inner">
+                            <div className="w-16 h-16 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-white/60 group-hover:text-fern transition-all group-hover:scale-110 shadow-inner">
                               {item.type === 'genetic' ? <Dna size={26} /> : <ClipboardList size={26} />}
                             </div>
                             <div>
                               <h4 className="text-2xl font-black text-white uppercase tracking-tighter italic group-hover:text-fern transition-colors">{item.name}</h4>
                               <div className="flex items-center gap-6 mt-3">
-                                <span className="text-[10px] text-white/20 font-black uppercase font-mono tracking-widest italic">{item.date}</span>
-                                <span className="w-1 h-1 rounded-full bg-white/10"></span>
-                                <span className="text-[10px] text-white/20 font-black uppercase font-mono tracking-widest italic">{item.size}</span>
-                                <span className="w-1 h-1 rounded-full bg-white/10"></span>
+                                <span className="text-[10px] text-white/60 font-black uppercase font-mono tracking-widest italic">{item.date}</span>
+                                <span className="w-1 h-1 rounded-full bg-white/20"></span>
+                                <span className="text-[10px] text-white/60 font-black uppercase font-mono tracking-widest italic">{item.size}</span>
+                                <span className="w-1 h-1 rounded-full bg-white/20"></span>
                                 <span className="text-[10px] text-fern font-black uppercase tracking-[0.3em] italic">SHARED_NODES: {item.sharedWith}</span>
-                                <span className="w-1 h-1 rounded-full bg-white/10"></span>
-                                <span className="text-[10px] text-white/40 font-black uppercase tracking-[0.2em] italic font-mono truncate max-w-[150px]" title={item.hash}>NOTARIZED: {item.hash?.slice(0, 10)}...</span>
+                                <span className="w-1 h-1 rounded-full bg-white/20"></span>
+                                <span className="text-[10px] text-white/80 font-black uppercase tracking-[0.2em] italic font-mono truncate max-w-[150px]" title={item.hash}>NOTARIZED: {item.hash?.slice(0, 10)}...</span>
                               </div>
                             </div>
                           </div>
@@ -505,23 +559,23 @@ const IndividualDashboard = () => {
                                 href={`https://hashscan.io/testnet/transaction/${item.hedera_transaction_id.replace('@', '-')}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="px-6 py-2 rounded-full border border-fern/30 bg-fern/5 text-fern text-[9px] font-black uppercase tracking-[0.4em] italic hover:bg-fern/20 transition-all flex items-center gap-3 decoration-transparent"
+                                className="px-6 py-2 rounded-full border border-fern/50 bg-fern/20 text-fern text-[9px] font-black uppercase tracking-[0.4em] italic hover:bg-fern/30 transition-all flex items-center gap-3 decoration-transparent"
                               >
                                 <ShieldCheck size={14} /> Verify_On_Hedera
                               </a>
                             )}
                             {item.nftCertified ? (
-                              <div className="px-6 py-2 rounded-full border border-fern/30 bg-fern/10 text-fern text-[9px] font-black uppercase tracking-[0.4em] italic">PROTOCOL_CERTIFIED</div>
+                              <div className="px-6 py-2 rounded-full border border-fern/50 bg-fern/20 text-fern text-[9px] font-black uppercase tracking-[0.4em] italic shadow-inner">PROTOCOL_CERTIFIED</div>
                             ) : (
                               <button
                                 onClick={() => handleMintNFT(item.id)}
                                 disabled={mintingFileId === item.id}
-                                className="h-12 px-10 rounded-3xl bg-white/5 border border-white/10 text-white text-[9px] font-black uppercase tracking-[0.4em] italic transition-all hover:bg-fern hover:text-obsidian hover:border-fern disabled:opacity-50"
+                                className="h-12 px-10 rounded-3xl bg-white/10 border border-white/20 text-white text-[9px] font-black uppercase tracking-[0.4em] italic transition-all hover:bg-fern hover:text-obsidian hover:border-fern disabled:opacity-50"
                               >
                                 {mintingFileId === item.id ? 'CERTIFYING...' : 'INITIALIZE_PROOF'}
                               </button>
                             )}
-                            <button className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 text-white/20 flex items-center justify-center hover:text-white transition-colors"><ExternalLink size={18} /></button>
+                            <button className="w-12 h-12 rounded-2xl bg-white/10 border border-white/20 text-white/60 flex items-center justify-center hover:text-white transition-colors"><ExternalLink size={18} /></button>
                           </div>
                         </div>
                       )))}
@@ -615,7 +669,7 @@ const IndividualDashboard = () => {
               )}
 
               {/* Placeholders */}
-              {['reports', 'subscriptions', 'nft', 'settings'].includes(activeTab) && (
+              {['reports', 'subscriptions', 'nft'].includes(activeTab) && (
                 <div className="flex flex-col items-center justify-center min-h-[600px] text-center glass-panel border-white/5 rounded-[5rem] bg-white/[0.01] border-dashed relative overflow-hidden group">
                   <div className="absolute inset-0 bg-fern/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
                   <div className="w-32 h-32 bg-white/5 rounded-[3rem] flex items-center justify-center text-fern/10 mb-10 border border-white/10 shadow-inner group-hover:text-fern group-hover:rotate-12 transition-all duration-1000">
@@ -632,6 +686,20 @@ const IndividualDashboard = () => {
                     <div className="w-2.5 h-2.5 rounded-full bg-fern animate-ping delay-700"></div>
                   </div>
                 </div>
+              )}
+
+              {/* Settings Tab */}
+              {activeTab === 'settings' && (
+                <AccountSettings
+                  userProfile={userProfile}
+                  user={user}
+                  theme="dark"
+                  onProfileUpdate={() => {
+                    api.get('get-profile').then(res => res.ok ? res.json() : null).then(data => {
+                      if (data) setUserProfile(data);
+                    });
+                  }}
+                />
               )}
             </motion.div>
           </AnimatePresence>

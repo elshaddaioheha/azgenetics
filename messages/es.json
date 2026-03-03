@@ -4,5 +4,34 @@
         "description": "Protege tu herencia genética con cifrado de nivel profesional",
         "digitalId": "ID Digital",
         "dashboard": "Panel de Control"
+    },
+    "Contact": {
+        "pageTitle": "Contacto | AZ Genes",
+        "getInTouch": "Ponerse en contacto",
+        "contactOur": "Contacte a nuestro",
+        "clinicalTeam": "Equipo Clínico.",
+        "description": "Ya sea que usted sea un individuo que desea asegurar sus datos genéticos o una institución que busca la integración de protocolos, estamos aquí para ayudar.",
+        "emailInquiries": "Consultas por correo electrónico",
+        "emailValue": "clinical@azgenes.app",
+        "researchHub": "Centro de Investigación",
+        "addressValue": "1200 Bio-Tech Avenue, SF",
+        "sendAMessage": "Enviar un Mensaje",
+        "yourName": "Su Nombre",
+        "namePlaceholder": "Juan Pérez",
+        "emailAddress": "Correo Electrónico",
+        "emailPlaceholder": "juan@ejemplo.com",
+        "message": "Mensaje",
+        "messagePlaceholder": "¿Cómo podemos ayudarle?",
+        "transmitMessage": "Transmitir Mensaje",
+        "sending": "Enviando...",
+        "successMessage": "¡Mensaje enviado! Nuestro equipo de soporte responderá en breve."
+    },
+    "Navbar": {
+        "documentation": "Documentación",
+        "howItWorks": "Cómo funciona",
+        "aboutUs": "Sobre nosotros",
+        "contactUs": "Contáctenos",
+        "signIn": "Iniciar sesión",
+        "initializeVault": "Inicializar Bóveda"
     }
 }

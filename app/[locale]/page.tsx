@@ -62,9 +62,22 @@ export default function Home() {
 
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 md:pt-36 md:pb-32 px-4 md:px-10 flex flex-col items-center justify-center text-center overflow-hidden">
+        {/* Hero Background Image with Fading Overlay */}
+        <div className="absolute inset-x-0 top-0 z-0 h-[100vh] min-h-[800px] pointer-events-none">
+          <img
+            src="/hero-image.jpg"
+            alt="Family outdoors in nature"
+            className="w-full h-full object-cover object-center opacity-80"
+          />
+          {/* Gradient fading to solid background color at the bottom */}
+          <div className="absolute inset-0 bg-gradient-to-b from-white/20 via-white/60 to-[#fdfdfd]" />
+          {/* Subtle horizontal gradient to ensure text readability */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#fdfdfd]/40 via-transparent to-[#fdfdfd]/40" />
+        </div>
+
         {/* Abstract background blur */}
-        <div className="absolute top-[10%] left-[-10%] w-[500px] h-[500px] bg-med-blue/10 rounded-full blur-[120px] pointer-events-none" />
-        <div className="absolute bottom-[10%] right-[-10%] w-[500px] h-[500px] bg-med-purple/10 rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute top-[10%] left-[-10%] w-[500px] h-[500px] bg-med-blue/20 rounded-full blur-[120px] pointer-events-none z-0" />
+        <div className="absolute bottom-[20%] right-[-10%] w-[500px] h-[500px] bg-med-purple/10 rounded-full blur-[120px] pointer-events-none z-0" />
 
         <motion.div
           initial="hidden"
@@ -291,10 +304,13 @@ export default function Home() {
         <div className="max-w-[1440px] mx-auto px-6 md:px-10">
           <div className="flex flex-col lg:flex-row justify-between items-start gap-12 lg:gap-20 mb-12 lg:mb-20">
             <div className="max-w-md">
-              <div className="flex items-center gap-3 mb-8 md:mb-10">
-                <div className="w-10 h-10 rounded-xl bg-fern flex items-center justify-center text-white font-bold text-sm shadow-sm transition-transform hover:scale-110">AZ</div>
-                <span className="text-white font-bold tracking-tight text-3xl uppercase">genes</span>
-              </div>
+              <Link href="/" className="flex items-center gap-3 mb-8 md:mb-10 group">
+                <img
+                  src="/logo.png"
+                  alt="AZ Genes Logo"
+                  className="h-10 w-auto object-contain transition-transform group-hover:scale-105"
+                />
+              </Link>
               <p className="text-white/60 text-base md:text-lg font-semibold leading-relaxed">
                 The global infrastructure for biological data sovereignty. Built for individuals, refined for institutions.
               </p>

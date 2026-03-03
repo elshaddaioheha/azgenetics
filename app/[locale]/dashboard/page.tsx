@@ -55,6 +55,7 @@ import { Progress } from '@/components/ui/progress';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { AreaChart, Area, XAxis, CartesianGrid } from "recharts";
+import { AccountSettings } from '@/components/dashboard/AccountSettings';
 
 const earningData = [
   { month: "Jan", tokens: 120 },
@@ -116,6 +117,7 @@ const Dashboard = () => {
   const [completeness, setCompleteness] = useState(0);
   const [earningHistory, setEarningHistory] = useState(earningData);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
 
   // Transaction modal state
   const [txModalOpen, setTxModalOpen] = useState(false);
@@ -298,7 +300,11 @@ const Dashboard = () => {
   ];
 
   if (authLoading) return <div className="h-screen flex items-center justify-center bg-background"><Spinner size="lg" /></div>;
-  if (!user) return null;
+  if (!user) {
+    // Session definitively absent — redirect to sign-in
+    if (typeof window !== 'undefined') window.location.href = '/en/sign-in';
+    return <div className="h-screen flex items-center justify-center bg-background"><Spinner size="lg" /></div>;
+  }
 
   return (
     <div className="flex h-screen bg-background font-sans text-foreground overflow-hidden selection:bg-fern/10 selection:text-fern">
@@ -324,9 +330,7 @@ const Dashboard = () => {
       >
         <div className="p-6 h-20 flex items-center justify-between border-b border-border">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-fern flex items-center justify-center text-white font-bold text-xs">
-              AZ
-            </div>
+            <img src="/logo.png" alt="AZ Genes" className="w-8 h-8 object-contain" />
             {sidebarOpen && <span className="font-bold text-lg tracking-tight uppercase">genes</span>}
           </div>
           <button onClick={() => setSidebarOpen(!sidebarOpen)} className="text-muted-foreground hover:text-foreground transition-all">
@@ -388,7 +392,7 @@ const Dashboard = () => {
 
             <LanguageSwitcher />
 
-            <div className="flex items-center gap-3 pl-6 border-l border-border">
+            <div className="flex items-center gap-3 pl-6 border-l border-border relative">
               <div className="text-right hidden sm:block">
                 <p className="text-sm font-bold leading-none mb-1">
                   {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User'}
@@ -397,9 +401,60 @@ const Dashboard = () => {
                   {userProfile?.user_role || 'Patient'}
                 </p>
               </div>
-              <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center font-bold text-foreground border border-border shadow-sm hover:scale-105 transition-all cursor-pointer">
+              <div
+                onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+                className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center font-bold text-foreground border border-border shadow-sm hover:scale-105 transition-all cursor-pointer"
+              >
                 {(user?.user_metadata?.full_name?.[0] || user?.email?.[0] || 'U').toUpperCase()}
               </div>
+
+              {/* Profile Dropdown */}
+              <AnimatePresence>
+                {profileDropdownOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute right-0 top-12 mt-2 w-56 bg-white border border-border rounded-2xl shadow-xl overflow-hidden z-50 flex flex-col"
+                  >
+                    <div className="p-4 border-b border-border flex flex-col items-center">
+                      <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-lg font-bold text-foreground mb-3 border border-border">
+                        {(user?.user_metadata?.full_name?.[0] || user?.email?.[0] || 'U').toUpperCase()}
+                      </div>
+                      <p className="text-sm font-bold text-foreground text-center">
+                        {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User'}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1 text-center font-medium capitalize">
+                        {userProfile?.user_role || 'Patient'}
+                      </p>
+                    </div>
+
+                    <div className="p-2 flex-grow">
+                      <button
+                        onClick={() => {
+                          setProfileDropdownOpen(false);
+                          setActiveTab('settings');
+                        }}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-slate-50 rounded-xl transition-all"
+                      >
+                        <Settings size={16} />
+                        Account Settings
+                      </button>
+                    </div>
+
+                    <div className="p-2 border-t border-border">
+                      <button
+                        onClick={handleLogout}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-red-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
+                      >
+                        <LogOut size={16} />
+                        Log Out
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
         </header>
@@ -714,28 +769,18 @@ const Dashboard = () => {
 
             {/* SETTINGS TAB */}
             {activeTab === 'settings' && (
-              <motion.div variants={itemVariants} className="space-y-8 max-w-2xl">
-                <div className="bg-white rounded-[2.5rem] border border-border shadow-sm p-8">
-                  <div className="flex items-center gap-3 mb-8">
-                    <div className="bg-muted p-2 rounded-lg"><Settings size={20} /></div>
-                    <h3 className="text-xl font-bold tracking-tight">Node Settings</h3>
-                  </div>
-                  <div className="space-y-6">
-                    <div className="space-y-2">
-                      <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Display Name</label>
-                      <input type="text" defaultValue={user?.user_metadata?.full_name || ''} readOnly className="w-full bg-muted/40 border border-border rounded-2xl px-5 py-3 text-sm font-medium focus:outline-none cursor-not-allowed opacity-70" />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Email Address</label>
-                      <input type="email" defaultValue={user?.email || ''} readOnly className="w-full bg-muted/40 border border-border rounded-2xl px-5 py-3 text-sm font-medium focus:outline-none cursor-not-allowed opacity-70" />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Account Role</label>
-                      <input type="text" defaultValue={userProfile?.user_role || 'patient'} readOnly className="w-full bg-muted/40 border border-border rounded-2xl px-5 py-3 text-sm font-medium capitalize focus:outline-none cursor-not-allowed opacity-70" />
-                    </div>
-                  </div>
-                </div>
-                <div className="bg-foreground text-white rounded-[2.5rem] p-8 relative overflow-hidden shadow-lg">
+              <motion.div variants={itemVariants} className="space-y-8 max-w-5xl">
+                <AccountSettings
+                  userProfile={userProfile}
+                  user={user}
+                  theme="light"
+                  onProfileUpdate={() => {
+                    api.get('get-profile').then(res => res.ok ? res.json() : null).then(data => {
+                      if (data) setUserProfile(data);
+                    });
+                  }}
+                />
+                <div className="bg-foreground text-white rounded-[2.5rem] p-8 relative overflow-hidden shadow-lg mx-auto max-w-5xl">
                   <div className="absolute top-0 right-0 p-6 opacity-10"><Shield size={64} /></div>
                   <h4 className="text-xl font-bold mb-3 tracking-tight">Data Sovereignty</h4>
                   <p className="text-white/60 text-sm font-medium mb-8 leading-relaxed">

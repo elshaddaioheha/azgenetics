@@ -4,5 +4,34 @@
         "description": "Sichern Sie Ihr genetisches Erbe mit professioneller Verschlüsselung",
         "digitalId": "Digitale ID",
         "dashboard": "Dashboard"
+    },
+    "Contact": {
+        "pageTitle": "Kontakt | AZ Genes",
+        "getInTouch": "In Kontakt kommen",
+        "contactOur": "Kontaktieren Sie unser",
+        "clinicalTeam": "Klinisches Team.",
+        "description": "Egal, ob Sie eine Einzelperson sind, die genetische Daten sichern möchte, oder eine Einrichtung, die eine Protokollintegration sucht – wir sind hier, um zu helfen.",
+        "emailInquiries": "E-Mail-Anfragen",
+        "emailValue": "clinical@azgenes.app",
+        "researchHub": "Forschungszentrum",
+        "addressValue": "1200 Bio-Tech Avenue, SF",
+        "sendAMessage": "Nachricht senden",
+        "yourName": "Ihr Name",
+        "namePlaceholder": "Max Mustermann",
+        "emailAddress": "E-Mail-Adresse",
+        "emailPlaceholder": "max@beispiel.de",
+        "message": "Nachricht",
+        "messagePlaceholder": "Wie können wir Ihnen helfen?",
+        "transmitMessage": "Nachricht übermitteln",
+        "sending": "Wird gesendet...",
+        "successMessage": "Nachricht gesendet! Unser Support-Team wird in Kürze antworten."
+    },
+    "Navbar": {
+        "documentation": "Dokumentation",
+        "howItWorks": "Wie es funktioniert",
+        "aboutUs": "Über uns",
+        "contactUs": "Kontakt",
+        "signIn": "Anmelden",
+        "initializeVault": "Tresor initialisieren"
     }
 }

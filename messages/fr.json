@@ -4,5 +4,34 @@
         "description": "Sécurisez votre patrimoine génétique avec un cryptage de qualité professionnelle",
         "digitalId": "ID Numérique",
         "dashboard": "Tableau de Bord"
+    },
+    "Contact": {
+        "pageTitle": "Contactez-nous | AZ Genes",
+        "getInTouch": "Contactez-nous",
+        "contactOur": "Contactez notre",
+        "clinicalTeam": "Équipe Clinique.",
+        "description": "Que vous soyez un individu souhaitant sécuriser ses données génétiques ou une institution recherchant l'intégration de protocole, nous sommes là pour vous aider.",
+        "emailInquiries": "Demandes par email",
+        "emailValue": "clinical@azgenes.app",
+        "researchHub": "Centre de recherche",
+        "addressValue": "1200 Bio-Tech Avenue, SF",
+        "sendAMessage": "Envoyer un message",
+        "yourName": "Votre nom",
+        "namePlaceholder": "Jean Dupont",
+        "emailAddress": "Adresse e-mail",
+        "emailPlaceholder": "jean@exemple.com",
+        "message": "Message",
+        "messagePlaceholder": "Comment pouvons-nous vous aider ?",
+        "transmitMessage": "Transmettre le message",
+        "sending": "Envoi...",
+        "successMessage": "Message envoyé ! Notre équipe d'assistance vous répondra sous peu."
+    },
+    "Navbar": {
+        "documentation": "Documentation",
+        "howItWorks": "Comment ça marche",
+        "aboutUs": "À propos",
+        "contactUs": "Nous contacter",
+        "signIn": "Se connecter",
+        "initializeVault": "Initialiser le coffre"
     }
 }
