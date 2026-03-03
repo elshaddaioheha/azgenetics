@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Fingerprint, ArrowRight, ShieldCheck, Key, Mail, Lock, Eye, EyeOff } from "lucide-react";
 import Spinner from "@/components/ui/Spinner";
@@ -89,11 +90,13 @@ const SignIn: React.FC = () => {
 
             <div className="w-full max-w-md p-8 relative z-10">
                 <div className="text-center mb-12">
-                    <Link href="/" className="inline-flex items-center gap-3 mb-10 group">
-                        <img
+                    <Link href="/" className="inline-flex items-center gap-3 mb-10 group relative h-12 w-40">
+                        <Image
                             src="/logo.png"
                             alt="AZ Genes Logo"
-                            className="h-10 w-auto object-contain transition-transform group-hover:scale-110"
+                            fill
+                            priority
+                            className="object-contain transition-transform group-hover:scale-110"
                         />
                     </Link>
                     <h2 className="text-4xl font-bold text-foreground tracking-tight mb-2">Welcome back</h2>

@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Link } from '@/i18n/routing';
 import { User, ArrowRight, Menu, X } from 'lucide-react';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import LanguageSwitcher from './LanguageSwitcher';
 import { useTranslations } from 'next-intl';
@@ -15,11 +16,12 @@ export default function Navbar() {
     <nav className="fixed top-0 w-full z-[100] bg-white/70 backdrop-blur-2xl border-b border-border">
       <div className="max-w-[1400px] mx-auto px-4 md:px-10 h-20 flex items-center justify-between">
         <div className="flex items-center gap-16">
-          <Link href="/" className="flex items-center gap-3 group">
-            <img
+          <Link href="/" className="flex items-center gap-3 group relative h-10 w-32">
+            <Image
               src="/logo.png"
               alt="AZ Genes Logo"
-              className="h-10 w-auto object-contain transition-transform group-hover:scale-105"
+              fill
+              className="object-contain transition-transform group-hover:scale-105 origin-left"
             />
           </Link>
 

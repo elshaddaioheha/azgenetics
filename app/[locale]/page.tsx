@@ -3,6 +3,7 @@
 import React from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import Navbar from '@/components/Navbar';
 import {
@@ -62,22 +63,27 @@ export default function Home() {
 
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 md:pt-36 md:pb-32 px-4 md:px-10 flex flex-col items-center justify-center text-center overflow-hidden">
-        {/* Hero Background Image with Fading Overlay */}
-        <div className="absolute inset-x-0 top-0 z-0 h-[100vh] min-h-[800px] pointer-events-none">
-          <img
+        {/* Hero Background Image with Purposeful Brand Overlay */}
+        <div className="absolute inset-x-0 top-0 z-0 h-[100vh] min-h-[800px] pointer-events-none overflow-hidden">
+          <Image
             src="/hero-image.jpg"
             alt="Family outdoors in nature"
-            className="w-full h-full object-cover object-center opacity-80"
+            fill
+            priority
+            quality={90}
+            className="object-cover object-center opacity-60"
           />
-          {/* Gradient fading to solid background color at the bottom */}
-          <div className="absolute inset-0 bg-gradient-to-b from-white/20 via-white/60 to-[#fdfdfd]" />
-          {/* Subtle horizontal gradient to ensure text readability */}
-          <div className="absolute inset-0 bg-gradient-to-r from-[#fdfdfd]/40 via-transparent to-[#fdfdfd]/40" />
+          {/* Brand-aligned color overlay (fern tint) */}
+          <div className="absolute inset-0 bg-fern mix-blend-color opacity-20" />
+          {/* Gradient fading to solid background color at the bottom for high contrast */}
+          <div className="absolute inset-0 bg-gradient-to-b from-[#fdfdfd]/60 via-[#fdfdfd]/90 to-[#fdfdfd]" />
+          {/* Subtle horizontal gradient to frame the text */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#fdfdfd]/80 via-transparent to-[#fdfdfd]/80" />
         </div>
 
         {/* Abstract background blur */}
-        <div className="absolute top-[10%] left-[-10%] w-[500px] h-[500px] bg-med-blue/20 rounded-full blur-[120px] pointer-events-none z-0" />
-        <div className="absolute bottom-[20%] right-[-10%] w-[500px] h-[500px] bg-med-purple/10 rounded-full blur-[120px] pointer-events-none z-0" />
+        <div className="absolute top-[10%] left-[-10%] w-[500px] h-[500px] bg-fern/20 rounded-full blur-[120px] pointer-events-none z-0" />
+        <div className="absolute bottom-[20%] right-[-10%] w-[500px] h-[500px] bg-med-blue/10 rounded-full blur-[120px] pointer-events-none z-0" />
 
         <motion.div
           initial="hidden"
@@ -85,11 +91,11 @@ export default function Home() {
           variants={stagger}
           className="relative z-10 flex flex-col items-center max-w-6xl"
         >
-          <motion.div variants={fadeIn} className="flex items-center gap-3 px-5 py-2 mb-12 rounded-full bg-slate-50 border border-slate-100 shadow-sm">
+          <motion.div variants={fadeIn} className="flex items-center gap-3 px-5 py-3 mb-12 rounded-full bg-fern/10 border border-fern/20 shadow-sm backdrop-blur-sm">
             <div className="flex items-center gap-2">
-              <ShieldCheck size={16} className="text-indigo-600" />
+              <ShieldCheck size={16} className="text-fern" />
             </div>
-            <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Backed by Leading Genomic Institutes</span>
+            <span className="text-[11px] font-bold text-fern uppercase tracking-wider">Backed by Leading Genomic Institutes</span>
           </motion.div>
 
           <motion.h1
@@ -108,18 +114,18 @@ export default function Home() {
 
           <motion.div variants={fadeIn} className="flex flex-wrap md:flex-nowrap gap-6 md:gap-10 items-center justify-center mb-16 px-4">
             <div className="flex flex-col items-center w-[40%] md:w-auto">
-              <span className="text-2xl sm:text-3xl font-bold tracking-tighter">100%</span>
-              <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-center">Sovereign</span>
+              <span className="text-2xl sm:text-3xl font-bold tracking-tighter text-fern">100%</span>
+              <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-[#111]/60 text-center">Sovereign</span>
             </div>
-            <div className="w-[1px] h-12 bg-border hidden md:block" />
+            <div className="w-[1px] h-12 bg-fern/20 hidden md:block" />
             <div className="flex flex-col items-center w-[40%] md:w-auto">
-              <span className="text-2xl sm:text-3xl font-bold tracking-tighter">Hedera</span>
-              <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-center">Powered Network</span>
+              <span className="text-2xl sm:text-3xl font-bold tracking-tighter text-fern">Hedera</span>
+              <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-[#111]/60 text-center">Powered Network</span>
             </div>
-            <div className="w-[1px] h-12 bg-border hidden md:block" />
+            <div className="w-[1px] h-12 bg-fern/20 hidden md:block" />
             <div className="flex flex-col items-center w-full md:w-auto mt-2 md:mt-0">
-              <span className="text-2xl sm:text-3xl font-bold tracking-tighter">IPFS</span>
-              <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-center">Encrypted Storage</span>
+              <span className="text-2xl sm:text-3xl font-bold tracking-tighter text-fern">IPFS</span>
+              <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-[#111]/60 text-center">Encrypted Storage</span>
             </div>
           </motion.div>
         </motion.div>
@@ -145,11 +151,12 @@ export default function Home() {
             </div>
             <div className="absolute inset-0 z-0 group-hover:scale-105 transition-transform duration-1000">
               <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/10 z-10" />
-              <img
+              <Image
                 src="/dna_abstract_1772094318671.png"
-                alt=""
-                className="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity"
-                onError={(e) => { e.currentTarget.style.backgroundColor = '#a8c0d8' }}
+                alt="Biological Vault Concept"
+                fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                className="object-cover opacity-60 group-hover:opacity-80 transition-opacity"
               />
             </div>
           </motion.div>
@@ -174,11 +181,12 @@ export default function Home() {
             </div>
             <div className="absolute inset-0 z-0 group-hover:scale-105 transition-transform duration-1000">
               <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/10 z-10" />
-              <img
+              <Image
                 src="/medical_lab_tech_1772094355868.png"
-                alt=""
-                className="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity"
-                onError={(e) => { e.currentTarget.style.backgroundColor = '#a3b18a' }}
+                alt="Clinical Network"
+                fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                className="object-cover opacity-60 group-hover:opacity-80 transition-opacity"
               />
             </div>
           </motion.div>
@@ -203,11 +211,12 @@ export default function Home() {
             </div>
             <div className="absolute inset-0 z-0 group-hover:scale-105 transition-transform duration-1000">
               <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/10 z-10" />
-              <img
+              <Image
                 src="/secure_vault_medical_1772094379550.png"
-                alt=""
-                className="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity"
-                onError={(e) => { e.currentTarget.style.backgroundColor = '#c8b6a6' }}
+                alt="Encryption Layer"
+                fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                className="object-cover opacity-60 group-hover:opacity-80 transition-opacity"
               />
             </div>
           </motion.div>
@@ -232,10 +241,13 @@ export default function Home() {
             </div>
             <div className="absolute inset-0 z-0 group-hover:scale-105 transition-transform duration-1000">
               <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/10 z-10" />
-              <img
+              <Image
                 src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=1000"
-                alt=""
-                className="w-full h-full object-cover opacity-40 group-hover:opacity-60 transition-opacity mix-blend-overlay"
+                alt="Global Hub Concept"
+                fill
+                unoptimized
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                className="object-cover opacity-40 group-hover:opacity-60 transition-opacity mix-blend-overlay"
               />
               <div className="w-full h-full bg-[#a997bf] flex items-center justify-center">
                 <Globe size={120} className="text-white/10" />
@@ -304,11 +316,12 @@ export default function Home() {
         <div className="max-w-[1440px] mx-auto px-6 md:px-10">
           <div className="flex flex-col lg:flex-row justify-between items-start gap-12 lg:gap-20 mb-12 lg:mb-20">
             <div className="max-w-md">
-              <Link href="/" className="flex items-center gap-3 mb-8 md:mb-10 group">
-                <img
+              <Link href="/" className="flex items-center gap-3 mb-8 md:mb-10 group relative h-10 w-32">
+                <Image
                   src="/logo.png"
                   alt="AZ Genes Logo"
-                  className="h-10 w-auto object-contain transition-transform group-hover:scale-105"
+                  fill
+                  className="object-contain transition-transform group-hover:scale-105 origin-left"
                 />
               </Link>
               <p className="text-white/60 text-base md:text-lg font-semibold leading-relaxed">
