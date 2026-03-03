@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Fingerprint, ArrowRight, ShieldCheck, Key, Mail, Lock, Eye, EyeOff } from "lucide-react";
 import Spinner from "@/components/ui/Spinner";
-import { createClient } from "@supabase/supabase-js";
+import { getSupabaseBrowser } from "@/lib/supabaseBrowser";
 
 const SignIn: React.FC = () => {
     const router = useRouter();
@@ -18,6 +18,7 @@ const SignIn: React.FC = () => {
     const handleSignIn = async (e: React.FormEvent) => {
         e.preventDefault();
         setError("");
+        console.log('[SignIn] Form submitted — email:', email);
 
         if (!email || !password) {
             setError("Please enter your identification parameters");
@@ -27,6 +28,7 @@ const SignIn: React.FC = () => {
         setLoading(true);
 
         try {
+            console.log('[SignIn] Calling /api/auth/signin...');
             const response = await fetch('/api/auth/signin', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -34,6 +36,7 @@ const SignIn: React.FC = () => {
             });
 
             const data = await response.json();
+            console.log('[SignIn] API response status:', response.status, '| body:', JSON.stringify(data).substring(0, 200));
 
             if (!response.ok) {
                 if (data.requiresVerification) {
@@ -45,14 +48,22 @@ const SignIn: React.FC = () => {
 
             // Establish the Supabase session in the browser client.
             if (data.session) {
-                const supabase = createClient(
-                    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-                    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-                );
-                await supabase.auth.setSession({
-                    access_token: data.session.access_token,
-                    refresh_token: data.session.refresh_token,
-                });
+                console.log('[SignIn] Session received — setting browser session...');
+                const supabase = getSupabaseBrowser();
+                console.log('[SignIn] getSupabaseBrowser() returned:', supabase ? 'client' : 'NULL');
+                if (supabase) {
+                    const { error: sessionError } = await supabase.auth.setSession({
+                        access_token: data.session.access_token,
+                        refresh_token: data.session.refresh_token,
+                    });
+                    if (sessionError) {
+                        console.error('[SignIn] setSession error:', sessionError.message);
+                    } else {
+                        console.log('[SignIn] Session set successfully');
+                    }
+                }
+            } else {
+                console.warn('[SignIn] No session in API response!');
             }
 
             // Redirect to the correct localized dashboard path
@@ -60,10 +71,11 @@ const SignIn: React.FC = () => {
             const dashboardPath = role === 'patient'
                 ? '/en/dashboard'
                 : `/en/dashboard/${role}`;
+            console.log('[SignIn] Redirecting to:', dashboardPath);
             router.push(dashboardPath);
 
         } catch (err: any) {
-            console.error('Sign-in error:', err);
+            console.error('[SignIn] Error:', err);
             setError(err.message || 'Authentication error');
         } finally {
             setLoading(false);

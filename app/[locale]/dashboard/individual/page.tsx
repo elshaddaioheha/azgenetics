@@ -1,7 +1,7 @@
 "use client"
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/lib/useAuth';
-import { supabase } from '@/app/api/_context';
+import { getSupabaseBrowser } from '@/lib/supabaseBrowser';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/apiClient';
 import toast from 'react-hot-toast';
@@ -309,7 +309,7 @@ const IndividualDashboard = () => {
 
         <div className="p-8 border-t border-white/5">
           <button
-            onClick={() => supabase?.auth.signOut().then(() => router.push('/'))}
+            onClick={() => getSupabaseBrowser()?.auth.signOut().then(() => router.push('/'))}
             className="w-full flex items-center gap-5 px-6 py-5 rounded-3xl text-white/30 hover:text-red-400 hover:bg-red-400/5 transition-all group"
           >
             <LogOut size={22} className="group-hover:rotate-12 transition-transform" />

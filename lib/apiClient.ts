@@ -1,7 +1,8 @@
-import { supabase } from '@/app/api/_context';
+import { getSupabaseBrowser } from '@/lib/supabaseBrowser';
 
 /**
- * API client helper that automatically attaches Supabase session token to requests
+ * API client helper that automatically attaches Supabase session token to requests.
+ * Uses the browser-safe client (NEXT_PUBLIC_ env vars only).
  */
 export async function apiRequest(
   endpoint: string,
@@ -9,10 +10,8 @@ export async function apiRequest(
 ): Promise<Response> {
   const headers = new Headers(options.headers || {});
 
-  if (!supabase) {
-    console.error('Supabase client is not initialized');
-  } else {
-    // Get Supabase session
+  const supabase = getSupabaseBrowser();
+  if (supabase) {
     const { data: { session } } = await supabase.auth.getSession();
     if (session) {
       headers.set('Authorization', `Bearer ${session.access_token}`);
